@@ -1,42 +1,18 @@
 import Link from 'next/link';
 
+const stages = [
+  ['Before work starts', 'If you cancel before document review, filing preparation, or a government payment has started, you may request a refund of the eligible professional fee. Payment-gateway charges and any clearly identified non-refundable charges may be deducted.'],
+  ['After review or preparation starts', 'Once the team has reviewed documents, prepared forms, drafted applications, or started professional work, the eligible refund may be reduced because work has already been performed. We will explain the calculation when responding to the request.'],
+  ['After government submission or payment', 'Government fees, stamp duty, challans, appointment charges, or other amounts already paid to an authority may not be refundable by NyayLink. A government authority’s rejection or delay does not automatically mean that a professional fee is refundable.'],
+  ['If NyayLink cannot continue', 'If we cannot provide the paid service and no government or professional work has started, support will explain the available refund or transfer option. Any remedy depends on the order scope and work already completed.'],
+  ['How to request help', 'Email your order number, registered email address, reason for the request, and payment reference to our support team. We will acknowledge the request and explain the next step. Do not send PAN, Aadhaar, passwords, or full bank details by email.'],
+];
+
 export default function RefundPolicyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      <header className="bg-[#073B5C] text-white py-4 px-4 sm:px-6 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <Link href="/" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Back to Home
-          </Link>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-        <div className="space-y-2 border-b border-slate-200 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#073B5C]">Cancellation & Refund Policy</h1>
-          <p className="text-xs text-slate-500">Clear and transparent fee guidelines</p>
-        </div>
-
-        <section className="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
-          <h2 className="text-base font-bold text-[#073B5C]">1. Pre-Filing Cancellation</h2>
-          <p>
-            Clients may request an order cancellation within 24 hours of payment, provided document ingestion has not commenced. In such cases, professional retainer fees are eligible for a 100% refund after deducting gateway transaction processing charges (2%).
-          </p>
-
-          <h2 className="text-base font-bold text-[#073B5C]">2. Non-Refundable Statutory Government Fees</h2>
-          <p>
-            Once a Service Request Number (SRN), government challan, or stamp duty payment is generated on official government portals (MCA, GSTN, DGFT, IP India), that portion of the fee is strictly non-refundable under government treasury rules.
-          </p>
-
-          <h2 className="text-base font-bold text-[#073B5C]">3. Refund Processing SLA</h2>
-          <p>
-            Approved refunds are credited back to the original payment source (UPI / Bank Account) within 5–7 business days.
-          </p>
-        </section>
-      </main>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      <header className="sticky top-0 z-40 bg-[#073B5C] px-4 py-4 text-white shadow sm:px-6"><div className="mx-auto flex max-w-7xl items-center justify-between gap-3"><Link href="/" className="rounded-xl bg-[#0E7490] px-3 py-1 font-mono text-xl font-black shadow">Nyaya<span className="text-[#F4B942]">Link</span></Link><Link href="/" className="min-h-11 inline-flex items-center text-xs font-bold text-[#F4B942] hover:underline">← Back to home</Link></div></header>
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-12"><div className="border-b border-slate-200 pb-5"><p className="text-xs font-bold uppercase tracking-wide text-[#0E7490]">NyayLink policies</p><h1 className="mt-2 text-2xl font-extrabold text-[#073B5C] sm:text-3xl">Cancellation and refund policy</h1><p className="mt-2 text-xs text-slate-500">Last reviewed: August 2026 · Please confirm the final rules with your payment and legal professionals before launch.</p></div><div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-relaxed text-cyan-950"><strong>In simple language:</strong> refund eligibility depends on how much work has already started and whether money has already been paid to a government authority.</div><div className="space-y-5">{stages.map(([title, body], index) => <section key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-base font-extrabold text-[#073B5C]">{index + 1}. {title}</h2><p className="mt-2 text-sm leading-7 text-slate-700">{body}</p></section>)}</div><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-base font-extrabold text-[#073B5C]">Refund support</h2><p className="mt-2 text-sm leading-7 text-slate-700">Send your request to <a className="font-bold text-[#0E7490] underline" href="mailto:complain@nyayalink.com">complain@nyayalink.com</a>. General service questions can be sent to <a className="font-bold text-[#0E7490] underline" href="mailto:info@nyayalink.com">info@nyayalink.com</a>.</p></section></main>
     </div>
   );
 }

@@ -18,6 +18,12 @@ export default function RegisterPage() {
     setLoading(true);
     setErrorMsg('');
 
+    if (password.length < 8) {
+      setErrorMsg('Use at least 8 characters for your password.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -54,7 +60,7 @@ export default function RegisterPage() {
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="bg-white py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 shadow-xl space-y-5">
           {errorMsg && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl font-semibold">
+            <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl font-semibold">
               {errorMsg}
             </div>
           )}
@@ -65,6 +71,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 required
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Dhaval Sidhpura"
@@ -77,6 +84,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
@@ -89,6 +97,8 @@ export default function RegisterPage() {
               <input
                 type="tel"
                 required
+                inputMode="tel"
+                autoComplete="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 9920054785"
@@ -98,9 +108,12 @@ export default function RegisterPage() {
 
             <div>
               <label className="block font-bold text-[#073B5C] mb-1">Password</label>
+              <p className="mb-2 text-[11px] text-slate-500">Use at least 8 characters. Never reuse your banking or email password.</p>
               <input
                 type="password"
                 required
+                minLength={8}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 8 characters"

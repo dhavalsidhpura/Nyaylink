@@ -76,6 +76,7 @@ const MENU_TAX_GST = {
 
 export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
@@ -274,15 +275,51 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Action Button */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-navigation"
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              onClick={() => setMobileOpen((open) => !open)}
+              className="md:hidden inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-xl text-white transition hover:bg-nyaya-teal/40 focus:outline-none focus:ring-2 focus:ring-nyaya-gold"
+            >
+              {mobileOpen ? '×' : '☰'}
+            </button>
             <Link
               href="/dashboard"
-              className="bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-4 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
+              className="hidden sm:inline-flex bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-4 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
             >
               My Dashboard
             </Link>
           </div>
+
+        {/* Compact mobile navigation */}
+        {mobileOpen && (
+          <div id="mobile-navigation" className="md:hidden border-t border-white/10 bg-[#052840] px-4 pb-4 pt-3 shadow-xl">
+            <nav aria-label="Mobile navigation" className="grid gap-2 text-sm font-semibold">
+              <Link onClick={() => setMobileOpen(false)} href="/#catalog-section" className="rounded-xl px-4 py-3 text-white transition hover:bg-nyaya-teal/40">
+                Explore services
+              </Link>
+              <Link onClick={() => setMobileOpen(false)} href="/services/private-limited-company" className="rounded-xl px-4 py-3 text-white transition hover:bg-nyaya-teal/40">
+                Company registration
+              </Link>
+              <Link onClick={() => setMobileOpen(false)} href="/services/gst-registration" className="rounded-xl px-4 py-3 text-white transition hover:bg-nyaya-teal/40">
+                GST and tax
+              </Link>
+              <Link onClick={() => setMobileOpen(false)} href="/services/trademark-registration" className="rounded-xl px-4 py-3 text-white transition hover:bg-nyaya-teal/40">
+                Trademark and IP
+              </Link>
+              <Link onClick={() => setMobileOpen(false)} href="/login" className="rounded-xl border border-nyaya-gold/50 px-4 py-3 text-nyaya-gold transition hover:bg-nyaya-gold/10">
+                Client login
+              </Link>
+              <a href="tel:+918068929400" className="rounded-xl bg-nyaya-gold px-4 py-3 text-center font-extrabold text-nyaya-navy transition hover:bg-amber-500">
+                Call the support desk
+              </a>
+            </nav>
+          </div>
+        )}
         </div>
       </header>
     </>

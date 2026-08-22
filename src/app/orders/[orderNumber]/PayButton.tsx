@@ -33,11 +33,11 @@ export default function PayButton({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  if (currentStatus === 'payment_completed' || currentStatus === 'completed') {
+  if (currentStatus === 'PAID') {
     return (
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
         <span className="text-emerald-700 font-bold text-sm block">✓ Payment Completed</span>
-        <span className="text-emerald-600 text-xs">Our CA/CS team is reviewing your filing details.</span>
+        <span className="text-emerald-600 text-xs">Your payment is recorded and the service desk can continue the case.</span>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function PayButton({
           key: razorpayKey,
           amount: createData.amount,
           currency: 'INR',
-          name: 'Legal & Compliance Portal',
+          name: 'NyayLink Legal Services',
           description: serviceTitle,
           handler: async function (response: {
             razorpay_order_id: string;
@@ -107,7 +107,7 @@ export default function PayButton({
             email: clientEmail,
             contact: clientPhone,
           },
-          theme: { color: '#f97316' },
+          theme: { color: '#073B5C' },
         };
 
         const rzp = new window.Razorpay(options);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { MASTER_SERVICES } from '@/data/services';
 import { getServiceStructure } from '@/data/serviceDetails';
+import { INDIAN_STATES, getStateIntakeGuidance } from '@/data/india';
 
 declare global {
   interface Window {
@@ -47,6 +48,12 @@ function ServiceDetailContent() {
 
   const [businessName, setBusinessName] = useState(prefilledName);
   const [selectedState, setSelectedState] = useState('Maharashtra');
+  const stateGuidance = getStateIntakeGuidance(selectedState);
+  const [location, setLocation] = useState('');
+  const [entityType, setEntityType] = useState('Private Limited Company');
+  const [employeeCount, setEmployeeCount] = useState('0-19');
+  const [businessActivity, setBusinessActivity] = useState('');
+  const [formError, setFormError] = useState('');
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -85,15 +92,23 @@ function ServiceDetailContent() {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+    setFormError('');
 
     try {
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceSlug: slug,
-          state: selectedState,
-        }),
+          body: JSON.stringify({
+            serviceSlug: slug,
+            state: selectedState,
+            intakeData: {
+              businessName,
+              location,
+              entityType,
+              employeeCount,
+              businessActivity,
+            },
+          }),
       });
 
       const data = await res.json();
@@ -104,8 +119,8 @@ function ServiceDetailContent() {
       }
 
       if (!res.ok || !data.success) {
-        alert(data.error || 'Payment gateway initialization failed.');
-        setIsProcessing(false);
+          setFormError(data.error || 'Payment gateway initialization failed.');
+          setIsProcessing(false);
         return;
       }
 
@@ -133,7 +148,7 @@ function ServiceDetailContent() {
           if (verifyData.success) {
             router.push(`/orders/${data.orderNumber}`);
           } else {
-            alert('Payment verification failed.');
+            setFormError(verifyData.error || 'Payment verification failed.');
           }
         },
         modal: {
@@ -147,11 +162,13 @@ function ServiceDetailContent() {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } else {
-        router.push(`/orders/${data.orderNumber}`);
+        setFormError('Secure payment checkout is not available. Please try again or contact support.');
+        setIsProcessing(false);
+        return;
       }
     } catch (err) {
       console.error(err);
-      alert('Network error. Redirecting to workspace...');
+      setFormError('Network error. Please try again or contact support.');
     } finally {
       setIsProcessing(false);
     }
@@ -348,6 +365,7 @@ function ServiceDetailContent() {
               </div>
 
               <form onSubmit={handlePayment} className="space-y-4 text-xs">
+                {formError && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{formError}</p>}
                 
                 {/* Step 1: Applicant Identity & PAN */}
                 {currentStep === 1 && (
@@ -442,21 +460,35 @@ function ServiceDetailContent() {
 
                     <div>
                       <label className="block font-bold text-[#073B5C] mb-1">Operational State *</label>
-                      <select
+                        <select
                         value={selectedState}
                         onChange={(e) => setSelectedState(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-bold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                       >
-                        <option value="Maharashtra">Maharashtra (Mumbai / Pune)</option>
-                        <option value="Delhi">Delhi NCR</option>
-                        <option value="Karnataka">Karnataka (Bengaluru)</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="West Bengal">West Bengal</option>
+                        {INDIAN_STATES.map((state) => <option key={state} value={state}>{state}</option>)}
                       </select>
                     </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="font-bold text-[#073B5C] block mb-1">{stateGuidance.locationLabel} *</label>
+                        <input type="text" required value={location} onChange={(e) => setLocation(e.target.value)} placeholder={stateGuidance.locationPlaceholder} className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]" />
+                      </div>
+                      <div>
+                        <label className="font-bold text-[#073B5C] block mb-1">Business type *</label>
+                        <select value={entityType} onChange={(e) => setEntityType(e.target.value)} className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-bold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490]"><option>Private Limited Company</option><option>LLP</option><option>Proprietorship</option><option>Partnership</option><option>Individual / Freelancer</option><option>Trust / Society / NGO</option></select>
+                      </div>
+                      <div>
+                        <label className="font-bold text-[#073B5C] block mb-1">Approx. employees</label>
+                        <select value={employeeCount} onChange={(e) => setEmployeeCount(e.target.value)} className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-bold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490]"><option>0-19</option><option>20-49</option><option>50-99</option><option>100+</option><option>Not applicable</option></select>
+                      </div>
+                      <div>
+                        <label className="font-bold text-[#073B5C] block mb-1">Business activity *</label>
+                        <input type="text" required value={businessActivity} onChange={(e) => setBusinessActivity(e.target.value)} placeholder="e.g. food, trading, IT services" className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]" />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-[11px] leading-relaxed text-[#073B5C]"><strong>{stateGuidance.label} checklist:</strong> {stateGuidance.note}</div>
 
                     <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C]">
                       <span>Filing Service: <strong>{details.title}</strong></span>
@@ -472,7 +504,7 @@ function ServiceDetailContent() {
                       </button>
                       <button
                         type="button"
-                        disabled={!businessName}
+                        disabled={!businessName || !location || !businessActivity}
                         onClick={() => setCurrentStep(3)}
                         className="w-2/3 bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-white font-extrabold py-3 rounded-xl uppercase tracking-wider transition cursor-pointer"
                       >

@@ -66,6 +66,7 @@ model Lead {
   phone          String
   source         String     @default("Website Intake")
   complianceType String
+  state          String?
   status         LeadStatus @default(NEW)
   assignedToId   String?
   assignedTo     User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
@@ -98,12 +99,14 @@ model Order {
   assignedCA   User?       @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
   amount            Float
   govtFee           Float       @default(0)
+  taxAmount         Float       @default(0)
   paymentStatus     String      @default("UNPAID")
   razorpayOrderId   String?     @unique
   razorpayPaymentId String?     @unique
   paidAt            DateTime?
   status            OrderStatus @default(SUBMITTED)
   state        String      @default("MH")
+  intakeData   Json?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

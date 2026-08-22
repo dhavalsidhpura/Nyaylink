@@ -19,6 +19,7 @@ export default function HomePage() {
   const [quickService, setQuickService] = useState('private-limited-company');
   const [quickState, setQuickState] = useState('Maharashtra');
   const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
+  const [quickFormError, setQuickFormError] = useState('');
 
   const servicesList = MASTER_SERVICES || [];
   const categoriesList = ALL_CATEGORIES || [];
@@ -31,17 +32,41 @@ export default function HomePage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleQuickFormSubmit = (e: React.FormEvent) => {
+  const handleQuickFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingQuick(true);
-    // Redirect directly into the dedicated service intake flow with prefilled data
-    const queryParams = new URLSearchParams({
-      name: quickName,
-      phone: quickPhone,
-      email: quickEmail,
-      state: quickState,
-    });
-    router.push(`/services/${quickService}?${queryParams.toString()}`);
+    setQuickFormError('');
+
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: quickName,
+          phone: quickPhone,
+          email: quickEmail,
+          state: quickState,
+          complianceType: quickService,
+          source: 'Homepage quick quote',
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || 'We could not save your request.');
+      }
+
+      const queryParams = new URLSearchParams({
+        name: quickName,
+        phone: quickPhone,
+        email: quickEmail,
+        state: quickState,
+      });
+      router.push(`/services/${quickService}?${queryParams.toString()}`);
+    } catch (cause) {
+      setQuickFormError(cause instanceof Error ? cause.message : 'We could not save your request.');
+      setIsSubmittingQuick(false);
+    }
   };
 
   return (
@@ -55,8 +80,8 @@ export default function HomePage() {
             <span>✉️ compliance@nyayalink.com</span>
           </div>
           <div className="flex items-center gap-4 text-[#F4B942] font-semibold">
-            <span>⚡ ISO 9001:2015 Certified Portal</span>
-            <span>• MCA V3, IP India & GSTN Integrated</span>
+            <span>⚡ Secure online service desk</span>
+            <span>• For startups, MSMEs & individuals across India</span>
           </div>
         </div>
       </div>
@@ -216,30 +241,30 @@ export default function HomePage() {
           <div className="lg:col-span-7 space-y-5">
             <div className="inline-flex items-center gap-2 bg-[#0E7490]/50 border border-cyan-400/30 px-3.5 py-1.5 rounded-full text-[11px] font-bold text-[#F4B942]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Govt Recognized Legal-Tech Architecture
+              India-focused legal & compliance support
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-white">
-              Fast, Certified Compliance & Legal Filing in India
+              Start, protect and grow your business in India
             </h1>
 
             <p className="text-slate-300 text-xs sm:text-base leading-relaxed max-w-xl">
-              Company Incorporation, Trademark protection, GST returns, FSSAI licenses, and AI transformations supervised by empanelled Chartered Accountants, CS, and High Court Advocates.
+              Guided support for company registration, GST, trademark, licences, and ongoing compliance. We help you understand the next step and keep your case moving.
             </p>
 
             {/* Micro Highlights */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-[#F4B942] text-sm">✓</span>
-                <span className="text-slate-200">100% Online Filing</span>
+                <span className="text-slate-200">Online-first process</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[#F4B942] text-sm">✓</span>
-                <span className="text-slate-200">Zero Hidden Govt Fees</span>
+                <span className="text-slate-200">Clear fee breakdown</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[#F4B942] text-sm">✓</span>
-                <span className="text-slate-200">Encrypted Vault Delivery</span>
+                <span className="text-slate-200">Private document handling</span>
               </div>
             </div>
 
@@ -289,6 +314,7 @@ export default function HomePage() {
                   <input
                     type="text"
                     required
+                    autoComplete="name"
                     value={quickName}
                     onChange={(e) => setQuickName(e.target.value)}
                     placeholder="e.g. Dhaval Sidhpura"
@@ -296,12 +322,14 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-[#073B5C] mb-1">Mobile (+91) *</label>
                     <input
                       type="tel"
                       required
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={quickPhone}
                       onChange={(e) => setQuickPhone(e.target.value)}
                       placeholder="+91 9920054785"
@@ -313,6 +341,8 @@ export default function HomePage() {
                     <input
                       type="email"
                       required
+                      inputMode="email"
+                      autoComplete="email"
                       value={quickEmail}
                       onChange={(e) => setQuickEmail(e.target.value)}
                       placeholder="dhaval@example.com"
@@ -321,7 +351,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-[#073B5C] mb-1">Service Needed *</label>
                     <select
@@ -362,13 +392,15 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={isSubmittingQuick}
-                  className="w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmittingQuick ? 'Connecting to Desk...' : 'Start Filing / Get Free Quote →'}
+                  {isSubmittingQuick ? 'Saving your request...' : 'Start Filing / Get Free Quote →'}
                 </button>
 
+                {quickFormError && <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-[11px] text-rose-800">{quickFormError}</p>}
+
                 <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
-                  🔒 256-Bit Encrypted • No Spam Policy • Assigned to Mumbai CA Desk
+                  🔒 Private document handling • Clear status updates • Mumbai support desk
                 </p>
               </form>
             </div>
@@ -381,19 +413,19 @@ export default function HomePage() {
       <section className="bg-white border-b border-slate-200 py-5 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">50,000+</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Filings Completed</p>
+            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Startup & MSME</strong>
+            <p className="text-[11px] text-slate-500 font-medium">Focused services</p>
           </div>
           <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Google Verified Rating</p>
+            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Clear pricing</strong>
+            <p className="text-[11px] text-slate-500 font-medium">Before checkout</p>
           </div>
           <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">100% Online</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Paperless Execution</p>
+            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Online-first</strong>
+            <p className="text-[11px] text-slate-500 font-medium">With assisted support</p>
           </div>
           <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">CA & Advocate</strong>
+            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Professional review</strong>
             <p className="text-[11px] text-slate-500 font-medium">Direct Desk Supervision</p>
           </div>
         </div>
@@ -444,7 +476,7 @@ export default function HomePage() {
         </div>
 
         {/* 4x2 Desktop & 2x2 Mobile Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 pt-2">
           {filteredServices.map((srv) => (
             <div
               key={srv.id}
@@ -537,12 +569,12 @@ export default function HomePage() {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-bold text-slate-700">Live Status Tracking</td>
-                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">Real-time milestone progress tracker & SRN sync</td>
+                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">Case milestones and next-action updates</td>
                   <td className="py-3 px-4 text-slate-500">Manual phone follow-ups with uncertain timelines</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-bold text-slate-700">Document Security</td>
-                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">Lifetime 256-bit encrypted digital vault</td>
+                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">Private document workspace with controlled access</td>
                   <td className="py-3 px-4 text-slate-500">Physical paper files prone to loss or misplacement</td>
                 </tr>
               </tbody>
@@ -565,17 +597,17 @@ export default function HomePage() {
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2">
               <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">1</span>
               <strong className="block text-[#073B5C] text-sm">Digital Intake</strong>
-              <p className="text-slate-500">Provide basic identity details and upload documents to your encrypted vault.</p>
+              <p className="text-slate-500">Answer a few questions and add documents to your private case workspace.</p>
             </div>
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2">
               <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">2</span>
               <strong className="block text-[#073B5C] text-sm">Expert Scrutiny</strong>
-              <p className="text-slate-500">Empanelled CAs and CS inspect paperwork and draft statutory declarations.</p>
+              <p className="text-slate-500">A designated service professional reviews your information and flags missing items.</p>
             </div>
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2">
               <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">3</span>
               <strong className="block text-[#073B5C] text-sm">Govt Submission</strong>
-              <p className="text-slate-500">Direct portal filing with MCA V3, GSTN, FoSCoS, or IP India with live SRN tracking.</p>
+              <p className="text-slate-500">Our team completes the relevant government-portal step and records the acknowledgement when available.</p>
             </div>
             <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2">
               <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">4</span>
@@ -597,16 +629,16 @@ export default function HomePage() {
           <div className="space-y-2 text-xs">
             {[
               {
-                q: 'How does NyayaLink guarantee government filing accuracy?',
-                a: 'Every filing undergoes a 2-stage verification process: first through automated pre-audit checks, and second through manual scrutiny by certified Chartered Accountants or Advocates before government submission.',
+                q: 'How does NyayaLink help avoid filing mistakes?',
+                a: 'We use a guided checklist and a human review step where the selected service includes professional review. Government timelines and approvals depend on the relevant authority.',
               },
               {
-                q: 'Are there any hidden costs after making payment?',
-                a: 'No. Our quotations display transparent breakdowns of professional retainers, 18% GST, and statutory government fees upfront.',
+                q: 'Will I know the fees before I pay?',
+                a: 'Before you pay, we show the service fee and known government fees separately. Any authority-driven fee, additional work, or resubmission will be explained before it is charged.',
               },
               {
                 q: 'How do I download my approved government certificates?',
-                a: 'Once approved by the respective statutory authority (MCA, GSTN, DGFT, IP India), all certificates, DIN letters, and bylaws are placed directly in your encrypted digital Vault for lifetime access.',
+                a: 'When your service is complete, approved outputs and acknowledgements will be made available in your private case workspace according to our published retention policy.',
               },
             ].map((faq, idx) => (
               <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden">
@@ -628,29 +660,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* 9. Full Footer */}
-      <footer className="bg-[#052840] text-slate-300 text-xs pt-12 pb-8 border-t border-[#0E7490]/40 antialiased">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-700/60 pb-6">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow">
-                Nyaya<span className="text-[#F4B942]">Link</span>
-              </Link>
-              <span className="text-xs text-slate-400">Corporate Legal Tech Portal</span>
-            </div>
-            <div className="flex gap-4 text-xs text-slate-300">
-              <Link href="/tools/company-name-search" className="hover:text-white">MCA Search</Link>
-              <Link href="/tools/trademark-search" className="hover:text-white">TM Finder</Link>
-              <Link href="/tools/gst-search" className="hover:text-white">GST Lookup</Link>
-              <Link href="/dashboard" className="text-[#F4B942] font-bold">Client Login</Link>
-            </div>
-          </div>
-          <div className="text-center text-[10px] text-slate-400">
-            © 2026 NyayaLink Tech Solutions Private Limited. Charkop, Kandivali West, Mumbai 400067.
-          </div>
-        </div>
-      </footer>
 
       {/* 10. Sticky Action Bar for Mobile Devices */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-2.5 px-4 flex items-center justify-between z-50 border-t border-cyan-800 shadow-2xl">

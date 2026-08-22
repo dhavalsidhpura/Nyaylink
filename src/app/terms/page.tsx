@@ -1,47 +1,20 @@
 import Link from 'next/link';
 
+const sections = [
+  ['What NyayLink does', 'NyayLink is a private technology and service platform. We help customers understand a service, collect information, coordinate document preparation, connect the case to the appropriate service professional where included, and track the work. We are not a government department and using our website does not itself create a government filing.'],
+  ['Professional services', 'Where a service includes a Chartered Accountant, Company Secretary, Advocate, or another professional, the scope and responsible professional should be shown in the order or support communication. The customer should review the service scope before paying and ask questions if the work they need is different.'],
+  ['Customer information', 'You must provide truthful, current, and complete information. Do not upload another person’s document unless you are authorised to do so. A government authority may ask for clarification, a new document, an appointment, biometric verification, or additional fees.'],
+  ['Timelines and outcomes', 'Displayed timelines are estimates for ordinary processing. They can change because of government portal availability, authority review, public holidays, missing information, resubmission, or events outside NyayLink’s control. A filing or application is not the same as a guaranteed approval.'],
+  ['Prices and payment', 'The checkout should show the professional fee, applicable tax, and known government charges separately. A government fee or authority charge may be non-refundable once paid to the authority. Any additional work or authority-driven charge should be explained before it is charged.'],
+  ['Account and security', 'Keep your password and one-time codes private. Tell us promptly if you believe your account has been accessed by someone else. We may suspend an account or case where we reasonably suspect fraud, misuse, unlawful activity, or a risk to customer documents.'],
+  ['Support and disputes', 'Please contact support first so we can investigate a problem. The final legal entity, governing law, escalation process, professional responsibility, and dispute-resolution wording must be confirmed by the NyayLink owner and an appropriate professional before public launch.'],
+];
+
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      <header className="bg-[#073B5C] text-white py-4 px-4 sm:px-6 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <Link href="/" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Back to Home
-          </Link>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-        <div className="space-y-2 border-b border-slate-200 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#073B5C]">Terms of Service</h1>
-          <p className="text-xs text-slate-500">Last updated: August 2026</p>
-        </div>
-
-        <section className="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
-          <h2 className="text-base font-bold text-[#073B5C]">1. Nature of Platform & Legal Technology Disclaimer</h2>
-          <p>
-            NyayaLink provides a cloud-based technology platform facilitating corporate compliance, regulatory filings, and document management. NyayaLink is not a law firm and does not provide formal legal representation. All professional advisory and statutory document verification services are handled independently by empanelled Chartered Accountants (CAs), Company Secretaries (CSs), and Advocates.
-          </p>
-
-          <h2 className="text-base font-bold text-[#073B5C]">2. Accuracy of Client Information</h2>
-          <p>
-            The client is solely responsible for the authenticity and validity of all documents, identity proofs (PAN, Aadhaar), and information submitted for MCA, GST, FSSAI, DGFT, and Trademark filings. NyayaLink and its empanelled professionals bear no liability for penalties resulting from false or misleading statutory submissions.
-          </p>
-
-          <h2 className="text-base font-bold text-[#073B5C]">3. Service Level Timelines (SLAs)</h2>
-          <p>
-            Stated service timelines (e.g., 7–10 days for incorporation) represent standard operational processing times. Processing timelines are subject to government portal availability, server maintenance windows, and ROC/GST officer verification turnaround.
-          </p>
-
-          <h2 className="text-base font-bold text-[#073B5C]">4. Governing Law & Jurisdiction</h2>
-          <p>
-            Any disputes, claims, or proceedings arising from the use of this portal shall be governed exclusively by the laws of India and subject to the exclusive jurisdiction of the competent courts in Mumbai, Maharashtra.
-          </p>
-        </section>
-      </main>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      <header className="sticky top-0 z-40 bg-[#073B5C] px-4 py-4 text-white shadow sm:px-6"><div className="mx-auto flex max-w-7xl items-center justify-between gap-3"><Link href="/" className="rounded-xl bg-[#0E7490] px-3 py-1 font-mono text-xl font-black shadow">Nyaya<span className="text-[#F4B942]">Link</span></Link><Link href="/" className="min-h-11 inline-flex items-center text-xs font-bold text-[#F4B942] hover:underline">← Back to home</Link></div></header>
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-12"><div className="border-b border-slate-200 pb-5"><p className="text-xs font-bold uppercase tracking-wide text-[#0E7490]">NyayLink policies</p><h1 className="mt-2 text-2xl font-extrabold text-[#073B5C] sm:text-3xl">Terms of service</h1><p className="mt-2 text-xs text-slate-500">Last reviewed: August 2026 · Please review the final version with your legal professional before launch.</p></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950"><strong>Important:</strong> government processing and approval are controlled by the relevant authority. NyayLink can guide and coordinate the process, but cannot promise an authority’s decision or timeline.</div><div className="space-y-5">{sections.map(([title, body], index) => <section key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-base font-extrabold text-[#073B5C]">{index + 1}. {title}</h2><p className="mt-2 text-sm leading-7 text-slate-700">{body}</p></section>)}</div><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-base font-extrabold text-[#073B5C]">Contact</h2><p className="mt-2 text-sm leading-7 text-slate-700">Questions about an order can be sent to <a className="font-bold text-[#0E7490] underline" href="mailto:info@nyayalink.com">info@nyayalink.com</a> or <a className="font-bold text-[#0E7490] underline" href="tel:+919920054785">+91 9920054785</a>.</p></section></main>
     </div>
   );
 }

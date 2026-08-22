@@ -28,7 +28,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const requestedOrderId = typeof body.orderId === 'string' ? body.orderId : '';
     const serviceSlug = typeof body.serviceSlug === 'string' ? body.serviceSlug.trim() : '';
-    const state = typeof body.state === 'string' ? body.state.trim().toUpperCase() : 'MH';
+    const state = typeof body.state === 'string' && body.state.trim() ? body.state.trim().slice(0, 80) : 'Maharashtra';
+    const rawIntake = body.intakeData && typeof body.intakeData === 'object' ? body.intakeData : {};
+    const intakeData = {
+      businessName: typeof rawIntake.businessName === 'string' ? rawIntake.businessName.trim().slice(0, 160) : '',
+      location: typeof rawIntake.location === 'string' ? rawIntake.location.trim().slice(0, 120) : '',
+      entityType: typeof rawIntake.entityType === 'string' ? rawIntake.entityType.trim().slice(0, 80) : '',
+      employeeCount: typeof rawIntake.employeeCount === 'string' ? rawIntake.employeeCount.trim().slice(0, 40) : '',
+      businessActivity: typeof rawIntake.businessActivity === 'string' ? rawIntake.businessActivity.trim().slice(0, 160) : '',
+    };
 
     let order = requestedOrderId
       ? await prisma.order.findFirst({
@@ -54,15 +62,21 @@ export async function POST(request: Request) {
         );
       }
 
+      const govtFee = 0;
+      const taxAmount = Math.round(service.startingPrice * 0.18 * 100) / 100;
+      const amount = service.startingPrice + govtFee + taxAmount;
+
       order = await prisma.order.create({
         data: {
           orderNumber: createReference('NYA'),
           srn: createReference('SRN'),
           serviceId: service.id,
           clientId: auth.user.id,
-          amount: service.startingPrice,
-          govtFee: 0,
+          amount,
+          govtFee,
+          taxAmount,
           state,
+          intakeData,
           status: 'SUBMITTED',
         },
         include: { service: true },
