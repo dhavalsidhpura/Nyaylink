@@ -9,3 +9,5 @@ build/
 
 # Local uploaded legal documents
 public/uploads/
+
+.env
