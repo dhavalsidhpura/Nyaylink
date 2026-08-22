@@ -11,7 +11,7 @@ function formatINR(amount: number): string {
   }).format(amount);
 }
 
-type UserRole = 'SUPER_ADMIN' | 'OPS_MANAGER' | 'CA_CS_LEAD' | 'FINANCE_MANAGER';
+type UserRole = 'SUPER_ADMIN' | 'OPS_MANAGER' | 'CA_CS_LEAD' | 'COMPLIANCE_EXEC' | 'FINANCE_MANAGER';
 
 interface TeamMember {
   id: string;

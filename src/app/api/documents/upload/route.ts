@@ -1,130 +1,109 @@
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
+import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { requireUser } from '@/lib/auth-guards';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_TYPES = new Map([
+  ['application/pdf', '.pdf'],
+  ['image/jpeg', '.jpg'],
+  ['image/png', '.png'],
+]);
+
+const STAFF_ROLES = new Set([
+  'SUPER_ADMIN',
+  'OPS_MANAGER',
+  'CA_CS_LEAD',
+  'COMPLIANCE_EXEC',
+]);
 
 export async function POST(request: Request) {
+  const auth = await requireUser();
+
+  if (auth.response) {
+    return auth.response;
+  }
+
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const orderId = formData.get('orderId') as string;
-    const rawReqId = formData.get('documentRequirementId') as string | null;
-    const documentName = (formData.get('documentName') as string) || 'Document';
+    const file = formData.get('file');
+    const orderId = formData.get('orderId');
+    const documentName = formData.get('documentName');
 
-    if (!file || !orderId) {
+    if (!(file instanceof File) || typeof orderId !== 'string' || !orderId) {
       return NextResponse.json(
-        { success: false, error: 'Missing required file or order ID' },
-        { status: 400 }
+        { success: false, error: 'A file and order ID are required.' },
+        { status: 400 },
       );
     }
 
-    // 1. Fetch order details
-    const order = await prisma.orders.findUnique({
+    if (file.size <= 0 || file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { success: false, error: 'Files must be larger than zero and no larger than 10 MB.' },
+        { status: 400 },
+      );
+    }
+
+    const extension = ALLOWED_TYPES.get(file.type);
+
+    if (!extension) {
+      return NextResponse.json(
+        { success: false, error: 'Only PDF, JPG, and PNG files are accepted.' },
+        { status: 400 },
+      );
+    }
+
+    const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, service_id: true },
+      select: { id: true, clientId: true },
     });
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: 'Order not found' },
-        { status: 404 }
+        { success: false, error: 'Order not found.' },
+        { status: 404 },
       );
     }
 
-    // 2. Resolve document_requirement_id
-    let docReqId: string;
-    const isUuid =
-      rawReqId &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawReqId);
+    const isStaff = STAFF_ROLES.has(auth.user.role);
 
-    if (isUuid && rawReqId) {
-      docReqId = rawReqId;
-    } else {
-      let req = await prisma.service_document_requirements.findFirst({
-        where: {
-          service_id: order.service_id,
-          document_name: documentName,
-        },
-      });
-
-      if (!req) {
-        req = await prisma.service_document_requirements.create({
-          data: {
-            service_id: order.service_id,
-            document_name: documentName,
-            description: `Required document for ${documentName}`,
-          },
-        });
-      }
-
-      docReqId = req.id;
+    if (order.clientId !== auth.user.id && !isStaff) {
+      return NextResponse.json(
+        { success: false, error: 'You do not have access to this order.' },
+        { status: 403 },
+      );
     }
 
-    // 3. Save physical file to public/uploads
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const storageKey = `${orderId}/${randomUUID()}${extension}`;
+    const privateRoot = process.env.PRIVATE_UPLOAD_DIR || path.join(process.cwd(), '.private-data', 'uploads');
+    const filePath = path.join(privateRoot, storageKey);
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, Buffer.from(await file.arrayBuffer()), { flag: 'wx' });
 
-    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${uniqueSuffix}-${sanitizedFileName}`;
-    const filePath = path.join(uploadDir, filename);
-
-    await writeFile(filePath, buffer);
-
-    const fileUrl = `/uploads/${filename}`;
-    const fileSizeInt = Math.floor(file.size);
-
-    // 4. Save to PostgreSQL order_documents table with file_size included
-    const existingDoc = await prisma.order_documents.findFirst({
-      where: {
-        order_id: orderId,
-        document_requirement_id: docReqId,
-      },
-    });
-
-    if (existingDoc) {
-      await prisma.order_documents.update({
-        where: { id: existingDoc.id },
-        data: {
-          file_url: fileUrl,
-          file_name: file.name,
-          file_size: fileSizeInt,
-        },
-      });
-    } else {
-      await prisma.order_documents.create({
-        data: {
-          order_id: orderId,
-          document_requirement_id: docReqId,
-          file_url: fileUrl,
-          file_name: file.name,
-          file_size: fileSizeInt,
-        },
-      });
-    }
-
-    // 5. Log activity
-    await prisma.order_status_logs.create({
+    const document = await prisma.vaultDocument.create({
       data: {
-        order_id: orderId,
-        status: 'document_uploaded',
-        remarks: `Uploaded document: ${documentName} (${file.name})`,
+        name: typeof documentName === 'string' && documentName.trim() ? documentName.trim() : file.name,
+        fileUrl: `private://${storageKey}`,
+        category: typeof documentName === 'string' && documentName.trim() ? documentName.trim() : 'General',
+        ownerId: order.clientId,
+        orderId: order.id,
       },
+      select: { id: true, name: true, status: true, uploadedAt: true },
     });
 
     return NextResponse.json({
       success: true,
-      fileUrl,
-      fileName: file.name,
+      document,
+      message: 'Document uploaded to the private vault.',
     });
-  } catch (error: any) {
-    console.error('File upload error:', error);
+  } catch (error) {
+    console.error('Private document upload error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process document upload' },
-      { status: 500 }
+      { success: false, error: 'Failed to process document upload.' },
+      { status: 500 },
     );
   }
 }

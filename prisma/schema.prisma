@@ -96,9 +96,13 @@ model Order {
   client       User        @relation("ClientOrders", fields: [clientId], references: [id])
   assignedCAId String?
   assignedCA   User?       @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
-  amount       Float
-  govtFee      Float       @default(0)
-  status       OrderStatus @default(SUBMITTED)
+  amount            Float
+  govtFee           Float       @default(0)
+  paymentStatus     String      @default("UNPAID")
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  paidAt            DateTime?
+  status            OrderStatus @default(SUBMITTED)
   state        String      @default("MH")
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

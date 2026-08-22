@@ -91,17 +91,17 @@ function ServiceDetailContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: totalDue,
-          serviceTitle: details.title,
-          clientName: fullName,
-          clientEmail: email,
-          clientPhone: phone,
-          companyName: businessName,
+          serviceSlug: slug,
           state: selectedState,
         }),
       });
 
       const data = await res.json();
+
+      if (res.status === 401) {
+        router.push(`/login?callbackUrl=${encodeURIComponent(`/services/${slug}`)}`);
+        return;
+      }
 
       if (!res.ok || !data.success) {
         alert(data.error || 'Payment gateway initialization failed.');

@@ -42,15 +42,21 @@ export default function PayButton({
     );
   }
 
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const configuredRazorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
-  const completePaymentInDatabase = async (paymentId: string) => {
+  const completePaymentInDatabase = async (response: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => {
     const verifyRes = await fetch('/api/payments/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        orderId,
-        razorpayPaymentId: paymentId,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+        orderNumber,
       }),
     });
 
@@ -80,15 +86,21 @@ export default function PayButton({
         return;
       }
 
-      if (razorpayKey && razorpayKey.startsWith('rzp_test_')) {
+      const razorpayKey = configuredRazorpayKey || createData.keyId;
+
+      if (razorpayKey && razorpayKey.startsWith('rzp_')) {
         const options = {
           key: razorpayKey,
-          amount: Math.round(amount * 100),
+          amount: createData.amount,
           currency: 'INR',
           name: 'Legal & Compliance Portal',
           description: serviceTitle,
-          handler: async function (response: any) {
-            await completePaymentInDatabase(response.razorpay_payment_id);
+          handler: async function (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) {
+            await completePaymentInDatabase(response);
           },
           prefill: {
             name: clientName,
@@ -104,14 +116,7 @@ export default function PayButton({
         return;
       }
 
-      const simulateSuccess = confirm(
-        `[TEST MODE SIMULATION]\n\nOrder: ${orderNumber}\nAmount: ₹${amount.toLocaleString('en-IN')}\n\nClick OK to simulate a successful payment.`
-      );
-
-      if (simulateSuccess) {
-        const mockPaymentId = `pay_sim_${Math.floor(10000000 + Math.random() * 90000000)}`;
-        await completePaymentInDatabase(mockPaymentId);
-      }
+      alert('Payment is not configured. Please contact NyayLink support.');
     } catch (err: any) {
       alert(`Checkout error: ${err.message || 'Check terminal logs.'}`);
     } finally {

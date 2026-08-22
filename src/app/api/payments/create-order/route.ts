@@ -1,75 +1,108 @@
-import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireUser } from '@/lib/auth-guards';
+
+function createReference(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+}
 
 export async function POST(request: Request) {
-  try {
-    const { amount, serviceTitle, clientName, clientEmail, clientPhone } = await request.json();
+  const auth = await requireUser();
 
-    if (!amount || !clientEmail) {
+  if (auth.response) {
+    return auth.response;
+  }
+
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    return NextResponse.json(
+      { success: false, error: 'Payment service is not configured.' },
+      { status: 503 },
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const requestedOrderId = typeof body.orderId === 'string' ? body.orderId : '';
+    const serviceSlug = typeof body.serviceSlug === 'string' ? body.serviceSlug.trim() : '';
+    const state = typeof body.state === 'string' ? body.state.trim().toUpperCase() : 'MH';
+
+    let order = requestedOrderId
+      ? await prisma.order.findFirst({
+          where: { id: requestedOrderId, clientId: auth.user.id },
+          include: { service: true },
+        })
+      : null;
+
+    if (!order) {
+      if (!serviceSlug) {
+        return NextResponse.json(
+          { success: false, error: 'A service or valid order is required.' },
+          { status: 400 },
+        );
+      }
+
+      const service = await prisma.service.findUnique({ where: { slug: serviceSlug } });
+
+      if (!service || !service.isActive) {
+        return NextResponse.json(
+          { success: false, error: 'The selected service is not available.' },
+          { status: 404 },
+        );
+      }
+
+      order = await prisma.order.create({
+        data: {
+          orderNumber: createReference('NYA'),
+          srn: createReference('SRN'),
+          serviceId: service.id,
+          clientId: auth.user.id,
+          amount: service.startingPrice,
+          govtFee: 0,
+          state,
+          status: 'SUBMITTED',
+        },
+        include: { service: true },
+      });
+    }
+
+    const amountInPaise = Math.round(order.amount * 100);
+
+    if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
       return NextResponse.json(
-        { success: false, error: 'Amount and client email are required.' },
-        { status: 400 }
+        { success: false, error: 'The order amount is invalid.' },
+        { status: 400 },
       );
     }
 
-    const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder';
-    const key_secret = process.env.RAZORPAY_KEY_SECRET || 'rzp_secret_placeholder';
-
-    const razorpay = new Razorpay({
-      key_id,
-      key_secret,
-    });
-
-    const options = {
-      amount: Math.round(Number(amount) * 100), // Amount in paise
+    const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+    const razorpayOrder = await razorpay.orders.create({
+      amount: amountInPaise,
       currency: 'INR',
-      receipt: `rcpt_${Date.now().toString().slice(-8)}`,
+      receipt: order.orderNumber,
       notes: {
-        serviceTitle: serviceTitle || 'Compliance Filing',
-        clientName: clientName || 'Client',
-      },
-    };
-
-    const rzpOrder = await razorpay.orders.create(options);
-
-    // Create a pending order entry in your database
-    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-    const orderNumber = `NYA-2026-${randomSuffix}`;
-
-    const newOrder = await prisma.order.create({
-      data: {
-        orderNumber,
-        srn: `SRN-${randomSuffix}`,
-        serviceTitle: serviceTitle || 'Legal Filing',
-        serviceSlug: 'filing',
-        clientName: clientName || 'Applicant',
-        clientEmail: clientEmail.toLowerCase().trim(),
-        clientPhone: clientPhone || '',
-        companyName: clientName || 'Business Entity',
-        state: 'MH',
-        amount: Number(amount),
-        status: 'PENDING_PAYMENT',
-        paymentStatus: 'UNPAID',
+        orderNumber: order.orderNumber,
+        service: order.service.title,
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        orderId: rzpOrder.id,
-        amount: rzpOrder.amount,
-        currency: rzpOrder.currency,
-        keyId: key_id,
-        orderNumber: newOrder.orderNumber,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      orderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId,
+      orderNumber: order.orderNumber,
+      localOrderId: order.id,
+    });
   } catch (error) {
-    console.error('Razorpay Create Order Error:', error);
+    console.error('Razorpay create-order error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create payment order.' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

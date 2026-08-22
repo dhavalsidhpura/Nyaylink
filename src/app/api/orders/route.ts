@@ -1,95 +1,105 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireUser } from '@/lib/auth-guards';
 
-// GET: Fetch all active orders (or filtered by user email query)
-export async function GET(request: Request) {
+const STAFF_ROLES = new Set([
+  'SUPER_ADMIN',
+  'OPS_MANAGER',
+  'CA_CS_LEAD',
+  'COMPLIANCE_EXEC',
+  'FINANCE_MANAGER',
+]);
+
+function createReference(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+}
+
+export async function GET() {
+  const auth = await requireUser();
+
+  if (auth.response) {
+    return auth.response;
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-
+    const isStaff = STAFF_ROLES.has(auth.user.role);
     const orders = await prisma.order.findMany({
-      where: email ? { clientEmail: email } : undefined,
+      where: isStaff ? undefined : { clientId: auth.user.id },
       include: {
+        service: true,
         documents: true,
-        ledgerEntries: true,
+        ledger: true,
+        invoices: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, orders }, { status: 200 });
+    return NextResponse.json({ success: true, orders });
   } catch (error) {
-    console.error('API /api/orders GET Error:', error);
+    console.error('API /api/orders GET error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch orders.' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-// POST: Create a new statutory filing order
 export async function POST(request: Request) {
+  const auth = await requireUser();
+
+  if (auth.response) {
+    return auth.response;
+  }
+
   try {
     const body = await request.json();
-    const {
-      serviceTitle,
-      serviceSlug,
-      clientName,
-      clientEmail,
-      clientPhone,
-      companyName,
-      state,
-      amount,
-      baseFee,
-      govtFee,
-      gstAmount,
-    } = body;
+    const serviceSlug = typeof body.serviceSlug === 'string' ? body.serviceSlug.trim() : '';
+    const state = typeof body.state === 'string' ? body.state.trim().toUpperCase() : 'MH';
 
-    if (!serviceTitle || !clientName || !clientEmail || !clientPhone) {
+    if (!serviceSlug) {
       return NextResponse.json(
-        { success: false, error: 'Required applicant fields missing.' },
-        { status: 400 }
+        { success: false, error: 'A service is required.' },
+        { status: 400 },
       );
     }
 
-    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-    const orderNumber = `NYA-2026-${randomSuffix}`;
-    const srn = `SRN-MCA-${randomSuffix}`;
+    const service = await prisma.service.findUnique({ where: { slug: serviceSlug } });
 
-    const newOrder = await prisma.order.create({
+    if (!service || !service.isActive) {
+      return NextResponse.json(
+        { success: false, error: 'The selected service is not available.' },
+        { status: 404 },
+      );
+    }
+
+    const order = await prisma.order.create({
       data: {
-        orderNumber,
-        srn,
-        serviceTitle,
-        serviceSlug: serviceSlug || 'general-filing',
-        clientName,
-        clientEmail: clientEmail.toLowerCase().trim(),
-        clientPhone,
-        companyName: companyName || clientName,
-        state: state || 'MH',
-        amount: Number(amount) || 6999,
-        baseFee: Number(baseFee) || 5000,
-        govtFee: Number(govtFee) || 1000,
-        gstAmount: Number(gstAmount) || 999,
-        status: 'PENDING_PAYMENT',
-        paymentStatus: 'UNPAID',
+        orderNumber: createReference('NYA'),
+        srn: createReference('SRN'),
+        serviceId: service.id,
+        clientId: auth.user.id,
+        amount: service.startingPrice,
+        govtFee: 0,
+        state,
+        status: 'SUBMITTED',
       },
+      include: { service: true },
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Order created successfully.',
-        order: newOrder,
-        orderNumber: newOrder.orderNumber,
-        srn: newOrder.srn,
+        order,
+        orderNumber: order.orderNumber,
+        srn: order.srn,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error('API /api/orders POST Error:', error);
+    console.error('API /api/orders POST error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to record order in database.' },
-      { status: 500 }
+      { success: false, error: 'Failed to create order.' },
+      { status: 500 },
     );
   }
 }
