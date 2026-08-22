@@ -1,0 +1,162 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  OPS_MANAGER
+  CA_CS_LEAD
+  COMPLIANCE_EXEC
+  FINANCE_MANAGER
+  CLIENT
+}
+
+enum OrderStatus {
+  SUBMITTED
+  IN_PROGRESS
+  QUERY_RAISED
+  APPROVED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  DISQUALIFIED
+}
+
+enum DocStatus {
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum TxnType {
+  CLIENT_PAYMENT
+  GOVT_FEES_DEBIT
+  CA_PAYOUT
+  REFUND
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  password  String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders         Order[]         @relation("ClientOrders")
+  assignedOrders Order[]         @relation("AssignedCAOrders")
+  documents      VaultDocument[]
+  leads          Lead[]          @relation("AssignedLeads")
+}
+
+model Lead {
+  id             String     @id @default(cuid())
+  fullName       String
+  email          String?
+  phone          String
+  source         String     @default("Website Intake")
+  complianceType String
+  status         LeadStatus @default(NEW)
+  assignedToId   String?
+  assignedTo     User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  createdAt      DateTime   @default(now())
+}
+
+model Service {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  category      String
+  startingPrice Float
+  govtFeeNote   String
+  sla           String
+  sacCode       String   @default("998221")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  orders        Order[]
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+  srn          String      @unique
+  serviceId    String
+  service      Service     @relation(fields: [serviceId], references: [id])
+  clientId     String
+  client       User        @relation("ClientOrders", fields: [clientId], references: [id])
+  assignedCAId String?
+  assignedCA   User?       @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
+  amount       Float
+  govtFee      Float       @default(0)
+  status       OrderStatus @default(SUBMITTED)
+  state        String      @default("MH")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  documents VaultDocument[]
+  invoices  Invoice[]
+  ledger    LedgerEntry[]
+}
+
+model VaultDocument {
+  id           String    @id @default(cuid())
+  name         String
+  fileUrl      String
+  category     String
+  status       DocStatus @default(PENDING_REVIEW)
+  rejectNote   String?
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id])
+  orderId      String?
+  order        Order?    @relation(fields: [orderId], references: [id])
+  uploadedAt   DateTime  @default(now())
+}
+
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  txnNo       String   @unique
+  type        TxnType
+  description String
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  balance     Float
+  mode        String   @default("RAZORPAY")
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNo     String   @unique
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id])
+  sacCode       String   @default("998221")
+  taxableAmount Float
+  cgst          Float
+  sgst          Float
+  igst          Float    @default(0)
+  totalAmount   Float
+  createdAt     DateTime @default(now())
+}
+
+model ServicePricing {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  category        String
+  baseFee         Float    // NyayaLink Professional Fee (e.g., 6999)
+  govtFeeNote     String   // Display note (e.g., "₹0 MCA + State Stamp Duty")
+  isActive        Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+}
