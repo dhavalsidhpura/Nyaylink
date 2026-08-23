@@ -21,6 +21,8 @@ type Order = {
   assignedCA?: { name: string; email: string } | null;
   documents: Document[];
   invoices: Invoice[];
+  caseEvents: { id: string; title: string; message: string; createdAt: string }[];
+  reminders: { id: string; title: string; dueAt: string; status: string }[];
 };
 
 type Document = {
@@ -119,6 +121,7 @@ export default function CustomerDashboard() {
     [orders],
   );
   const invoices = useMemo(() => orders.flatMap((order) => order.invoices), [orders]);
+  const reminders = useMemo(() => orders.flatMap((order) => order.reminders.map((reminder) => ({ ...reminder, order }))), [orders]);
   const attentionOrder = orders.find((order) => order.status === 'QUERY_RAISED');
   const paidTotal = orders
     .filter((order) => order.paymentStatus === 'PAID')
@@ -266,11 +269,12 @@ export default function CustomerDashboard() {
 
               {view === 'overview' && (
                 <div className="space-y-5">
-                  <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                     {[
                       ['Active cases', String(orders.filter((order) => order.status !== 'APPROVED').length)],
                       ['Completed', String(orders.filter((order) => order.status === 'APPROVED').length)],
                       ['Documents', String(documents.length)],
+                      ['Reminders', String(reminders.length)],
                       ['Paid total', formatMoney(paidTotal)],
                     ].map(([label, value]) => (
                       <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -292,6 +296,8 @@ export default function CustomerDashboard() {
                       {orders.slice(0, 3).map((order) => <OrderCard key={order.id} order={order} onUpload={() => openUpload(order.id)} />)}
                     </div>
                   </section>
+
+                  {reminders.length > 0 && <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="text-lg font-extrabold text-amber-900">Upcoming compliance</h3><p className="text-xs text-amber-800">Dates confirmed by the service desk.</p></div><span className="text-xs font-bold text-amber-700">{reminders.length} due</span></div><div className="mt-3 grid gap-2 sm:grid-cols-2">{reminders.slice(0, 4).map((reminder) => <Link key={reminder.id} href={`/orders/${reminder.order.orderNumber}`} className="rounded-xl bg-white/70 p-3 hover:bg-white"><p className="text-xs font-extrabold text-amber-900">{reminder.title}</p><p className="mt-1 text-[11px] text-amber-800">{reminder.order.service.title} · Due {formatDate(reminder.dueAt)}</p></Link>)}</div></section>}
                 </div>
               )}
 
@@ -357,7 +363,7 @@ export default function CustomerDashboard() {
 
 function OrderCard({ order, onUpload }: { order: Order; onUpload: () => void }) {
   const status = statusCopy[order.status];
-  return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase ${status.tone}`}>{status.label}</span><span className="text-[11px] font-bold text-slate-400">{order.orderNumber}</span></div><h4 className="mt-2 text-base font-extrabold text-[#073B5C]">{order.service.title}</h4><p className="mt-1 text-xs text-slate-500">State: {order.state} · Started {formatDate(order.createdAt)}</p></div><p className="text-lg font-extrabold text-[#073B5C]">{formatMoney(order.amount)}</p></div><div className="mt-4 flex flex-col justify-between gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center"><p className="text-xs text-slate-500">{order.assignedCA ? `Assigned desk: ${order.assignedCA.name}` : 'A service professional will be assigned after review.'}</p><div className="flex flex-wrap gap-2"><Link href={`/orders/${order.orderNumber}`} className="min-h-11 inline-flex items-center rounded-xl border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">Open case</Link><button type="button" onClick={onUpload} className="min-h-11 rounded-xl bg-[#0E7490] px-3 text-xs font-extrabold text-white hover:bg-cyan-800">Add document</button></div></div></article>;
+  return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase ${status.tone}`}>{status.label}</span><span className="text-[11px] font-bold text-slate-400">{order.orderNumber}</span></div><h4 className="mt-2 text-base font-extrabold text-[#073B5C]">{order.service.title}</h4><p className="mt-1 text-xs text-slate-500">State: {order.state} · Started {formatDate(order.createdAt)}</p></div><p className="text-lg font-extrabold text-[#073B5C]">{formatMoney(order.amount)}</p></div>{order.caseEvents[0] && <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600"><strong className="text-[#073B5C]">Latest update:</strong> {order.caseEvents[0].message}</p>}<div className="mt-4 flex flex-col justify-between gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center"><p className="text-xs text-slate-500">{order.assignedCA ? `Assigned desk: ${order.assignedCA.name}` : 'A service professional will be assigned after review.'}</p><div className="flex flex-wrap gap-2"><Link href={`/orders/${order.orderNumber}`} className="min-h-11 inline-flex items-center rounded-xl border border-slate-300 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">Open case</Link><button type="button" onClick={onUpload} className="min-h-11 rounded-xl bg-[#0E7490] px-3 text-xs font-extrabold text-white hover:bg-cyan-800">Add document</button></div></div></article>;
 }
 
 function DocumentCard({ document, orderNumber }: { document: Document; orderNumber: string }) {

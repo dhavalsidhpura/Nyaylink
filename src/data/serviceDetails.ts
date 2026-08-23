@@ -855,7 +855,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Immediate ™ Symbol Rights', desc: 'Legal right to brandish ™ on products, website, and promotional media.' },
       { title: 'Class 1–45 Nice Classification Report', desc: 'Comprehensive phonetic and Vienna code search report.' },
       { title: 'Drafted Form TM-48 (Power of Attorney)', desc: 'Official authorization for advocate representation before the registry.' },
-      { title: 'Priority User Affidavit Compilation', desc: 'Legally vetted date-stamped documentary evidence dossier.' },
+      { title: 'Priority user affidavit compilation', desc: 'Organised, date-stamped documentary evidence dossier for professional review.' },
     ],
     faqs: [
       { q: 'When can I start using the ™ symbol?', a: 'You can legally use the ™ symbol immediately upon receipt of the Form TM-A acknowledgment receipt (within 24–48 hours).' },

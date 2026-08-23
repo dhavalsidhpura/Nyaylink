@@ -48,6 +48,17 @@ export async function GET() {
           select: { id: true, invoiceNo: true, taxableAmount: true, cgst: true, sgst: true, igst: true, totalAmount: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
         },
+        caseEvents: {
+          select: { id: true, title: true, message: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        reminders: {
+          where: { status: 'PENDING' },
+          select: { id: true, title: true, dueAt: true, status: true },
+          orderBy: { dueAt: 'asc' },
+          take: 3,
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
