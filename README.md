@@ -43,7 +43,9 @@ Start the development server with:
 npm run dev
 ```
 
-Open `http://localhost:3000`. The main public journey is homepage lead capture → registration/login → service intake → server-calculated quote → test payment → dashboard/case tracking → private document upload.
+Open `http://localhost:3000`. The main public journey is homepage service recommender → lead capture/registration → state-aware intake → document checklist → server-calculated quote → test payment → dashboard/case tracking → private document upload → professional review → final delivery → confirmed compliance reminders.
+
+The reminder processor is available at `POST /api/internal/reminders/process`. A host-level daily scheduler should call it with `Authorization: Bearer $REMINDER_CRON_SECRET` after email and the cron secret are configured. It fails closed when not configured and does not invent due dates; staff must create confirmed reminders first.
 
 ## Quality checks
 
@@ -71,6 +73,8 @@ The production build should be tested with a valid development `DATABASE_URL`. A
 | `RAZORPAY_WEBHOOK_SECRET` | Signature verification for Razorpay callbacks | Before enabling webhook delivery |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Browser checkout key identifier | Razorpay checkout UI |
 | `RESEND_API_KEY` | Transactional email integration | Email sending |
+| `EMAIL_FROM` | Verified sender address for customer notifications | Production email sending |
+| `REMINDER_CRON_SECRET` | Secret for the scheduled reminder processor | Reminder automation |
 | `PRIVATE_UPLOAD_DIR` | Development-only private disk path | Local upload fallback |
 
 Never put a secret in source code, the public repository, browser-exposed variables, screenshots, issue comments, or chat. Use the hosting provider's encrypted environment-variable store.
@@ -86,9 +90,10 @@ The following items must be completed before production approval:
 3. Replace local private-disk uploads with private object storage, short-lived signed URLs, file metadata/checksums, malware scanning, retention rules, and tested restore procedures.
 4. Configure and test the Razorpay webhook implementation with signature validation, idempotency, reconciliation, failure, refund, and browser-close handling.
 5. Remove or clearly label demo verification, AI audit, checkout, sample staff, and static catalog flows that are not connected to a real approved service.
-6. Complete staff case assignment, status history, audit actors, customer messages/support, invoice generation, and operational monitoring.
-7. Obtain professional review and approval of privacy, terms, cancellation/refund, tax, payment, and legal-service wording for India.
-8. Complete responsive accessibility testing and security review on the chosen production domain.
+6. Complete staff case assignment, status history, audit actors, customer messages/support, invoice generation, reminder processing monitoring, and operational monitoring.
+7. Configure a verified notification sender and a daily scheduler for `/api/internal/reminders/process`, then test delivery failure and retry behavior.
+8. Obtain professional review and approval of privacy, terms, cancellation/refund, tax, payment, and legal-service wording for India.
+9. Complete responsive accessibility testing and security review on the chosen production domain.
 
 ## Branch policy
 

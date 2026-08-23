@@ -28,10 +28,11 @@ This list contains only actions that require the owner’s account access, busin
 | Document policy | Approve how long customer documents should be retained and when they should be deleted. | Before real uploads. |
 | Identity verification provider | Choose and approve a compliant PAN/GSTIN verification provider, data-processing terms, and customer consent wording. | Before enabling live verification. |
 | Document review approach | Decide whether review is manual at launch or uses an approved OCR/malware-scanning provider with human escalation. | Before accepting real identity documents. |
+| Notification delivery | Provide a verified sender/domain for email notifications and choose where the daily reminder scheduler will run. | Before sending real customer reminders. |
 
 ## Development work completed without owner intervention
 
-The public journey now includes guided service recommendations, state-prefilled intake, a document-readiness checkpoint, server-calculated estimates, payment activity events, private case activity, delivery/reminder display, and synchronization of all 45 reviewed catalog services into the database seed. These features remain subject to staging verification and owner-approved business rules.
+The public journey now includes guided service recommendations, state-prefilled intake, a document-readiness checkpoint, server-calculated estimates, payment activity events, private case activity, delivery/reminder display, a secured reminder processor, staff case operations, and synchronization of all 45 reviewed catalog services into the database seed. These features remain subject to staging verification and owner-approved business rules.
 
 ## Decisions that can wait
 

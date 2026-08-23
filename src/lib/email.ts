@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
 
-const FROM_EMAIL = 'Legal Portal <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'NyayLink <onboarding@resend.dev>';
 
 interface SendEmailParams {
   to: string;
@@ -14,11 +14,11 @@ interface SendEmailParams {
 export async function sendNotificationEmail({ to, subject, html }: SendEmailParams) {
   try {
     if (!resend) {
-      console.log(`\n📧 [EMAIL SIMULATION]`);
+      console.log(`\n📧 [EMAIL NOT CONFIGURED]`);
       console.log(`To: ${to}`);
       console.log(`Subject: ${subject}`);
       console.log(`----------------------------------------`);
-      return { success: true, simulated: true };
+      return { success: false, configured: false, error: new Error('Email provider is not configured.') };
     }
 
     const response = await resend.emails.send({
