@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, unlink, writeFile } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
@@ -109,24 +109,30 @@ export async function POST(request: Request) {
     const filePath = path.join(privateRoot, storageKey);
 
     await mkdir(path.dirname(filePath), { recursive: true });
-    await writeFile(filePath, fileBytes, { flag: 'wx' });
 
-    const document = await prisma.vaultDocument.create({
-      data: {
-        name: safeDocumentName,
-        fileUrl: `private://${storageKey}`,
-        category: safeDocumentName,
-        ownerId: order.clientId,
-        orderId: order.id,
-      },
-      select: { id: true, name: true, status: true, uploadedAt: true },
-    });
+    try {
+      await writeFile(filePath, fileBytes, { flag: 'wx' });
 
-    return NextResponse.json({
-      success: true,
-      document,
-      message: 'Document uploaded to the private vault.',
-    });
+      const document = await prisma.vaultDocument.create({
+        data: {
+          name: safeDocumentName,
+          fileUrl: `private://${storageKey}`,
+          category: safeDocumentName,
+          ownerId: order.clientId,
+          orderId: order.id,
+        },
+        select: { id: true, name: true, status: true, uploadedAt: true },
+      });
+
+      return NextResponse.json({
+        success: true,
+        document,
+        message: 'Document uploaded to the private vault.',
+      });
+    } catch (error) {
+      await unlink(filePath).catch(() => undefined);
+      throw error;
+    }
   } catch (error) {
     console.error('Private document upload error:', error);
     return NextResponse.json(
