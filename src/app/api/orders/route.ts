@@ -25,11 +25,28 @@ export async function GET() {
     const isStaff = STAFF_ROLES.has(auth.user.role);
     const orders = await prisma.order.findMany({
       where: isStaff ? undefined : { clientId: auth.user.id },
-      include: {
-        service: true,
-        documents: true,
-        ledger: true,
-        invoices: true,
+      select: {
+        id: true,
+        orderNumber: true,
+        srn: true,
+        state: true,
+        amount: true,
+        govtFee: true,
+        taxAmount: true,
+        paymentStatus: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        service: { select: { title: true, slug: true, sla: true } },
+        assignedCA: { select: { name: true, email: true } },
+        documents: {
+          select: { id: true, name: true, category: true, status: true, uploadedAt: true },
+          orderBy: { uploadedAt: 'desc' },
+        },
+        invoices: {
+          select: { id: true, invoiceNo: true, taxableAmount: true, cgst: true, sgst: true, igst: true, totalAmount: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
