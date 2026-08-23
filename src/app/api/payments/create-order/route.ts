@@ -84,11 +84,30 @@ export async function POST(request: Request) {
 
     const amountInPaise = Math.round(order.amount * 100);
 
+    if (order.paymentStatus === 'PAID') {
+      return NextResponse.json(
+        { success: false, error: 'This order has already been paid.' },
+        { status: 409 },
+      );
+    }
+
     if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
       return NextResponse.json(
         { success: false, error: 'The order amount is invalid.' },
         { status: 400 },
       );
+    }
+
+    if (order.razorpayOrderId) {
+      return NextResponse.json({
+        success: true,
+        orderId: order.razorpayOrderId,
+        amount: amountInPaise,
+        currency: 'INR',
+        keyId,
+        orderNumber: order.orderNumber,
+        localOrderId: order.id,
+      });
     }
 
     const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
@@ -100,6 +119,11 @@ export async function POST(request: Request) {
         orderNumber: order.orderNumber,
         service: order.service.title,
       },
+    });
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { razorpayOrderId: razorpayOrder.id },
     });
 
     return NextResponse.json({
