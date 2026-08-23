@@ -157,6 +157,19 @@ model Invoice {
   createdAt     DateTime @default(now())
 }
 
+model PaymentEvent {
+  id                String   @id @default(cuid())
+  eventId           String   @unique
+  eventType         String
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  payload           Json
+  processedAt       DateTime @default(now())
+
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+}
+
 model ServicePricing {
   id              String   @id @default(cuid())
   slug            String   @unique
