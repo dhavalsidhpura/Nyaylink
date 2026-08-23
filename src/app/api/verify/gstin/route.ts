@@ -18,13 +18,11 @@ export async function POST(request: Request) {
       {
         success: true,
         gstin: cleanGSTIN,
-        tradeName: 'MOBIZSPARE TECHNOLOGIES',
-        legalName: 'DHAVAL KISHOR SIDHPURA',
-        status: 'ACTIVE',
+        formatValid: true,
+        verified: false,
+        status: 'LIVE_LOOKUP_NOT_CONFIGURED',
         stateCode,
-        stateName: stateCode === '27' ? 'Maharashtra' : 'Karnataka',
-        principalAddress: 'Plot 42, Charkop Industrial Estate, Kandivali West, Mumbai 400067',
-        filingFrequency: 'MONTHLY (GSTR-3B)',
+        message: 'GSTIN format is valid. Live verification is not enabled yet.',
       },
       { status: 200 }
     );
