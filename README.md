@@ -4,7 +4,7 @@ NyayLink is an India-focused legal and compliance service portal for founders, s
 
 ## Current status
 
-The repository contains a stabilized customer flow covering registration, login, lead capture, Indian state-aware intake, case creation, customer dashboard, case details, private document upload/download, invoice display, Razorpay test-mode integration points, and authorized staff status updates.
+The repository contains a stabilized customer flow covering registration, login, lead capture, guided service recommendations, Indian state-aware intake, document-readiness confirmation, case creation, customer dashboard, case details, private document upload/download, invoice display, payment activity, delivery/reminder display, Razorpay test-mode integration points, and authorized staff status updates.
 
 The application is **not yet approved for real customers or real payments**. Before launch, the owner must provide or approve the hosting provider, production database, private object storage, Razorpay production setup, email provider, domain, legal policy text, service catalog, state-specific rules, retention policy, and support process. See [`INTERVENTION_LIST.md`](./INTERVENTION_LIST.md) for the consolidated decision list.
 
@@ -31,10 +31,11 @@ Generate Prisma Client and apply migrations only to a development database:
 ```bash
 npx prisma generate
 npx prisma migrate deploy
+npm run generate:service-catalog
 npx prisma db seed
 ```
 
-The current seed contains four canonical services for safe testing. The public catalog is broader than the seed and must be reconciled before customer launch so that every advertised service has an approved database price and workflow.
+The seed synchronizes all 45 reviewed public services, their pricing entries, document checklists, and recommendation tags. Keep the generated `prisma/service-catalog.json` aligned with `src/data/services.ts` whenever the public catalog changes. Every advertised service still requires owner approval of its price, official-fee treatment, and final workflow before launch.
 
 Start the development server with:
 
@@ -49,6 +50,7 @@ Open `http://localhost:3000`. The main public journey is homepage lead capture â
 Run the following before pushing changes:
 
 ```bash
+npm run generate:service-catalog
 npx prisma generate
 npx tsc --noEmit
 npm run lint

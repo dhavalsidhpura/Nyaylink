@@ -22,12 +22,16 @@ This list contains only actions that require the owner’s account access, busin
 
 | Item | Owner action required | When needed |
 |---|---|---|
-| Prisma migration | Approve and run a migration for `Order.taxAmount`, `Order.intakeData`, `Lead.state`, and `PaymentEvent` against a separate development database first. | Before testing orders or payment callbacks. |
+| Prisma migration | Approve and run the current migrations for intake/tax/state fields, payment events, and case workflow tables against a separate development database first. | Before testing orders, payment callbacks, or case reminders. |
 | Service pricing | Confirm whether the displayed professional fee includes GST and provide the real government-fee rules by service and state. | Before charging customers. |
 | Customer support | Confirm the support phone, support email, escalation SLA, and the professionals who will receive cases. | Before lead capture and case assignment. |
 | Document policy | Approve how long customer documents should be retained and when they should be deleted. | Before real uploads. |
 | Identity verification provider | Choose and approve a compliant PAN/GSTIN verification provider, data-processing terms, and customer consent wording. | Before enabling live verification. |
 | Document review approach | Decide whether review is manual at launch or uses an approved OCR/malware-scanning provider with human escalation. | Before accepting real identity documents. |
+
+## Development work completed without owner intervention
+
+The public journey now includes guided service recommendations, state-prefilled intake, a document-readiness checkpoint, server-calculated estimates, payment activity events, private case activity, delivery/reminder display, and synchronization of all 45 reviewed catalog services into the database seed. These features remain subject to staging verification and owner-approved business rules.
 
 ## Decisions that can wait
 
