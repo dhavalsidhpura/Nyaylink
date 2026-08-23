@@ -31,7 +31,7 @@ export async function requireUser() {
   return { session, user, response: null } as const;
 }
 
-export async function requireRole(roles: string[]) {
+export async function requireRole(roles: readonly string[]) {
   const auth = await requireUser();
 
   if (auth.response) {

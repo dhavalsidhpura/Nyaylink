@@ -29,10 +29,51 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const updatedOrder = await prisma.order.update({
+    const existingOrder = await prisma.order.findUnique({
       where: { id: orderId },
-      data: { status: newStatus as OrderStatus },
-      select: { id: true, orderNumber: true, status: true, updatedAt: true },
+      select: { id: true, orderNumber: true, status: true, service: { select: { title: true } } },
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json({ success: false, error: 'Order not found.' }, { status: 404 });
+    }
+
+    if (existingOrder.status === newStatus) {
+      return NextResponse.json({ success: true, order: existingOrder });
+    }
+
+    const statusLabels: Record<OrderStatus, string> = {
+      SUBMITTED: 'Request received',
+      IN_PROGRESS: 'Professional review',
+      QUERY_RAISED: 'Customer action needed',
+      APPROVED: 'Service completed',
+    };
+
+    const updatedOrder = await prisma.$transaction(async (transaction) => {
+      const updated = await transaction.order.update({
+        where: { id: orderId },
+        data: {
+          status: newStatus as OrderStatus,
+          completedAt: newStatus === 'APPROVED' ? new Date() : undefined,
+        },
+        select: { id: true, orderNumber: true, status: true, updatedAt: true, completedAt: true },
+      });
+
+      await transaction.caseEvent.create({
+        data: {
+          orderId,
+          actorId: auth.user.id,
+          eventType: 'STATUS_CHANGED',
+          title: statusLabels[newStatus as OrderStatus],
+          message: newStatus === 'QUERY_RAISED'
+            ? `The service desk needs an additional document or clarification for your ${existingOrder.service.title} case.`
+            : newStatus === 'APPROVED'
+              ? `Your ${existingOrder.service.title} case is marked complete. Check the delivery section for the available output.`
+              : `Your ${existingOrder.service.title} case is now in ${statusLabels[newStatus as OrderStatus].toLowerCase()}.`,
+        },
+      });
+
+      return updated;
     });
 
     return NextResponse.json({ success: true, order: updatedOrder });

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import StatusSelector from '@/app/admin/orders/StatusSelector';
+import StaffCaseControls from '@/app/admin/orders/StaffCaseControls';
 
 interface AdminOrderPageProps {
   params: {
@@ -18,12 +19,22 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
       documents: true,
       ledger: { orderBy: { createdAt: 'desc' } },
       invoices: { orderBy: { createdAt: 'desc' } },
+      caseEvents: {
+        include: { actor: { select: { name: true, role: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
     },
   });
 
   if (!order) {
     notFound();
   }
+
+  const professionals = await prisma.user.findMany({
+    where: { role: { in: ['OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC'] } },
+    select: { id: true, name: true, email: true, role: true },
+    orderBy: { name: 'asc' },
+  });
 
   return (
     <main className="min-h-screen bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
@@ -93,7 +104,7 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
                   <span>{new Date(order.updatedAt).toLocaleString('en-IN')}</span>
                 </div>
               </div>
-              <p className="text-xs text-slate-400">Detailed status history will be added with the case-task workflow.</p>
+              <div className="space-y-2 border-t border-slate-100 pt-4">{order.caseEvents.length === 0 ? <p className="text-xs text-slate-400">No case events recorded yet.</p> : order.caseEvents.map((event) => <div key={event.id} className="rounded-xl bg-slate-50 p-3"><div className="flex justify-between gap-3 text-xs"><strong className="text-slate-800">{event.title}</strong><span className="text-slate-400">{new Date(event.createdAt).toLocaleString('en-IN')}</span></div><p className="mt-1 text-xs leading-relaxed text-slate-600">{event.message}</p>{event.actor && <p className="mt-1 text-[10px] text-slate-400">By {event.actor.name}</p>}</div>)}</div>
             </div>
           </div>
 
@@ -117,6 +128,15 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
             </div>
           </div>
         </div>
+
+        <StaffCaseControls
+          orderId={order.id}
+          currentAssigneeId={order.assignedCAId}
+          currentProfessionalType={order.professionalType}
+          currentAssignmentNote={order.assignmentNote}
+          professionals={professionals}
+          documents={order.documents.map((document) => ({ id: document.id, name: document.name, status: document.status }))}
+        />
       </div>
     </main>
   );
