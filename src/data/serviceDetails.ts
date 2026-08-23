@@ -49,7 +49,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'business-tech',
     badge: 'Autonomous AI Systems',
     whoShouldBuy: 'Companies seeking 24/7 customer support, automated outbound/inbound calling, automated lead qualification, and hands-free back-office operations.',
-    whyShouldBuy: 'Reduces customer support overhead by up to 70%, captures and qualifies leads instantly across channels (WhatsApp, web, phone), and eliminates repetitive data entry through autonomous AI agents.',
+    whyShouldBuy: 'Can reduce repetitive support work, capture and qualify leads across channels, and support workflow automation when configured to the agreed scope.',
     timeframe: '1–2 weeks for standard AI chatbots & voice agents; 3–6 weeks for custom multi-agent workflow systems.',
     specificDocs: [
       'Knowledge base documents (FAQs, product catalogs, company policies, training manuals)',
@@ -62,7 +62,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     ],
     deliverables: [
       { title: 'Configured Multi-Channel AI Agent / Chatbot', desc: 'Deployed across WhatsApp, Web, and telephony.' },
-      { title: 'CRM & Database Webhook Integration', desc: 'Instant bidirectional lead sync and ticket creation.' },
+      { title: 'CRM & database webhook integration', desc: 'Bidirectional lead sync and ticket creation configured to the agreed scope.' },
       { title: 'Human Escalation & Live Analytics Dashboard', desc: 'Real-time conversation inspection and intervention controls.' },
     ],
     faqs: [
@@ -76,7 +76,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'business-tech',
     badge: 'Full-Stack Engineering',
     whoShouldBuy: 'Enterprises and specialized businesses whose unique operational processes outgrow generic off-the-shelf software tools.',
-    whyShouldBuy: 'Delivers 100% tailored systems built around your exact business logic, eliminating recurring per-user SaaS subscription costs while ensuring complete data ownership and custom integrations.',
+    whyShouldBuy: 'Delivers systems tailored to the agreed business logic, with transparent scope, data-ownership terms, and custom integration planning.',
     timeframe: '4–8 weeks for MVPs / custom CRMs; 8–16 weeks for complex enterprise ERPs and cross-platform mobile apps (iOS & Android).',
     specificDocs: [
       'Detailed Functional Requirement Document (FRD) / Feature List',
@@ -89,7 +89,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     ],
     deliverables: [
       { title: 'Production-Ready Web / Mobile Application', desc: 'High-performance React/Next.js and Flutter/React Native build.' },
-      { title: '100% Source Code & IP Handover', desc: 'Direct repository ownership transferred to your GitHub/GitLab account.' },
+      { title: 'Source Code & IP Handover', desc: 'Direct repository ownership transferred to your GitHub/GitLab account.' },
       { title: 'API Documentation & 60-Day Warranty', desc: 'Complete architectural manuals and post-launch bug support.' },
     ],
     faqs: [
@@ -130,7 +130,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'business-tech',
     badge: 'Cloud & Enterprise IT',
     whoShouldBuy: 'Organizations scaling their workforce, migrating from local physical servers to the cloud, or setting up secure enterprise collaboration environments.',
-    whyShouldBuy: 'Eliminates hardware maintenance costs, provides 99.9% uptime, enables secure remote work via centralized cloud systems (AWS, Azure, Google Cloud), and ensures automated off-site backups.',
+    whyShouldBuy: 'Supports cloud infrastructure planning, remote work, backup design, and operational resilience; availability depends on the selected provider and scope.',
     timeframe: '3–7 working days for Microsoft 365 / Google Workspace migration; 2–4 weeks for full cloud server architecture and database setup.',
     specificDocs: [
       'Domain DNS management access',
@@ -166,12 +166,12 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     ],
     importantConsiderations: [
       'Testing includes both automated vulnerability scans and manual exploit verification.',
-      'Includes a remediation re-test report post bug-fixing to certify resolution.',
+      'May include a remediation re-test report after agreed fixes.',
     ],
     deliverables: [
-      { title: 'Certified VAPT Security Audit Report', desc: 'Comprehensive OWASP Top 10 penetration findings.' },
+      { title: 'VAPT Security Audit Report', desc: 'Comprehensive OWASP Top 10 penetration findings.' },
       { title: 'Prioritized Vulnerability Patching Matrix', desc: 'Engineering guide with code-level remediation steps.' },
-      { title: 'Official Certificate of Security Clearance', desc: 'Formal attestation letter for enterprise client empanelment.' },
+      { title: 'Security assessment summary', desc: 'Assessment summary for stakeholder review; no government clearance is implied.' },
     ],
     faqs: [
       { q: 'Will penetration testing cause our website or API to crash?', a: 'No. Penetration tests are carefully calibrated against staging or production systems with strict rate limiting and non-destructive payloads.' },
@@ -224,7 +224,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     ],
     deliverables: [
       { title: 'Full-Funnel Paid Advertising Setup', desc: 'Google Search/Performance Max and Meta Conversion campaigns.' },
-      { title: 'Server-Side GA4 & Meta CAPI Tracking', desc: '100% verified event tracking and conversion attribution setup.' },
+      { title: 'Server-Side GA4 & Meta CAPI Tracking', desc: 'Event tracking and conversion attribution setup, subject to platform and implementation checks.' },
       { title: 'Technical & Organic SEO Roadmap', desc: 'Keyword cluster strategy, backlink architecture, and on-page optimization.' },
     ],
     faqs: [
@@ -266,7 +266,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'private-limited-company',
     title: 'Private Limited Company (Pvt Ltd)',
     category: 'company-reg',
-    badge: 'MCA SPICe+ Certified',
+    badge: 'MCA SPICe+ Filing Support',
     whoShouldBuy: 'Startups, tech founders, e-commerce platforms, and growing businesses planning to raise angel or venture capital.',
     whyShouldBuy: 'Offers a strong separate legal identity, limits personal financial liability, makes issuing equity and ESOPs straightforward, and holds high credibility with banks and investors.',
     timeframe: '7–10 working days',
@@ -291,7 +291,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'EPFO, ESIC & Bank Account', desc: 'Statutory labor welfare numbers and pre-approved current account letter.' },
     ],
     faqs: [
-      { q: 'Do I need to visit the ROC office in person?', a: 'No. The entire incorporation process is 100% online and paperless via Class 3 DSC and electronic signatures.' },
+      { q: 'Do I need to visit the ROC office in person?', a: 'Most steps are handled online through the MCA portal and electronic signatures; specific cases may still require additional verification or attendance.' },
       { q: 'Can a residential address be used as the registered office?', a: 'Yes. A residential home or rented apartment can be used with a recent utility bill (< 60 days) and signed Landlord NOC.' },
       { q: 'What is the minimum capital required to start?', a: 'There is no minimum paid-up capital requirement under the Companies Act 2013. You can start with ₹1,00,000 authorized capital.' },
     ],
@@ -334,7 +334,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'company-reg',
     badge: 'Sole Founder Entity',
     whoShouldBuy: 'Solo entrepreneurs, freelance professionals, consultants, and individual business owners wanting a corporate structure without bringing on co-founders.',
-    whyShouldBuy: 'Complete operational and equity control with 100% shareholding, limited liability protection, and higher credibility than a sole proprietorship.',
+    whyShouldBuy: 'Provides single-member ownership with limited liability protection, subject to OPC eligibility and compliance requirements.',
     timeframe: '7–10 working days',
     specificDocs: [
       'PAN card, photo, and ID proof (Aadhaar/Passport/Voter ID) of the sole member',
@@ -480,7 +480,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'company-reg',
     badge: 'FDI & Foreign Entity',
     whoShouldBuy: 'Foreign enterprises, multinational corporations (MNCs), and overseas startups looking to establish an operational subsidiary or branch in India.',
-    whyShouldBuy: 'Enables 100% Foreign Direct Investment (FDI) under the automatic route for most industries, allowing foreign entities to manage sales, hiring, and distribution locally with limited liability.',
+    whyShouldBuy: 'Supports Indian subsidiary and FDI documentation; ownership, route, and approvals depend on the sector and current rules.',
     timeframe: '15–25 working days',
     specificDocs: [
       'Certificate of Incorporation and charter documents of the foreign parent company',
@@ -495,12 +495,12 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     ],
     deliverables: [
       { title: 'Certificate of Incorporation (FDI Entity)', desc: 'Indian subsidiary registration certificate with CIN.' },
-      { title: 'Foreign & Resident Director DINs & DSCs', desc: 'Certified digital signatures and director identification.' },
+      { title: 'Foreign & Resident Director DINs & DSCs', desc: 'Digital signatures and director identification documents, where required.' },
       { title: 'Company PAN, TAN & Foreign Bank Pack', desc: 'Statutory tax registrations and capital inflow banking documentation.' },
       { title: 'RBI FC-GPR Filing Advisory', desc: 'Step-by-step reporting framework for inward remittance compliance.' },
     ],
     faqs: [
-      { q: 'Is 100% foreign ownership allowed in Indian subsidiaries?', a: 'Yes, for most sectors including IT, SaaS, e-commerce, manufacturing, and consultancy under the 100% automatic FDI route.' },
+      { q: 'Is 100% foreign ownership allowed in Indian subsidiaries?', a: 'It may be available in some sectors under the automatic route, but ownership limits and approvals must be checked for the specific activity and current rules.' },
       { q: 'What is document apostilling?', a: 'Apostilling is international document legalization under the Hague Convention, verifying that foreign company records are genuine before Indian authorities.' },
     ],
   },
@@ -571,7 +571,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     badge: 'Zero-Transaction Protection',
     whoShouldBuy: 'GST-registered businesses with zero sales, zero purchases, and zero tax liability during a given tax period.',
     whyShouldBuy: 'GST filings remain legally mandatory even with zero commercial activity. Filing Nil returns prevents automatic cancellation of GST registration and accumulates zero late fees.',
-    timeframe: 'Same-day filing (instantly via GST portal or SMS OTP).',
+    timeframe: 'Filing support through the GST portal; authority processing time may vary.',
     specificDocs: [
       'GST portal login credentials or registered mobile number for SMS OTP filing',
       'Confirmation of zero outward/inward taxable transactions during the filing period',
@@ -581,8 +581,8 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'Neglecting Nil returns will incur standard late fees (₹20/day) until filed.',
     ],
     deliverables: [
-      { title: 'Instant Nil Filing ARN Receipts', desc: 'Filed acknowledgments for GSTR-1 and GSTR-3B.' },
-      { title: 'Active GSTIN Protection Certificate', desc: 'Maintains compliant active standing on the GSTN registry.' },
+      { title: 'Nil filing acknowledgment', desc: 'Filing acknowledgment, if issued by the GST portal.' },
+      { title: 'Filing status note', desc: 'A filing record does not guarantee that GST registration remains active.' },
     ],
     faqs: [
       { q: 'Can I file Nil GST returns via SMS?', a: 'Yes. If you have no outward supplies, no inward supplies liable to reverse charge, and no tax credit claims, you can file via 14409.' },
@@ -603,7 +603,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'Class-3 DSC or authorized signatory OTP',
     ],
     importantConsiderations: [
-      'Amendments are categorized into Core fields (Business name, principal place of business, partners/directors) which require officer approval, and Non-Core fields (bank accounts, contact details) which update instantly via system verification.',
+      'Amendments are categorized into Core fields (Business name, principal place of business, partners/directors) which require officer approval, and Non-Core fields (bank accounts, contact details) which update after system processing and validation.',
     ],
     deliverables: [
       { title: 'Form GST REG-14 Amendment Filing Receipt', desc: 'Statutory submission receipt for modified parameters.' },
@@ -673,7 +673,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     badge: 'Consignment Transit Pass',
     whoShouldBuy: 'Manufacturers, traders, logistics companies, and e-commerce businesses moving physical consignments of goods.',
     whyShouldBuy: 'Mandatory electronic documentation required before transporting goods worth more than ₹50,000 (inter-state or intra-state, subject to state-specific rules). Prevents interception, vehicle seizure, and 200% penalty on tax value.',
-    timeframe: 'Instant generation via the E-Way Bill portal.',
+    timeframe: 'E-way bill portal generation support after required details are validated.',
     specificDocs: [
       'Tax Invoice, Bill of Supply, or Delivery Challan',
       'Transporter ID, Transporter Name, and Vehicle Number (for road transport)',
@@ -820,7 +820,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     deliverables: [
       { title: 'Monthly Audited Profit & Loss Statement', desc: 'Categorized revenue, direct expenses, and EBITDA analysis.' },
       { title: 'Monthly Balance Sheet & Trial Balance', desc: 'Reconciled assets, liabilities, and equity ledgers.' },
-      { title: 'Bank Reconciliation Statements (BRS)', desc: '100% matched bank statement vs accounting book ledger.' },
+      { title: 'Bank Reconciliation Statements (BRS)', desc: 'Reconciled bank statement and accounting book ledger.' },
     ],
     faqs: [
       { q: 'Which accounting software do you support?', a: 'We support Zoho Books, Tally Prime, QuickBooks, Busy, and custom ERP systems.' },
@@ -851,7 +851,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'Registration remains valid for 10 years from the date of application.',
     ],
     deliverables: [
-      { title: 'Form TM-A Filing Acknowledgment', desc: 'Instant official government receipt with unique Application Number.' },
+      { title: 'Form TM-A Filing Acknowledgment', desc: 'Government filing acknowledgment with an application number, if issued.' },
       { title: 'Immediate ™ Symbol Rights', desc: 'Legal right to brandish ™ on products, website, and promotional media.' },
       { title: 'Class 1–45 Nice Classification Report', desc: 'Comprehensive phonetic and Vienna code search report.' },
       { title: 'Drafted Form TM-48 (Power of Attorney)', desc: 'Official authorization for advocate representation before the registry.' },
@@ -993,7 +993,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Copyright Assignment Certificate', desc: 'Complete transfer of intellectual property and commercial exploitation rights.' },
     ],
     faqs: [
-      { q: 'Can I trademark the logo designed by NyayaLink?', a: 'Yes. All our logos are built from scratch without stock elements, making them 100% compliant for Class 1–45 trademark registration.' },
+      { q: 'Can I trademark the logo designed by NyayaLink?', a: 'We prepare original logo concepts to the agreed brief; trademark distinctiveness and registration remain subject to registry review.' },
     ],
   },
   'series-trademark': {
@@ -1030,7 +1030,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'copyright-registration',
     title: 'Copyright Registration',
     category: 'copyright',
-    badge: 'Lifetime + 60 Years Protection',
+    badge: 'Copyright Term Guidance',
     whoShouldBuy: 'Software developers, UI/UX designers, authors, musicians, filmmakers, content creators, and businesses looking to protect proprietary code, artistic works, or written content.',
     whyShouldBuy: 'Confers exclusive legal ownership over original creations, provides concrete legal standing in court against plagiarism or software piracy, and lasts for the author\'s lifetime plus 60 years.',
     timeframe: 'Diary number issuance in 24–48 hours; mandatory 30-day objection waiting period; final registration in 4–8 months.',
@@ -1062,7 +1062,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'fssai-food-license',
     title: 'FSSAI Food Safety Registration & License',
     category: 'licenses-permits',
-    badge: 'FoSCoS Certified Desk',
+    badge: 'FoSCoS Support Desk',
     whoShouldBuy: 'Basic Registration: Small food business operators (FBOs), hawkers, cloud kitchens, bakeries, or dairy units with annual turnover up to ₹12 Lakhs. State License: Medium manufacturers, restaurants, distributors, catering services with annual turnover between ₹12 Lakhs and ₹20 Crores. Central License: Large food manufacturers, 100% export-oriented units (EOUs), importers, multi-state chains, and businesses with turnover exceeding ₹20 Crores.',
     whyShouldBuy: 'Legally required to handle, package, cook, store, or sell food items; essential for listing on food delivery platforms (Zomato, Swiggy, Blinkit, Zepto, Amazon); builds consumer trust and avoids hefty fines (up to ₹5 Lakhs and imprisonment).',
     timeframe: 'Basic Registration: 3–7 working days; State/Central License: 15–30 working days (subject to departmental review/inspection).',
@@ -1079,8 +1079,8 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       '14-digit FSSAI number must be displayed on product packaging and at business premises.',
     ],
     deliverables: [
-      { title: '14-Digit FSSAI Registration / License Certificate', desc: 'Official FoSCoS certificate with QR verification.' },
-      { title: 'Approved Food Product Category Mapping', desc: 'Endorsed food category authorization letter.' },
+      { title: 'FoSCoS application output', desc: 'Registration or licence certificate, if approved by the authority.' },
+      { title: 'Food product category mapping', desc: 'Category mapping prepared for the application, subject to authority approval.' },
       { title: 'Food Safety Management System (FSMS) Plan', desc: 'Standardized hygiene and sanitation operating manual.' },
     ],
     faqs: [
@@ -1143,10 +1143,10 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'import-export-code-iec',
     title: 'Import Export Code (IEC) Registration',
     category: 'licenses-permits',
-    badge: 'DGFT Lifetime License',
+    badge: 'DGFT IEC Support',
     whoShouldBuy: 'Any individual, partnership, LLP, or company planning to import physical goods/raw materials into India or export goods and services globally.',
-    whyShouldBuy: 'Mandatory 10-digit code issued by DGFT (Director General of Foreign Trade); required for customs clearance, receiving international inward business remittances, and availing foreign trade policy export benefits (like RoDTEP).',
-    timeframe: '24–48 hours (instant issuance upon successful validation).',
+    whyShouldBuy: 'Support for DGFT IEC application; the requirement, exemptions, and available trade benefits depend on the activity and current rules.',
+    timeframe: '24–48 hours for document preparation; DGFT processing time may vary.',
     specificDocs: [
       'PAN card of the entity/proprietor',
       'Aadhaar card / Voter ID / Passport of the applicant/directors/partners',
@@ -1158,7 +1158,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'IEC has lifetime validity; however, annual electronic re-validation (updating details on DGFT between April and June each year) is mandatory, even if there are no changes, to prevent deactivation.',
     ],
     deliverables: [
-      { title: '10-Digit Official IEC Certificate', desc: 'Direct DGFT import-export license with lifetime validity.' },
+      { title: 'IEC application output', desc: 'DGFT-issued IEC, if the application is approved.' },
       { title: 'DGFT Portal User Profile Setup', desc: 'Online portal registration for ICEGATE and duty drawback access.' },
     ],
     faqs: [
@@ -1184,7 +1184,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'Updates must be completed online directly via the DGFT portal using DSC or Aadhaar OTP verification.',
     ],
     deliverables: [
-      { title: 'Modified IEC Electronic Certificate', desc: 'Updated DGFT license with validated branch/bank details.' },
+      { title: 'Modified IEC record', desc: 'Updated DGFT record, if the amendment is approved.' },
       { title: 'DGFT Annual Re-Validation Acknowledgment', desc: 'Active status confirmation preventing port de-linking.' },
     ],
     faqs: [
@@ -1197,7 +1197,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     category: 'licenses-permits',
     badge: 'Form D-1 / D-2 Desk',
     whoShouldBuy: 'FSSAI State and Central licensed food manufacturers, processors, repackers, labellers, and importers (excluding simple restaurants, fast-food joints, grocery stores, and Basic registration holders).',
-    whyShouldBuy: 'Mandatory annual statutory compliance under FSSAI regulations; non-filing attracts a strict statutory fine of ₹100 per day of delay until the return is submitted.',
+    whyShouldBuy: 'Annual return support for eligible FSSAI licence holders; due dates and penalties depend on licence category and current rules.',
     timeframe: 'Annual filing due by May 31st for the preceding financial year.',
     specificDocs: [
       'Active FSSAI license credentials (FoSCoS portal)',
@@ -1221,9 +1221,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'iso-certification',
     title: 'ISO Certification (ISO 9001, 14001, 27001, 22000)',
     category: 'licenses-permits',
-    badge: 'IAF / Non-IAF Accredited',
+    badge: 'ISO Certification Pathway',
     whoShouldBuy: 'Startups, manufacturing units, IT/software firms, healthcare organizations, and B2B service providers bidding for government tenders, international contracts, or enterprise vendor empanelment.',
-    whyShouldBuy: 'Validates quality management, data security, and operational reliability; boosts brand credibility and client trust; fulfills mandatory pre-requisites for government (GeM portal) and corporate tenders.',
+    whyShouldBuy: 'Supports preparation for an ISO certification process; acceptance for tenders and vendor programmes depends on the buyer and certification body.',
     timeframe: '3–7 working days (for standard non-audit IAF/Non-IAF certifications); 2–4 weeks if comprehensive multi-stage external audits are involved.',
     specificDocs: [
       'Business Registration Proof (GST certificate, Udyam MSME, or Incorporation Certificate)',
@@ -1237,9 +1237,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'IAF vs. Non-IAF: IAF (International Accreditation Forum) certificates are globally accepted and mandatory for government tenders; Non-IAF is suitable for branding and marketing.',
     ],
     deliverables: [
-      { title: 'Official ISO Certificate with QR Code', desc: 'IAF / Non-IAF certified document with global registry verification.' },
+      { title: 'ISO certification documentation', desc: 'Certificate documentation, if issued by the selected certification body after its review.' },
       { title: 'Quality Management Manual & SOPs', desc: 'Standardized operational procedures tailored to ISO standards.' },
-      { title: 'High-Resolution Vector Marketing Badges', desc: 'Official ISO logos for packaging, brochures, and digital media.' },
+      { title: 'Marketing artwork guidance', desc: 'Use of ISO names or marks remains subject to the certification body rules.' },
     ],
     faqs: [
       { q: 'What is the difference between IAF and Non-IAF certification?', a: 'IAF certificates are issued by globally accredited bodies and are mandatory for government/GeM tenders. Non-IAF is faster and cost-effective for general branding.' },
@@ -1253,7 +1253,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
     slug: 'cheque-bounce-notice-138',
     title: 'Section 138 Cheque Bounce Demand Notice',
     category: 'legal-dispute',
-    badge: 'Advocate Vetted Notice',
+    badge: 'Demand Notice Drafting',
     whoShouldBuy: 'Individuals, businesses, traders, and lenders who have received a dishonored cheque with bank return memo stating funds insufficient or stop payment.',
     whyShouldBuy: 'Mandatory statutory prerequisite before filing a criminal complaint under Section 138 of the Negotiable Instruments Act; establishes rigorous legal ground for speedy recovery.',
     timeframe: '24–48 hours for drafting and speed post dispatch.',
@@ -1268,7 +1268,7 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       'The defaulter is given a mandatory 15-day statutory window from receipt to settle the amount before criminal prosecution begins.',
     ],
     deliverables: [
-      { title: 'Statutory Demand Notice on Advocate Letterhead', desc: 'Legally vetted notice drafted by practicing High Court advocate.' },
+      { title: 'Statutory demand notice draft', desc: 'Notice drafting and review by an appropriately engaged legal professional, subject to scope.' },
       { title: 'Speed Post Consignment Booking Receipt', desc: 'Proof of dispatch with tracking number.' },
       { title: 'Proof of Delivery (POD) Dossier', desc: 'Court-admissible delivery acknowledgement summary.' },
     ],
@@ -1287,9 +1287,9 @@ export function getServiceStructure(slug: string): ServiceStructure {
     slug,
     title: slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     category: 'general',
-    badge: 'NyayaLink Assured',
-    whoShouldBuy: 'Businesses, professionals, and entities looking for certified statutory compliance and verified regulatory execution.',
-    whyShouldBuy: 'Ensures 100% compliance with relevant government departments, prevents late penalty notices, and protects business operations with certified CA/Advocate supervision.',
+    badge: 'Service overview',
+    whoShouldBuy: 'Businesses, professionals, and entities looking for structured statutory compliance assistance and filing support.',
+    whyShouldBuy: 'Supports compliance work with relevant government departments; outcomes, deadlines, and any professional review depend on the facts and authority response.',
     timeframe: '3–7 working days',
     specificDocs: [
       'Identity and PAN proof of applicant or director',
@@ -1300,7 +1300,7 @@ export function getServiceStructure(slug: string): ServiceStructure {
       'All uploaded documents must be clear and legible to prevent portal re-scrutiny.',
     ],
     deliverables: [
-      { title: 'Official Filing Acknowledgment', desc: 'Direct government receipt with tracking reference.' },
+      { title: 'Filing acknowledgment', desc: 'Government acknowledgment or tracking reference, if issued after submission.' },
     ],
     faqs: [
       { q: 'How do I track filing status?', a: 'Live updates are displayed in real-time inside your Vault Dashboard.' },

@@ -137,9 +137,9 @@ export default function Footer() {
 
         {/* Quick Portal Account Links */}
         <div className="space-y-2 bg-[#073B5C] p-4 rounded-xl border border-slate-700">
-          <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Instant Access</h5>
+          <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Portal Access</h5>
           <p className="text-slate-300 text-[11px] leading-relaxed">
-            Create an account or login to access your real-time CA filing dashboard.
+            Create an account or log in to access your case dashboard and document status.
           </p>
           <div className="flex gap-2 pt-2">
             <Link href="/login" className="bg-[#0E7490] hover:bg-cyan-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors">
@@ -157,7 +157,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-6 border-b border-slate-700/60 text-slate-400 text-[11px] leading-relaxed space-y-2">
         <strong className="text-[#F4B942] block uppercase tracking-wider">Website Disclaimer:</strong>
         <p>
-          This website is privately operated by NyayaLink and is not directly affiliated with, endorsed by, or connected to any government body, ministry, or statutory authority. The intake forms on this portal are designed to collect client information for statutory business filings. Assistance is rendered based on customer requests, and fees charged represent platform advisory and document preparation charges. Filings are processed through certified Chartered Accountants, Company Secretaries, and Legal Advocates.
+          This website is privately operated by NyayaLink and is not directly affiliated with, endorsed by, or connected to any government body, ministry, or statutory authority. The intake forms on this portal are designed to collect client information for statutory business filings. Assistance is rendered based on customer requests, and fees charged represent platform advisory and document preparation charges. Where applicable, filings are reviewed or processed by appropriately engaged professionals; credentials and assignments must be confirmed for each service.
         </p>
       </div>
 

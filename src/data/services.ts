@@ -675,7 +675,7 @@ export const MASTER_SERVICES: ServiceItem[] = [
     price: 2499,
     govtFee: 'Includes Speed Post Tracking Charges',
     sla: '24 - 48 Hours Drafting',
-    badge: 'Advocate Vetted',
+    badge: 'Demand Notice Drafting',
     sacCode: '998221',
     icon: '⚖️',
     desc: 'Statutory demand notice drafting with timeline checks; applicable limitation periods must be verified from the case facts.',

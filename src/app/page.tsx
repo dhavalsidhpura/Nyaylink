@@ -268,10 +268,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Instant Free Verification Tools */}
+            {/* Free Online Diagnostic Tools */}
             <div className="pt-4 border-t border-cyan-900/60">
               <span className="text-[11px] text-cyan-200 font-bold block mb-2.5">
-                Free Instant Diagnostic Tools:
+                Free online diagnostic tools:
               </span>
               <div className="flex flex-wrap gap-2 text-xs">
                 <Link
@@ -290,7 +290,7 @@ export default function HomePage() {
                   href="/tools/gst-search"
                   className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5"
                 >
-                  <span>🧾</span> Verify GSTIN
+                  <span>🧾</span> GSTIN Format Check
                 </Link>
               </div>
             </div>
@@ -300,12 +300,12 @@ export default function HomePage() {
           <div className="lg:col-span-5">
             <div className="bg-white text-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/20 relative">
               <div className="absolute -top-3 right-6 bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
-                ⚡ Instant Consultation Desk
+                Consultation Desk
               </div>
 
               <div className="space-y-1 mb-5">
                 <h3 className="text-lg font-black text-[#073B5C]">Quick Filing & Free Quote</h3>
-                <p className="text-xs text-slate-500">Get connected with a dedicated CA desk in under 15 minutes.</p>
+                <p className="text-xs text-slate-500">Submit your details for a team follow-up; response time varies.</p>
               </div>
 
               <form onSubmit={handleQuickFormSubmit} className="space-y-3.5 text-xs">
@@ -559,7 +559,7 @@ export default function HomePage() {
               <tbody className="divide-y divide-slate-100 text-[11px]">
                 <tr>
                   <td className="py-3 px-4 font-bold text-slate-700">Filing Execution</td>
-                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">100% Digital & Paperless (Zero physical visits)</td>
+                  <td className="py-3 px-4 bg-cyan-50/30 font-bold text-[#073B5C]">Digital-first process (a physical visit may be required)</td>
                   <td className="py-3 px-4 text-slate-500">Requires multiple office visits & physical paperwork</td>
                 </tr>
                 <tr>
