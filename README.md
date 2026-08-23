@@ -6,7 +6,7 @@ NyayLink is an India-focused legal and compliance service portal for founders, s
 
 The repository contains a stabilized customer flow covering registration, login, lead capture, guided service recommendations, Indian state-aware intake, document-readiness confirmation, case creation, customer dashboard, case details, private document upload/download, invoice display, payment activity, delivery/reminder display, Razorpay test-mode integration points, and authorized staff status updates.
 
-The application is **not yet approved for real customers or real payments**. Before launch, the owner must provide or approve the hosting provider, production database, private object storage, Razorpay production setup, email provider, domain, legal policy text, service catalog, state-specific rules, retention policy, and support process. See [`INTERVENTION_LIST.md`](./INTERVENTION_LIST.md) for the consolidated decision list.
+The application is **not yet approved for real customers or real payments**. Before launch, the owner must provide or approve the hosting provider, production database, private object storage, Razorpay production setup, email provider, domain, legal policy text, service catalog, state-specific rules, retention policy, and support process. See [`INTERVENTION_LIST.md`](./INTERVENTION_LIST.md) for the consolidated decision list and [`TEST_PLAN.md`](./TEST_PLAN.md) for the complete staging and release test matrix.
 
 ## Technology
 
