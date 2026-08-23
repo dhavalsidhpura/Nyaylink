@@ -14,6 +14,14 @@ declare global {
   }
 }
 
+type ServerQuote = {
+  professionalFee: number;
+  govtFee: number;
+  taxAmount: number;
+  amount: number;
+  governmentFeeNote: string;
+};
+
 function ServiceDetailContent() {
   const params = useParams();
   const router = useRouter();
@@ -57,6 +65,8 @@ function ServiceDetailContent() {
   const [businessActivity, setBusinessActivity] = useState('');
   const [formError, setFormError] = useState('');
   const [documentsConfirmed, setDocumentsConfirmed] = useState(false);
+  const [serverQuote, setServerQuote] = useState<ServerQuote | null>(null);
+  const [quoteStatus, setQuoteStatus] = useState('Loading current service price…');
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -72,9 +82,32 @@ function ServiceDetailContent() {
     }
   }, [prefilledState]);
 
+  useEffect(() => {
+    let active = true;
+    async function loadQuote() {
+      setQuoteStatus('Loading current service price…');
+      try {
+        const response = await fetch(`/api/services/${encodeURIComponent(slug)}/quote`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) throw new Error(payload.error || 'Server quote unavailable.');
+        if (active) {
+          setServerQuote(payload.quote);
+          setQuoteStatus('Price confirmed from the current service catalog.');
+        }
+      } catch {
+        if (active) setQuoteStatus('Preview estimate shown; the server will confirm the final amount before payment.');
+      }
+    }
+    void loadQuote();
+    return () => { active = false; };
+  }, [slug]);
+
   const estimatedTotals = calculateOrderTotals(masterService.price);
-  const gstAmount = estimatedTotals.taxAmount;
-  const totalDue = estimatedTotals.amount;
+  const quoteTotals = serverQuote || estimatedTotals;
+  const gstAmount = quoteTotals.taxAmount;
+  const totalDue = quoteTotals.amount;
+  const professionalFee = quoteTotals.professionalFee;
+  const governmentFeeNote = serverQuote?.governmentFeeNote || masterService.govtFee;
 
   const handleVerifyPAN = async () => {
     if (panNumber.length !== 10) return;
@@ -534,7 +567,7 @@ function ServiceDetailContent() {
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
                       <div className="flex justify-between gap-3">
                         <span className="text-slate-600">Professional service fee:</span>
-                        <strong className="text-slate-900">₹{masterService.price.toLocaleString()}</strong>
+                        <strong className="text-slate-900">₹{professionalFee.toLocaleString()}</strong>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span className="text-slate-600">GST estimate (currently shown at 18%):</span>
@@ -542,13 +575,14 @@ function ServiceDetailContent() {
                       </div>
                       <div className="flex justify-between gap-3">
                         <span className="text-slate-600">Known official-fee note:</span>
-                        <strong className="max-w-[58%] text-right text-slate-900">{masterService.govtFee}</strong>
+                        <strong className="max-w-[58%] text-right text-slate-900">{governmentFeeNote}</strong>
                       </div>
                       <div className="flex justify-between border-t border-slate-200 pt-2 font-extrabold text-[#073B5C] text-sm">
                         <span>Estimated total:</span>
                         <span className="text-emerald-700">₹{totalDue.toLocaleString()}</span>
                       </div>
                       <p className="pt-1 text-[10px] leading-4 text-slate-500">Authority-driven fees, additional work, or resubmission charges are not included unless stated and will be explained before they are charged.</p>
+                      <p role="status" className="pt-1 text-[10px] font-semibold leading-4 text-[#0E7490]">{quoteStatus}</p>
                     </div>
 
                     <div className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-4 text-xs text-[#073B5C]">
