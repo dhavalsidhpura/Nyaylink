@@ -9,7 +9,7 @@ This list contains only actions that require the owner’s account access, busin
 | Hosting provider | Choose and connect Vercel + Supabase, Render/Railway, or AWS Mumbai. | Before staging deployment. |
 | Billing approval | Approve paid hosting plans and monthly budget. | Before enabling paid production services. |
 | Domain | Confirm the final NyayLink domain and update registrar/DNS records. | Before public launch. |
-| Production secrets | Enter `DATABASE_URL`, `NEXTAUTH_SECRET`, Razorpay live/test keys, email key, and storage credentials in the host dashboard. Never send them in chat. | Before integrated staging/payment tests. |
+| Production secrets | Enter `DATABASE_URL`, `NEXTAUTH_SECRET`, Razorpay live/test keys, email key, and storage credentials in the host dashboard. Never send them in chat. Review the old public Git history once and rotate any value if it was ever real. | Before integrated staging/payment tests. |
 | Database | Create a separate development/staging database and approve the production database region/retention plan. | Before database migration and end-to-end tests. |
 | Payment account | Configure Razorpay test mode, webhook URL (`/api/payments/webhook`), webhook secret, allowed domains, refund policy, and later live-mode approval. | Before payment testing and launch. |
 | Document storage | Create a private storage bucket, block public access, enable encryption/versioning, and confirm retention period. | Before any real identity/legal document is uploaded. |
@@ -32,7 +32,7 @@ This list contains only actions that require the owner’s account access, busin
 
 ## Development work completed without owner intervention
 
-The public journey now includes guided service recommendations, state-prefilled intake, a document-readiness checkpoint, server-calculated estimates, payment activity events, private case activity, delivery/reminder display, a secured reminder processor, staff case operations, and synchronization of all 45 reviewed catalog services into the database seed. These features remain subject to staging verification and owner-approved business rules.
+The public journey now includes guided service recommendations, state-prefilled intake, a document-readiness checkpoint, server-confirmed estimates, payment activity events, private case activity, delivery/reminder display, a secured reminder processor, staff case operations, document review, vault metadata, and synchronization of all 45 reviewed catalog services into the database seed. The current branch tracks only `.env.example`; no `.env` file is tracked. These features remain subject to staging verification and owner-approved business rules.
 
 ## Decisions that can wait
 
