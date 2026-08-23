@@ -56,6 +56,7 @@ function ServiceDetailContent() {
   const [employeeCount, setEmployeeCount] = useState('0-19');
   const [businessActivity, setBusinessActivity] = useState('');
   const [formError, setFormError] = useState('');
+  const [documentsConfirmed, setDocumentsConfirmed] = useState(false);
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -280,7 +281,7 @@ function ServiceDetailContent() {
                   <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2">
                     <span>📁</span> Specific Documents Required
                   </h3>
-                  <p className="text-xs text-slate-500">Keep clear scanned color copies ready for instant upload:</p>
+                  <p className="text-xs text-slate-500">Review these items now. You can upload them securely in your private case workspace after payment.</p>
                 </div>
                 <span className="bg-cyan-100 text-[#0E7490] text-[10px] font-extrabold px-2.5 py-1 rounded-full">
                   {details.specificDocs.length} Requirements
@@ -319,7 +320,7 @@ function ServiceDetailContent() {
                 <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2">
                   <span>📦</span> Official Deliverables Included
                 </h3>
-                <p className="text-xs text-slate-500">Delivered directly to your encrypted customer vault upon approval.</p>
+                <p className="text-xs text-slate-500">Expected outputs are made available in your private case workspace when the relevant authority or professional review is complete.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -531,18 +532,32 @@ function ServiceDetailContent() {
                 {currentStep === 3 && (
                   <div className="space-y-4">
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Professional Retainer Fee:</span>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-slate-600">Professional service fee:</span>
                         <strong className="text-slate-900">₹{masterService.price.toLocaleString()}</strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">GST (currently shown at 18%):</span>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-slate-600">GST estimate (currently shown at 18%):</span>
                         <strong className="text-slate-900">₹{gstAmount.toLocaleString()}</strong>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-slate-600">Known official-fee note:</span>
+                        <strong className="max-w-[58%] text-right text-slate-900">{masterService.govtFee}</strong>
                       </div>
                       <div className="flex justify-between border-t border-slate-200 pt-2 font-extrabold text-[#073B5C] text-sm">
                         <span>Estimated total:</span>
                         <span className="text-emerald-700">₹{totalDue.toLocaleString()}</span>
                       </div>
+                      <p className="pt-1 text-[10px] leading-4 text-slate-500">Authority-driven fees, additional work, or resubmission charges are not included unless stated and will be explained before they are charged.</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-cyan-200 bg-cyan-50/60 p-4 text-xs text-[#073B5C]">
+                      <p className="font-extrabold">Document readiness</p>
+                      <p className="mt-1 text-[11px] leading-5 text-slate-600">You reviewed the requested document list on this page and understand that the final checklist can change after professional review.</p>
+                      <label className="mt-3 flex items-start gap-2 font-semibold">
+                        <input type="checkbox" checked={documentsConfirmed} onChange={(event) => setDocumentsConfirmed(event.target.checked)} className="mt-0.5 h-4 w-4 accent-[#0E7490]" />
+                        <span>I have reviewed the document requirements.</span>
+                      </label>
                     </div>
 
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 space-y-1">
@@ -560,7 +575,7 @@ function ServiceDetailContent() {
                       </button>
                       <button
                         type="submit"
-                        disabled={isProcessing}
+                        disabled={isProcessing || !documentsConfirmed}
                         className="w-2/3 bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         {isProcessing ? 'Opening Gateway...' : 'Continue to secure payment →'}
