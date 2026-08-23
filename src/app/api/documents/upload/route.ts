@@ -1,9 +1,8 @@
-import { mkdir, unlink, writeFile } from 'fs/promises';
-import path from 'path';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth-guards';
+import { putPrivateObject, removePrivateObject } from '@/lib/private-storage';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Map([
@@ -105,23 +104,21 @@ export async function POST(request: Request) {
       ? documentName.trim().slice(0, 160)
       : file.name.slice(0, 160);
     const storageKey = `${orderId}/${randomUUID()}${extension}`;
-    const privateRoot = process.env.PRIVATE_UPLOAD_DIR || path.join(process.cwd(), '.private-data', 'uploads');
-    const filePath = path.join(privateRoot, storageKey);
-
-    await mkdir(path.dirname(filePath), { recursive: true });
+    const storedObject = await putPrivateObject(storageKey, fileBytes);
 
     try {
-      await writeFile(filePath, fileBytes, { flag: 'wx' });
-
       const document = await prisma.vaultDocument.create({
         data: {
           name: safeDocumentName,
-          fileUrl: `private://${storageKey}`,
+          fileUrl: storedObject.uri,
           category: safeDocumentName,
           ownerId: order.clientId,
           orderId: order.id,
+          mimeType: file.type,
+          fileSize: storedObject.size,
+          checksum: storedObject.checksum,
         },
-        select: { id: true, name: true, status: true, uploadedAt: true },
+        select: { id: true, name: true, status: true, uploadedAt: true, fileSize: true, checksum: true },
       });
 
       return NextResponse.json({
@@ -130,7 +127,7 @@ export async function POST(request: Request) {
         message: 'Document uploaded to the private vault.',
       });
     } catch (error) {
-      await unlink(filePath).catch(() => undefined);
+      await removePrivateObject(storedObject.uri).catch(() => undefined);
       throw error;
     }
   } catch (error) {

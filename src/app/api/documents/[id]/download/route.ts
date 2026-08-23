@@ -1,8 +1,8 @@
-import { readFile } from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth-guards';
+import { getPrivateObject } from '@/lib/private-storage';
 
 const STAFF_ROLES = new Set([
   'SUPER_ADMIN',
@@ -34,6 +34,7 @@ export async function GET(
         id: true,
         name: true,
         fileUrl: true,
+        mimeType: true,
         ownerId: true,
         order: { select: { assignedCAId: true } },
       },
@@ -55,24 +56,15 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Document storage reference is invalid.' }, { status: 500 });
     }
 
-    const storageKey = document.fileUrl.slice('private://'.length);
-    const privateRoot = path.resolve(
-      process.env.PRIVATE_UPLOAD_DIR || path.join(process.cwd(), '.private-data', 'uploads'),
-    );
-    const filePath = path.resolve(privateRoot, storageKey);
-
-    if (!filePath.startsWith(`${privateRoot}${path.sep}`)) {
-      return NextResponse.json({ success: false, error: 'Document path is invalid.' }, { status: 400 });
-    }
-
-    const file = await readFile(filePath);
-    const contentType = CONTENT_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    const { bytes, storageKey } = await getPrivateObject(document.fileUrl);
+    const contentType = document.mimeType || CONTENT_TYPES[path.extname(storageKey).toLowerCase()] || 'application/octet-stream';
     const safeName = document.name.replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0, 120) || 'document';
 
-    return new NextResponse(file, {
+    return new NextResponse(bytes, {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${safeName}"`,
+        'Content-Length': String(bytes.length),
         'Cache-Control': 'private, no-store, max-age=0',
         'X-Content-Type-Options': 'nosniff',
       },

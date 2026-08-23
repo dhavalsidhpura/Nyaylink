@@ -53,13 +53,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  orders         Order[]         @relation("ClientOrders")
-  assignedOrders Order[]         @relation("AssignedCAOrders")
-  documents      VaultDocument[]
-  leads          Lead[]          @relation("AssignedLeads")
-  caseEvents     CaseEvent[]     @relation("CaseEventActor")
-  messages       CaseMessage[]   @relation("CaseMessageSender")
-  reminders      ComplianceReminder[] @relation("UserReminders")
+  orders            Order[]              @relation("ClientOrders")
+  assignedOrders    Order[]              @relation("AssignedCAOrders")
+  documents         VaultDocument[]
+  reviewedDocuments VaultDocument[]      @relation("ReviewedDocuments")
+  leads             Lead[]               @relation("AssignedLeads")
+  caseEvents        CaseEvent[]          @relation("CaseEventActor")
+  messages          CaseMessage[]        @relation("CaseMessageSender")
+  reminders         ComplianceReminder[] @relation("UserReminders")
 }
 
 model Lead {
@@ -77,31 +78,31 @@ model Lead {
 }
 
 model Service {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  category      String
-  startingPrice Float
-  govtFeeNote   String
-  sla           String
-  sacCode             String   @default("998221")
-  description         String?
-  intakeSchema        Json?
-  documentChecklist   Json?
-  recommendationTags  Json?
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  orders        Order[]
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  title              String
+  category           String
+  startingPrice      Float
+  govtFeeNote        String
+  sla                String
+  sacCode            String   @default("998221")
+  description        String?
+  intakeSchema       Json?
+  documentChecklist  Json?
+  recommendationTags Json?
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  orders             Order[]
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  orderNumber  String      @unique
-  srn          String      @unique
-  serviceId    String
-  service      Service     @relation(fields: [serviceId], references: [id])
-  clientId     String
-  client       User        @relation("ClientOrders", fields: [clientId], references: [id])
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  srn               String      @unique
+  serviceId         String
+  service           Service     @relation(fields: [serviceId], references: [id])
+  clientId          String
+  client            User        @relation("ClientOrders", fields: [clientId], references: [id])
   assignedCAId      String?
   assignedCA        User?       @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
   assignedAt        DateTime?
@@ -115,19 +116,19 @@ model Order {
   razorpayPaymentId String?     @unique
   paidAt            DateTime?
   status            OrderStatus @default(SUBMITTED)
-  state           String      @default("MH")
-  intakeData      Json?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  completedAt     DateTime?
+  state             String      @default("MH")
+  intakeData        Json?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  completedAt       DateTime?
 
-  documents VaultDocument[]
-  invoices  Invoice[]
-  ledger    LedgerEntry[]
+  documents  VaultDocument[]
+  invoices   Invoice[]
+  ledger     LedgerEntry[]
   caseEvents CaseEvent[]
   messages   CaseMessage[]
   reminders  ComplianceReminder[] @relation("OrderReminders")
-  delivery CaseDelivery?
+  delivery   CaseDelivery?
 }
 
 model VaultDocument {
@@ -139,6 +140,12 @@ model VaultDocument {
   rejectNote   String?
   ownerId      String
   owner        User      @relation(fields: [ownerId], references: [id])
+  reviewedById String?
+  reviewedBy   User?     @relation("ReviewedDocuments", fields: [reviewedById], references: [id])
+  mimeType     String?
+  fileSize     Int?
+  checksum     String?
+  reviewedAt   DateTime?
   orderId      String?
   order        Order?    @relation(fields: [orderId], references: [id])
   uploadedAt   DateTime  @default(now())
@@ -203,12 +210,12 @@ model CaseEvent {
 }
 
 model CaseMessage {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   orderId   String
   senderId  String?
   body      String
   readAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   order  Order @relation(fields: [orderId], references: [id])
   sender User? @relation("CaseMessageSender", fields: [senderId], references: [id])
@@ -218,18 +225,18 @@ model CaseMessage {
 }
 
 model ComplianceReminder {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
   orderId      String?
   reminderType String
   title        String
   dueAt        DateTime
-  status       String   @default("PENDING")
+  status       String    @default("PENDING")
   sentAt       DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  user  User  @relation("UserReminders", fields: [userId], references: [id])
+  user  User   @relation("UserReminders", fields: [userId], references: [id])
   order Order? @relation("OrderReminders", fields: [orderId], references: [id])
 
   @@index([userId, dueAt])
@@ -238,15 +245,15 @@ model ComplianceReminder {
 }
 
 model CaseDelivery {
-  id           String   @id @default(cuid())
-  orderId      String   @unique
+  id           String    @id @default(cuid())
+  orderId      String    @unique
   deliveryType String
   title        String
   documentId   String?
-  status       String   @default("PENDING")
+  status       String    @default("PENDING")
   deliveredAt  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   order Order @relation(fields: [orderId], references: [id])
 
@@ -254,12 +261,12 @@ model CaseDelivery {
 }
 
 model ServicePricing {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  category        String
-  baseFee         Float    // NyayaLink Professional Fee (e.g., 6999)
-  govtFeeNote     String   // Display note (e.g., "₹0 MCA + State Stamp Duty")
-  isActive        Boolean  @default(true)
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  category    String
+  baseFee     Float // NyayaLink Professional Fee (e.g., 6999)
+  govtFeeNote String // Display note (e.g., "₹0 MCA + State Stamp Duty")
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
 }
