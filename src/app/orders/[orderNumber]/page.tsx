@@ -78,6 +78,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [question, setQuestion] = useState('');
+  const [questionStatus, setQuestionStatus] = useState('');
+  const [sendingQuestion, setSendingQuestion] = useState(false);
 
   useEffect(() => {
     if (!orderNumber) return;
@@ -101,6 +104,29 @@ export default function OrderDetailPage() {
 
     void loadOrder();
   }, [orderNumber, router]);
+
+  async function submitQuestion(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!question.trim() || sendingQuestion) return;
+    setSendingQuestion(true);
+    setQuestionStatus('');
+    try {
+      const response = await fetch(`/api/orders/${encodeURIComponent(orderNumber)}/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message: question }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.error || 'Unable to send your question.');
+      setQuestion('');
+      setQuestionStatus('Your question was sent to the service desk.');
+    } catch (cause) {
+      setQuestionStatus(cause instanceof Error ? cause.message : 'Unable to send your question.');
+    } finally {
+      setSendingQuestion(false);
+    }
+  }
 
   const currentIndex = useMemo(() => {
     if (!order) return -1;
@@ -155,6 +181,15 @@ export default function OrderDetailPage() {
                 {order.caseEvents.length === 0 ? <p className="rounded-2xl border border-dashed border-slate-300 p-4 text-xs text-slate-500">No additional case updates yet.</p> : order.caseEvents.map((event) => <div key={event.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3"><div className="flex flex-col justify-between gap-1 sm:flex-row"><p className="text-sm font-extrabold text-[#073B5C]">{event.title}</p><span className="text-[11px] text-slate-400">{formatDate(event.createdAt)}</span></div><p className="mt-1 text-xs leading-relaxed text-slate-600">{event.message}</p>{event.actor?.name && <p className="mt-2 text-[10px] font-semibold text-slate-400">Updated by {event.actor.name}</p>}</div>)}
               </div>
               {order.messages.length > 0 && <div className="mt-5 border-t border-slate-100 pt-4"><h3 className="text-sm font-extrabold text-[#073B5C]">Messages</h3><div className="mt-3 space-y-2">{order.messages.map((message) => <div key={message.id} className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-3"><p className="text-xs leading-relaxed text-slate-700">{message.body}</p><p className="mt-1 text-[10px] text-slate-400">{message.sender?.name || 'NyayLink team'} · {formatDate(message.createdAt)}</p></div>)}</div></div>}
+            </section>
+
+            <section className="rounded-3xl border border-cyan-200 bg-cyan-50/50 p-5 shadow-sm sm:p-6">
+              <h2 className="text-lg font-extrabold text-[#073B5C]">Ask the service desk</h2>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600">Ask a question about your checklist, payment, status, or next step. Do not include passwords or unrelated sensitive information.</p>
+              <form onSubmit={submitQuestion} className="mt-4 space-y-3">
+                <textarea required value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={2000} rows={3} className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#0E7490]" placeholder="How do I provide the premises proof?" />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><button type="submit" disabled={sendingQuestion || !question.trim()} className="min-h-11 rounded-xl bg-[#073B5C] px-4 text-xs font-extrabold text-[#F4B942] disabled:opacity-50">{sendingQuestion ? 'Sending…' : 'Send question'}</button>{questionStatus && <p role="status" className="text-xs text-slate-600">{questionStatus}</p>}</div>
+              </form>
             </section>
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-lg font-extrabold text-[#073B5C]">Documents for this case</h2><p className="mt-1 text-xs text-slate-500">Only upload documents requested for this service.</p></div><DocumentUploader orderId={order.id} documentName="Additional case document" /></div><div className="mt-4 grid gap-3 sm:grid-cols-2">{order.documents.length === 0 ? <p className="rounded-2xl border border-dashed border-slate-300 p-5 text-center text-xs text-slate-500 sm:col-span-2">No documents uploaded yet.</p> : order.documents.map((document) => <div key={document.id} className="rounded-2xl border border-slate-200 p-3"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><p className="truncate text-sm font-bold text-[#073B5C]">{document.name}</p><p className="mt-1 text-[11px] text-slate-500">{document.category} · {formatDate(document.uploadedAt)}</p></div><span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600">{document.status === 'PENDING_REVIEW' ? 'Under review' : document.status === 'VERIFIED' ? 'Verified' : 'Replace'}</span></div>{document.status === 'REJECTED' && document.rejectNote && <p className="mt-2 text-[11px] text-rose-700">{document.rejectNote}</p>}<div className="mt-2"><DocumentUploader orderId={order.id} documentId={document.id} existingFileName={document.name} documentName={document.category} /></div></div>)}</div></section>
