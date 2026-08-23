@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
+import ServiceRecommender from '@/components/ServiceRecommender';
 
 export default function HomePage() {
   const router = useRouter();
@@ -409,7 +410,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Customer Case Experience */}
+      {/* 4. Guided Service Recommender */}
+      <ServiceRecommender />
+
+      {/* 5. Customer Case Experience */}
       <section className="bg-white border-b border-slate-200 py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto space-y-7">
           <div className="max-w-3xl">
@@ -448,7 +452,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Trust & Metrics Banner */}
+      {/* 6. Trust & Metrics Banner */}
       <section className="bg-white border-b border-slate-200 py-5 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
@@ -470,7 +474,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Main Services Directory (4x2 Desktop & 2x2 Mobile) */}
+      {/* 7. Main Services Directory (4x2 Desktop & 2x2 Mobile) */}
       <main id="catalog-section" className="max-w-7xl mx-auto px-3 sm:px-6 py-12 w-full flex-grow space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

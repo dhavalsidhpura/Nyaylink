@@ -20,6 +20,7 @@ function ServiceDetailContent() {
   const searchParams = useSearchParams();
   const slug = (params?.slug as string) || 'private-limited-company';
   const prefilledName = searchParams?.get('name') || searchParams?.get('brand') || '';
+  const prefilledState = searchParams?.get('state') || '';
 
   const masterService = MASTER_SERVICES.find((s) => s.slug === slug) || {
     id: 'srv-custom',
@@ -63,6 +64,12 @@ function ServiceDetailContent() {
   useEffect(() => {
     if (prefilledName) setBusinessName(prefilledName);
   }, [prefilledName]);
+
+  useEffect(() => {
+    if (INDIAN_STATES.includes(prefilledState as (typeof INDIAN_STATES)[number])) {
+      setSelectedState(prefilledState);
+    }
+  }, [prefilledState]);
 
   const estimatedTotals = calculateOrderTotals(masterService.price);
   const gstAmount = estimatedTotals.taxAmount;
