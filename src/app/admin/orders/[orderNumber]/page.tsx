@@ -15,10 +15,12 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
   const order = await prisma.order.findUnique({
     where: { orderNumber: params.orderNumber },
     include: {
-      service: true,
-      client: true,
-      documents: true,
-      ledger: { orderBy: { createdAt: 'desc' } },
+      service: { select: { title: true } },
+      client: { select: { id: true, name: true, email: true, phone: true } },
+      documents: {
+        select: { id: true, name: true, status: true, uploadedAt: true },
+        orderBy: { uploadedAt: 'desc' },
+      },
       invoices: { orderBy: { createdAt: 'desc' } },
       caseEvents: {
         include: { actor: { select: { name: true, role: true } } },
