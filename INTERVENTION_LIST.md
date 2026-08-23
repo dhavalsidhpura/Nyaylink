@@ -26,6 +26,8 @@ This list contains only actions that require the owner’s account access, busin
 | Service pricing | Confirm whether the displayed professional fee includes GST and provide the real government-fee rules by service and state. | Before charging customers. |
 | Customer support | Confirm the support phone, support email, escalation SLA, and the professionals who will receive cases. | Before lead capture and case assignment. |
 | Document policy | Approve how long customer documents should be retained and when they should be deleted. | Before real uploads. |
+| Identity verification provider | Choose and approve a compliant PAN/GSTIN verification provider, data-processing terms, and customer consent wording. | Before enabling live verification. |
+| Document review approach | Decide whether review is manual at launch or uses an approved OCR/malware-scanning provider with human escalation. | Before accepting real identity documents. |
 
 ## Decisions that can wait
 
