@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { MASTER_SERVICES } from '@/data/services';
 import { getServiceStructure } from '@/data/serviceDetails';
 import { INDIAN_STATES, getStateIntakeGuidance } from '@/data/india';
+import { calculateOrderTotals } from '@/lib/pricing';
 
 declare global {
   interface Window {
@@ -44,7 +45,7 @@ function ServiceDetailContent() {
   const [phone, setPhone] = useState('');
   const [panNumber, setPanNumber] = useState('');
   const [isVerifyingPan, setIsVerifyingPan] = useState(false);
-  const [panVerified, setPanVerified] = useState(false);
+  const [panFormatValid, setPanFormatValid] = useState(false);
 
   const [businessName, setBusinessName] = useState(prefilledName);
   const [selectedState, setSelectedState] = useState('Maharashtra');
@@ -63,8 +64,9 @@ function ServiceDetailContent() {
     if (prefilledName) setBusinessName(prefilledName);
   }, [prefilledName]);
 
-  const gstAmount = Math.round(masterService.price * 0.18);
-  const totalDue = masterService.price + gstAmount;
+  const estimatedTotals = calculateOrderTotals(masterService.price);
+  const gstAmount = estimatedTotals.taxAmount;
+  const totalDue = estimatedTotals.amount;
 
   const handleVerifyPAN = async () => {
     if (panNumber.length !== 10) return;
@@ -76,11 +78,15 @@ function ServiceDetailContent() {
         body: JSON.stringify({ pan: panNumber }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.verified && data.legalName) {
         setFullName(data.legalName);
-        setPanVerified(true);
+        setPanFormatValid(true);
+      } else if (data.success && data.formatValid) {
+        setPanFormatValid(true);
+        setFormError(data.message || 'PAN format is valid. Live verification is not enabled yet.');
       } else {
-        alert(data.error || 'Invalid PAN format');
+        setPanFormatValid(false);
+        setFormError(data.error || 'Invalid PAN format');
       }
     } catch (err) {
       console.error(err);
@@ -355,7 +361,7 @@ function ServiceDetailContent() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                   <h3 className="font-extrabold text-[#073B5C] text-base sm:text-lg">Filing Intake Form</h3>
-                  <span className="text-[11px] text-slate-400">Step {currentStep} of 3 • CA Supervised Desk</span>
+                  <span className="text-[11px] text-slate-400">Step {currentStep} of 3 • Team review</span>
                 </div>
                 <div className="flex gap-1.5">
                   <span className={`w-2.5 h-2.5 rounded-full ${currentStep >= 1 ? 'bg-[#0E7490]' : 'bg-slate-200'}`}></span>
@@ -373,7 +379,7 @@ function ServiceDetailContent() {
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <label className="font-bold text-[#073B5C]">Applicant / Director PAN *</label>
-                        {panVerified && <span className="text-emerald-700 font-extrabold text-[10px]">✓ Verified</span>}
+                        {panFormatValid && <span className="text-emerald-700 font-extrabold text-[10px]">✓ Format valid</span>}
                       </div>
                       <div className="relative">
                         <input
@@ -391,7 +397,7 @@ function ServiceDetailContent() {
                           disabled={panNumber.length !== 10 || isVerifyingPan}
                           className="absolute right-2 top-2 bg-[#073B5C] text-[#F4B942] px-2.5 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer"
                         >
-                          {isVerifyingPan ? 'Verifying...' : 'Verify'}
+                          {isVerifyingPan ? 'Checking...' : 'Check format'}
                         </button>
                       </div>
                     </div>
@@ -523,18 +529,18 @@ function ServiceDetailContent() {
                         <strong className="text-slate-900">₹{masterService.price.toLocaleString()}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">GST (18% Input Credit):</span>
+                        <span className="text-slate-600">GST (currently shown at 18%):</span>
                         <strong className="text-slate-900">₹{gstAmount.toLocaleString()}</strong>
                       </div>
                       <div className="flex justify-between border-t border-slate-200 pt-2 font-extrabold text-[#073B5C] text-sm">
-                        <span>Total Professional Retainer:</span>
+                        <span>Estimated total:</span>
                         <span className="text-emerald-700">₹{totalDue.toLocaleString()}</span>
                       </div>
                     </div>
 
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 space-y-1">
-                      <span className="font-bold block">✓ Verified Statutory Desk Allocation</span>
-                      <span>Assigned to Mumbai Compliance Desk (Kandivali West) upon payment confirmation.</span>
+                      <span className="font-bold block">Team review after payment</span>
+                      <span>Your case will be routed based on state, service, and team availability after payment confirmation.</span>
                     </div>
 
                     <div className="flex gap-2 pt-2">
@@ -550,7 +556,7 @@ function ServiceDetailContent() {
                         disabled={isProcessing}
                         className="w-2/3 bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                       >
-                        {isProcessing ? 'Opening Gateway...' : `Pay ₹${totalDue.toLocaleString()} & File →`}
+                        {isProcessing ? 'Opening Gateway...' : 'Continue to secure payment →'}
                       </button>
                     </div>
                   </div>
@@ -566,7 +572,7 @@ function ServiceDetailContent() {
       {/* Floating Bottom Bar for Mobile Devices */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-3 px-4 flex items-center justify-between z-40 border-t border-cyan-800 shadow-2xl">
         <div>
-          <span className="text-[10px] text-slate-300 block">Total Due</span>
+          <span className="text-[10px] text-slate-300 block">Estimated total</span>
           <strong className="text-base font-black text-[#F4B942]">₹{totalDue.toLocaleString()}</strong>
         </div>
         <button

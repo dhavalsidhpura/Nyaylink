@@ -1,6 +1,7 @@
 import Razorpay from 'razorpay';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { calculateOrderTotals } from '@/lib/pricing';
 import { requireUser } from '@/lib/auth-guards';
 
 function createReference(prefix: string) {
@@ -62,9 +63,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const govtFee = 0;
-      const taxAmount = Math.round(service.startingPrice * 0.18 * 100) / 100;
-      const amount = service.startingPrice + govtFee + taxAmount;
+      const { govtFee, taxAmount, amount } = calculateOrderTotals(service.startingPrice);
 
       order = await prisma.order.create({
         data: {
