@@ -39,6 +39,10 @@ export async function GET(
         status: true,
         createdAt: true,
         updatedAt: true,
+        assignedAt: true,
+        assignmentNote: true,
+        professionalType: true,
+        completedAt: true,
         service: {
           select: { title: true, slug: true, sla: true, govtFeeNote: true },
         },
@@ -66,6 +70,35 @@ export async function GET(
             createdAt: true,
           },
           orderBy: { createdAt: 'desc' },
+        },
+        caseEvents: {
+          select: {
+            id: true,
+            eventType: true,
+            title: true,
+            message: true,
+            createdAt: true,
+            actor: { select: { name: true, role: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        messages: {
+          select: {
+            id: true,
+            body: true,
+            readAt: true,
+            createdAt: true,
+            sender: { select: { name: true, role: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        delivery: {
+          select: { id: true, deliveryType: true, title: true, documentId: true, status: true, deliveredAt: true },
+        },
+        reminders: {
+          where: { status: 'PENDING' },
+          select: { id: true, reminderType: true, title: true, dueAt: true, status: true },
+          orderBy: { dueAt: 'asc' },
         },
       },
     });

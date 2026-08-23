@@ -100,20 +100,33 @@ export async function POST(request: Request) {
 
     const { govtFee, taxAmount, amount } = calculateOrderTotals(service.startingPrice);
 
-    const order = await prisma.order.create({
-      data: {
-        orderNumber: createReference('NYA'),
-        srn: createReference('SRN'),
-        serviceId: service.id,
-        clientId: auth.user.id,
-        amount,
-        govtFee,
-        taxAmount,
-        state,
-        intakeData,
-        status: 'SUBMITTED',
-      },
-      include: { service: true },
+    const order = await prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.order.create({
+        data: {
+          orderNumber: createReference('NYA'),
+          srn: createReference('SRN'),
+          serviceId: service.id,
+          clientId: auth.user.id,
+          amount,
+          govtFee,
+          taxAmount,
+          state,
+          intakeData,
+          status: 'SUBMITTED',
+        },
+        include: { service: true },
+      });
+
+      await tx.caseEvent.create({
+        data: {
+          orderId: createdOrder.id,
+          eventType: 'CASE_CREATED',
+          title: 'Request received',
+          message: 'Your intake has been received. The service desk will review the details and confirm the next step.',
+        },
+      });
+
+      return createdOrder;
     });
 
     return NextResponse.json(

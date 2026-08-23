@@ -98,16 +98,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: 'PAID',
-        razorpayOrderId,
-        razorpayPaymentId,
-        paidAt: new Date(),
-        status: order.status === 'SUBMITTED' ? 'IN_PROGRESS' : order.status,
-      },
-      select: { id: true, orderNumber: true, paymentStatus: true, status: true, paidAt: true },
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      const updated = await tx.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: 'PAID',
+          razorpayOrderId,
+          razorpayPaymentId,
+          paidAt: order.paidAt || new Date(),
+          status: order.status === 'SUBMITTED' ? 'IN_PROGRESS' : order.status,
+        },
+        select: { id: true, orderNumber: true, paymentStatus: true, status: true, paidAt: true },
+      });
+
+      if (order.paymentStatus !== 'PAID') {
+        await tx.caseEvent.create({
+          data: {
+            orderId: order.id,
+            eventType: 'PAYMENT_CAPTURED',
+            title: 'Payment confirmed',
+            message: 'Your payment has been confirmed. The case is now queued for professional review and assignment.',
+          },
+        });
+      }
+
+      return updated;
     });
 
     return NextResponse.json({ success: true, order: updatedOrder });

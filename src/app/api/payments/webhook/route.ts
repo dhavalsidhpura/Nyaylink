@@ -134,6 +134,14 @@ export async function POST(request: Request) {
               status: order.status === 'SUBMITTED' ? 'IN_PROGRESS' : order.status,
             },
           });
+          await transaction.caseEvent.create({
+            data: {
+              orderId: order.id,
+              eventType: 'PAYMENT_CAPTURED',
+              title: 'Payment confirmed',
+              message: 'Your payment has been confirmed. The case is now queued for professional review and assignment.',
+            },
+          });
           return { duplicate: false, matched: true, updated: true };
         }
       }
@@ -147,6 +155,14 @@ export async function POST(request: Request) {
             razorpayPaymentId: razorpayPaymentId || order.razorpayPaymentId,
           },
         });
+        await transaction.caseEvent.create({
+          data: {
+            orderId: order.id,
+            eventType: 'PAYMENT_FAILED',
+            title: 'Payment needs attention',
+            message: 'The payment was not captured. You can retry from the case payment panel.',
+          },
+        });
         return { duplicate: false, matched: true, updated: true };
       }
 
@@ -154,6 +170,14 @@ export async function POST(request: Request) {
         await transaction.order.update({
           where: { id: order.id },
           data: { paymentStatus: 'REFUNDED' },
+        });
+        await transaction.caseEvent.create({
+          data: {
+            orderId: order.id,
+            eventType: 'REFUND_PROCESSED',
+            title: 'Refund processed',
+            message: 'A refund has been recorded for this case. Please contact the service desk if you need help with the next step.',
+          },
         });
         return { duplicate: false, matched: true, updated: true };
       }
