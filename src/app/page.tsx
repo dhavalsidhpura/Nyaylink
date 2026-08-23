@@ -298,7 +298,7 @@ export default function HomePage() {
 
           {/* Right Column: High-Converting Quick Filing / Consultation Widget (5 Cols) */}
           <div className="lg:col-span-5">
-            <div className="bg-white text-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/20 relative">
+            <div id="quick-quote" className="bg-white text-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/20 relative">
               <div className="absolute -top-3 right-6 bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
                 Consultation Desk
               </div>
@@ -409,7 +409,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Trust & Metrics Banner */}
+      {/* 4. Customer Case Experience */}
+      <section className="bg-white border-b border-slate-200 py-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-7">
+          <div className="max-w-3xl">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#0E7490]">A clearer way to get work done</span>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-[#073B5C]">From first enquiry to a private case workspace</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">NyayLink brings the important steps into one guided flow. You know what information is needed, what happens next, and where your case stands.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-cyan-100 bg-cyan-50/50 p-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#073B5C] text-sm font-black text-[#F4B942]">01</span>
+              <h3 className="mt-4 text-sm font-extrabold text-[#073B5C]">State-aware intake</h3>
+              <p className="mt-2 text-xs leading-5 text-slate-600">Share your state, district, business type, team size, and activity. Maharashtra and Gujarat guidance is included in the current intake flow.</p>
+            </div>
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#073B5C] text-sm font-black text-[#F4B942]">02</span>
+              <h3 className="mt-4 text-sm font-extrabold text-[#073B5C]">Transparent quote</h3>
+              <p className="mt-2 text-xs leading-5 text-slate-600">See the professional fee and the currently configured tax estimate before checkout. Official charges are kept separate where they are known.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#073B5C] text-sm font-black text-[#F4B942]">03</span>
+              <h3 className="mt-4 text-sm font-extrabold text-[#073B5C]">Private case workspace</h3>
+              <p className="mt-2 text-xs leading-5 text-slate-600">After login, upload documents privately, review case details, view invoices, and download files only through an authorised case route.</p>
+            </div>
+            <div className="rounded-2xl border border-violet-100 bg-violet-50/50 p-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#073B5C] text-sm font-black text-[#F4B942]">04</span>
+              <h3 className="mt-4 text-sm font-extrabold text-[#073B5C]">Know the next step</h3>
+              <p className="mt-2 text-xs leading-5 text-slate-600">Follow case milestones and payment status in one place. Team review and authority decisions remain visible as the case moves forward.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <Link href="/dashboard" className="inline-flex items-center justify-center rounded-xl bg-[#073B5C] px-5 py-3 text-xs font-black uppercase tracking-wider text-[#F4B942] transition hover:bg-[#0E7490]">Open customer workspace →</Link>
+            <Link href="#quick-quote" className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-xs font-extrabold uppercase tracking-wider text-[#073B5C] transition hover:border-[#0E7490] hover:text-[#0E7490]">Start with a free quote</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Trust & Metrics Banner */}
       <section className="bg-white border-b border-slate-200 py-5 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
@@ -418,15 +457,15 @@ export default function HomePage() {
           </div>
           <div>
             <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Clear pricing</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Before checkout</p>
+            <p className="text-[11px] text-slate-500 font-medium">Estimate before checkout</p>
           </div>
           <div>
             <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Online-first</strong>
             <p className="text-[11px] text-slate-500 font-medium">With assisted support</p>
           </div>
           <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Professional review</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Direct Desk Supervision</p>
+            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">Case workspace</strong>
+            <p className="text-[11px] text-slate-500 font-medium">Updates and documents</p>
           </div>
         </div>
       </section>
