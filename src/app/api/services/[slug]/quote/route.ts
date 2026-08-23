@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { calculateOrderTotals } from '@/lib/pricing';
+import { calculateOrderTotals, DEFAULT_GST_RATE } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +32,7 @@ export async function GET(
         serviceSlug: service.slug,
         serviceTitle: service.title,
         ...totals,
-        taxRate: 0.18,
+        taxRate: DEFAULT_GST_RATE,
         governmentFeeNote: service.govtFeeNote,
         validity: 'Subject to approved service pricing and any stated authority fee changes before payment.',
       },
