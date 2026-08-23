@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import StatusSelector from '@/app/admin/orders/StatusSelector';
 import StaffCaseControls from '@/app/admin/orders/StaffCaseControls';
+import DocumentReviewSelector from '@/app/admin/orders/DocumentReviewSelector';
 
 interface AdminOrderPageProps {
   params: {
@@ -85,7 +86,7 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
                           {document.status.replace('_', ' ')} · {new Date(document.uploadedAt).toLocaleDateString('en-IN')}
                         </span>
                       </div>
-                      <span className="text-xs font-semibold text-slate-500">Private vault</span>
+                      <DocumentReviewSelector documentId={document.id} currentStatus={document.status} />
                     </div>
                   ))}
                 </div>
