@@ -161,9 +161,18 @@ export default function Footer() {
         </p>
       </div>
 
-      {/* 4. COPYRIGHT BAR */}
-      <div className="bg-[#031c2d] py-4 text-center text-slate-500 text-[11px] border-t border-slate-800">
-        <p>© 2026 NyayaLink — Your Link to Justice. All Rights Reserved. Charkop, Kandivali West, Mumbai 400067.</p>
+      {/* 4. COPYRIGHT & MANDATORY POLICIES BAR */}
+      <div className="bg-[#031c2d] py-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>© 2026 NyayaLink — Your Link to Justice. All Rights Reserved. Charkop, Kandivali West, Mumbai 400067.</p>
+          <div className="flex items-center gap-4 text-xs font-semibold text-slate-300">
+            <Link href="/terms" className="hover:text-[#F4B942] transition-colors">Terms of Service</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-[#F4B942] transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link href="/refund-policy" className="hover:text-[#F4B942] transition-colors">Refund Policy</Link>
+          </div>
+        </div>
       </div>
 
     </footer>
