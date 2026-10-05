@@ -23,6 +23,30 @@ export interface ServicePricing {
   sacCode: string;
 }
 
+export interface ServiceData {
+  slug: string;
+  title: string;
+  category: string;
+  professionalFee: number;
+  govtFee: number;
+  govtFeeNote: string;
+  gstRate: number;
+  sla: string;
+  sacCode: string;
+  isActive: boolean;
+  requirements?: Array<{
+    id?: string;
+    key: string;
+    label: string;
+    required: boolean;
+  }>;
+}
+
+export interface ServiceDetailClientProps {
+  serviceData?: ServiceData | null;
+  pricing?: ServicePricing | null;
+}
+
 const DRAFT_KEY = (slug: string) => `nyayalink:intake:${slug}`;
 
 // Dynamic document icons mapping based on document keyword
@@ -46,30 +70,36 @@ function getDocIcon(docText: string): { icon: string; title: string } {
   return { icon: '📄', title: 'Statutory Documentation' };
 }
 
-function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
+function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps) {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const slug = (params?.slug as string) || 'private-limited-company';
+  const slug = (params?.slug as string) || serviceData?.slug || 'private-limited-company';
   const prefilledName = searchParams?.get('name') || searchParams?.get('brand') || '';
 
   const masterService = MASTER_SERVICES.find((s) => s.slug === slug) || {
     id: 'srv-custom',
     slug: slug,
-    category: 'company-reg',
-    title: slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-    price: 6999,
-    govtFee: 'Standard Official Portal Charges Apply',
-    sla: '7–10 working days',
+    category: serviceData?.category || 'company-reg',
+    title: serviceData?.title || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    price: serviceData?.professionalFee ?? 6999,
+    govtFee: serviceData?.govtFeeNote ?? 'Standard Official Portal Charges Apply',
+    sla: serviceData?.sla ?? '7–10 working days',
     badge: 'NyayaLink Assured',
-    sacCode: '998221',
+    sacCode: serviceData?.sacCode ?? '998221',
     icon: '🏢',
     desc: 'Professional legal and statutory filing executed directly by Chartered Accountants and Legal Advocates.',
     docs: 'PAN, ID, Address Proof, Commercial Documents',
   };
 
   const details = getServiceStructure(slug);
-  const isStateSpecificService = masterService.category === 'company-reg' || slug.includes('incorporation') || slug.includes('company') || slug.includes('llp');
+  const serviceCategory = serviceData?.category || masterService.category;
+  const isStateSpecificService = serviceCategory === 'company-reg' || slug.includes('incorporation') || slug.includes('company') || slug.includes('llp');
+  const isServiceActive = serviceData ? serviceData.isActive : true;
+
+  const displayTitle = serviceData?.title || details.title;
+  const displaySla = serviceData?.sla || pricing?.sla || masterService.sla;
+  const displaySac = serviceData?.sacCode || pricing?.sacCode || masterService.sacCode;
 
   const { data: session, status: sessionStatus } = useSession();
   const signedIn = sessionStatus === 'authenticated';
@@ -120,28 +150,36 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
   }, [signedIn, session, fullName]);
 
   // Pricing calculations
-  const baseProfFee = pricing ? pricing.professionalFee : masterService.price;
-  const gstRate = pricing?.gstRate || 18;
+  const baseProfFee = serviceData ? serviceData.professionalFee : (pricing ? pricing.professionalFee : masterService.price);
+  const gstRate = serviceData?.gstRate || pricing?.gstRate || 18;
   const stateStamp = useMemo(() => getStateStampDuty(selectedState), [selectedState]);
 
   // Compute GST on professional fee
   const baseQuote = useMemo(
     () =>
       computeQuote(
-        { professionalFee: baseProfFee, govtFee: isStateSpecificService ? stateStamp.amount : (pricing?.govtFee || 0), gstRate },
+        { professionalFee: baseProfFee, govtFee: isStateSpecificService ? stateStamp.amount : ((serviceData?.govtFee ?? pricing?.govtFee) || 0), gstRate },
         selectedState
       ),
-    [baseProfFee, isStateSpecificService, stateStamp.amount, pricing?.govtFee, gstRate, selectedState]
+    [baseProfFee, isStateSpecificService, stateStamp.amount, serviceData?.govtFee, pricing?.govtFee, gstRate, selectedState]
   );
 
-  const dynamicGovtFee = isStateSpecificService ? stateStamp.amount : (pricing?.govtFee || 0);
+  const dynamicGovtFee = isStateSpecificService ? stateStamp.amount : ((serviceData?.govtFee ?? pricing?.govtFee) || 0);
   const totalEstimatedCost = baseQuote.total;
   const advanceAmount = Math.min(999, totalEstimatedCost);
   const activePayAmount = payAdvance ? advanceAmount : totalEstimatedCost;
 
-  // Simplified 3-4 document pills from details.specificDocs
+  // Active documents checklist (falls back to serviceDetails.ts if not custom seeded)
+  const allDocsList = useMemo(() => {
+    if (serviceData?.requirements && serviceData.requirements.length > 0) {
+      return serviceData.requirements.map((r) => r.label);
+    }
+    return details.specificDocs;
+  }, [serviceData, details.specificDocs]);
+
+  // Simplified 3-4 document pills from allDocsList
   const simplifiedDocs = useMemo(() => {
-    const list = details.specificDocs || [];
+    const list = allDocsList || [];
     const seenTitles = new Set<string>();
     const result: { icon: string; title: string; original: string }[] = [];
 
@@ -164,7 +202,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
       );
     }
     return result;
-  }, [details.specificDocs]);
+  }, [allDocsList]);
 
   const saveDraftAndSignIn = () => {
     try {
@@ -276,12 +314,26 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
             
             {/* HERO SECTION */}
             <div className="space-y-4">
+              {!isServiceActive && (
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
+                  <span className="text-2xl shrink-0">⚠️</span>
+                  <div className="space-y-1">
+                    <h2 className="text-xs sm:text-sm font-extrabold text-amber-900 uppercase tracking-wide">
+                      Online Intake Temporarily Paused
+                    </h2>
+                    <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                      New online applications for this service are temporarily paused by administration. You can still schedule an advisory consultation with our Chartered Accountants.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center gap-2">
                 <span className="bg-[#073B5C] text-[#F4B942] font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-cyan-400/20 shadow-sm">
                   ⚡ {details.badge || 'Govt Portal Assured'}
                 </span>
                 <span className="bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md">
-                  SAC: {pricing?.sacCode || masterService.sacCode}
+                  SAC: {displaySac}
                 </span>
                 <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
                   <span>★ 4.9/5</span>
@@ -290,7 +342,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
               </div>
 
               <h1 className="text-2xl sm:text-4xl font-black text-[#073B5C] tracking-tight leading-tight">
-                {details.title}
+                {displayTitle}
               </h1>
 
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-3xl font-medium">
@@ -310,7 +362,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                   <span className="text-lg">⏱️</span>
                   <div>
                     <strong className="block text-[#073B5C] font-extrabold text-[11px]">Fast Track SLA</strong>
-                    <span className="text-[10px] text-slate-500">{pricing?.sla || masterService.sla}</span>
+                    <span className="text-[10px] text-slate-500">{displaySla}</span>
                   </div>
                 </div>
                 <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
@@ -376,7 +428,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                   <p className="text-xs text-slate-500">Simple smartphone photos or clear scans. Uploaded privately right after booking.</p>
                 </div>
                 <span className="text-[11px] font-semibold text-slate-400">
-                  {details.specificDocs.length} items total
+                  {allDocsList.length} items total
                 </span>
               </div>
 
@@ -405,7 +457,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                   onClick={() => setIsDocsModalOpen(true)}
                   className="font-extrabold text-[#0E7490] hover:text-[#073B5C] hover:underline flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>📋 + View complete documentation guidelines ({details.specificDocs.length} items)</span>
+                  <span>📋 + View complete documentation guidelines ({allDocsList.length} items)</span>
                   <span>→</span>
                 </button>
                 <span className="text-[11px] text-slate-400 hidden sm:inline">PDF, JPG, PNG accepted (up to 10MB)</span>
@@ -496,7 +548,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                   <span className="text-[11px] text-slate-400 font-bold">CA Supervised</span>
                 </div>
                 <h3 className="font-black text-[#073B5C] text-lg sm:text-xl">
-                  {details.title}
+                  {displayTitle}
                 </h3>
               </div>
 
@@ -599,19 +651,37 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
 
               {/* THE IMPULSE CTA BUTTON */}
               <div className="space-y-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsCheckoutModalOpen(true)}
-                  className="w-full bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-sm py-4 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
-                >
-                  <span>Start Now for {formatINR(activePayAmount)} {payAdvance ? 'Advance' : ''} →</span>
-                </button>
+                {!isServiceActive ? (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full bg-slate-200 text-slate-500 font-black text-xs sm:text-sm py-3.5 rounded-2xl uppercase tracking-wider cursor-not-allowed text-center"
+                    >
+                      Applications Paused
+                    </button>
+                    <a
+                      href="#consultation"
+                      className="block text-center w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3 rounded-2xl uppercase transition shadow"
+                    >
+                      Book Expert Consultation Instead →
+                    </a>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsCheckoutModalOpen(true)}
+                    className="w-full bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-sm py-4 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+                  >
+                    <span>Start Now for {formatINR(activePayAmount)} {payAdvance ? 'Advance' : ''} →</span>
+                  </button>
+                )}
 
                 {/* SLA BADGE DIRECTLY UNDER CTA */}
                 <div className="p-2.5 bg-cyan-50/70 border border-cyan-200/80 rounded-xl text-center">
                   <span className="text-xs font-extrabold text-[#073B5C] flex items-center justify-center gap-1.5">
                     <span>⚡ Typical Turnaround:</span>
-                    <span className="text-[#0E7490]">{pricing?.sla || masterService.sla}</span>
+                    <span className="text-[#0E7490]">{displaySla}</span>
                   </span>
                 </div>
               </div>
@@ -656,14 +726,24 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCheckoutModalOpen(true)}
-          className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider shadow cursor-pointer active:scale-95 transition"
-        >
-          Start for {formatINR(activePayAmount)} →
-        </button>
+        {!isServiceActive ? (
+          <a
+            href="#consultation"
+            className="bg-[#073B5C] border border-[#F4B942] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl uppercase whitespace-nowrap"
+          >
+            Consultation Only
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsCheckoutModalOpen(true)}
+            className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider shadow cursor-pointer active:scale-95 transition"
+          >
+            Start for {formatINR(activePayAmount)} →
+          </button>
+        )}
       </div>
+
 
       {/* ======================================================== */}
       {/* 4. EXPRESS CHECKOUT MODAL                                */}
@@ -678,7 +758,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                   Express Filing Setup
                 </span>
                 <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
-                  {details.title}
+                  {displayTitle}
                 </h3>
               </div>
               <button
@@ -831,7 +911,7 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
               <p className="text-slate-500 text-[11px] pb-1">
                 You do not need these immediately. You can book now and upload them anytime inside your secure Vault:
               </p>
-              {details.specificDocs.map((doc, idx) => (
+              {allDocsList.map((doc, idx) => (
                 <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-start gap-2.5">
                   <span className="text-emerald-700 font-black text-sm mt-0.5">✓</span>
                   <span className="text-slate-700 font-medium leading-relaxed">{doc}</span>
@@ -857,10 +937,11 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
   );
 }
 
-export default function ServiceDetailClient({ pricing }: { pricing: ServicePricing | null }) {
+export default function ServiceDetailClient(props: ServiceDetailClientProps) {
   return (
     <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs">Loading service workspace...</div>}>
-      <ServiceDetailContent pricing={pricing} />
+      <ServiceDetailContent {...props} />
     </Suspense>
   );
 }
+

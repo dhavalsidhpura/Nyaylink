@@ -66,6 +66,23 @@ export async function syncCatalog() {
   return syncPromise;
 }
 
+export async function syncServiceRequirements(serviceId: string, docLabels: string[]) {
+  const seen = new Set<string>();
+  const newReqs = docLabels.map((label, i) => {
+    let key = requirementKey(label, i);
+    if (seen.has(key)) key = `${key}-${i + 1}`;
+    seen.add(key);
+    return { serviceId, key, label, sortOrder: i, required: true };
+  });
+
+  await prisma.$transaction([
+    prisma.serviceDocRequirement.deleteMany({ where: { serviceId } }),
+    ...(newReqs.length > 0 ? [prisma.serviceDocRequirement.createMany({ data: newReqs })] : []),
+  ]);
+}
+
+export { requirementKey };
+
 export async function getActiveService(slug: string) {
   let service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
   if (!service && MASTER_SERVICES.some((s) => s.slug === slug)) {
@@ -73,4 +90,13 @@ export async function getActiveService(slug: string) {
     service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
   }
   return service?.isActive ? service : null;
+}
+
+export async function getServiceBySlug(slug: string) {
+  let service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+  if (!service && MASTER_SERVICES.some((s) => s.slug === slug)) {
+    await syncCatalog();
+    service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+  }
+  return service;
 }

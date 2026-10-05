@@ -405,14 +405,41 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
         )}
 
         {activeTab === 'catalog' && (
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center space-y-4">
-            <h2 className="text-xl font-extrabold text-[#073B5C]">Service Catalog & Rate Management</h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Pricing and rate management lives in the dedicated Rate Manager, backed by the live database.
-            </p>
-            <Link href="/admin/pricing" className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-bold text-xs px-5 py-2.5 rounded-xl transition-colors">
-              Open Rate & Fee Manager →
-            </Link>
+          <div className="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#073B5C]">Service Catalog, Documents & Rate Manager</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Single source of truth for pricing, statutory government fees, required KYC documents, and service availability.
+                </p>
+              </div>
+              <Link href="/admin/pricing" className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3 rounded-xl transition shadow flex items-center gap-1.5 whitespace-nowrap">
+                <span>⚡</span> Launch Service Console →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <span className="text-xl">💰</span>
+                <strong className="block text-xs font-black text-[#073B5C]">Dynamic Pricing & GST</strong>
+                <p className="text-[11px] text-slate-500">Edit professional fees, pass-through govt fees, and statutory portal fee notes.</p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <span className="text-xl">📁</span>
+                <strong className="block text-xs font-black text-[#073B5C]">Document Requirements</strong>
+                <p className="text-[11px] text-slate-500">Add or remove KYC document checklists required for client filing vaults.</p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <span className="text-xl">⏸️</span>
+                <strong className="block text-xs font-black text-[#073B5C]">Active / Pause Control</strong>
+                <p className="text-[11px] text-slate-500">Instantly pause services when govt portals are down or intake is full.</p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <span className="text-xl">➕</span>
+                <strong className="block text-xs font-black text-[#073B5C]">Add Brand-New Services</strong>
+                <p className="text-[11px] text-slate-500">Create new service slugs and publish them live to checkout immediately.</p>
+              </div>
+            </div>
           </div>
         )}
 
