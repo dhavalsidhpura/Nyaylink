@@ -22,6 +22,7 @@ export default function HomePage() {
   // Directory Category & Search
   const [activeCategory, setActiveCategory] = useState('all');
   const [directorySearch, setDirectorySearch] = useState('');
+  const [mobileCatalogLayout, setMobileCatalogLayout] = useState<'grid' | 'horizontal'>('grid');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Interactive 2-Step Quote Estimator (Hero Right)
@@ -455,10 +456,71 @@ export default function HomePage() {
               </Link>
             </div>
 
+            {/* 2×2 Quick Category Launcher */}
+            <div className="space-y-1.5 pt-2 border-t border-cyan-800">
+              <span className="text-[10px] text-cyan-200 font-bold uppercase tracking-wider block">
+                Quick Category Launcher (1-Tap)
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory('company-reg');
+                    setIsMobileMenuOpen(false);
+                    const el = document.getElementById('catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="p-2.5 bg-white/10 hover:bg-white/15 rounded-xl font-bold flex items-center gap-2 text-left transition active:scale-95 cursor-pointer"
+                >
+                  <span className="text-base">🏢</span>
+                  <span className="truncate">Companies</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory('trademark-ipr');
+                    setIsMobileMenuOpen(false);
+                    const el = document.getElementById('catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="p-2.5 bg-white/10 hover:bg-white/15 rounded-xl font-bold flex items-center gap-2 text-left transition active:scale-95 cursor-pointer"
+                >
+                  <span className="text-base">™️</span>
+                  <span className="truncate">Trademark</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory('tax-accounting');
+                    setIsMobileMenuOpen(false);
+                    const el = document.getElementById('catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="p-2.5 bg-white/10 hover:bg-white/15 rounded-xl font-bold flex items-center gap-2 text-left transition active:scale-95 cursor-pointer"
+                >
+                  <span className="text-base">🧾</span>
+                  <span className="truncate">Tax & GST</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory('licenses-permits');
+                    setIsMobileMenuOpen(false);
+                    const el = document.getElementById('catalog-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="p-2.5 bg-white/10 hover:bg-white/15 rounded-xl font-bold flex items-center gap-2 text-left transition active:scale-95 cursor-pointer"
+                >
+                  <span className="text-base">📜</span>
+                  <span className="truncate">Licenses</span>
+                </button>
+              </div>
+            </div>
+
             {/* Category Accordions */}
             <div className="space-y-1.5 text-xs pt-2 border-t border-cyan-800">
               <span className="text-[10px] text-cyan-200 font-bold uppercase tracking-wider block mb-1">
-                Browse by Category
+                Browse Detailed Catalog
               </span>
 
               {[
@@ -586,53 +648,78 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Quick Category Jump Pills */}
+            {/* Quick Category Jump (2×2 on Mobile, Flex on Desktop) */}
             <div className="space-y-2 pt-1">
               <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider block">
                 Popular Filings:
               </span>
-              <div className="flex flex-wrap gap-2 text-xs">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 text-xs">
                 <Link
                   href="/services/private-limited-company"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
                 >
-                  <span>🏢</span> Pvt Ltd Company
+                  <span className="text-base shrink-0">🏢</span>
+                  <span className="truncate">Pvt Ltd Company</span>
                 </Link>
                 <Link
                   href="/services/trademark-registration"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
                 >
-                  <span>™️</span> Trademark Filing
+                  <span className="text-base shrink-0">™️</span>
+                  <span className="truncate">Trademark Filing</span>
                 </Link>
                 <Link
                   href="/services/gst-registration"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
                 >
-                  <span>🧾</span> GST Registration
+                  <span className="text-base shrink-0">🧾</span>
+                  <span className="truncate">GST Registration</span>
                 </Link>
                 <Link
                   href="/services/fssai-food-license"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
                 >
-                  <span>🍽️</span> FSSAI Food License
+                  <span className="text-base shrink-0">🍽️</span>
+                  <span className="truncate">FSSAI License</span>
                 </Link>
               </div>
             </div>
 
-            {/* Instant Free Diagnostic Tools Ribbon */}
-            <div className="pt-3 border-t border-cyan-900/60 flex flex-wrap items-center gap-3 text-xs">
-              <span className="text-[11px] text-slate-300 font-semibold">Free Verification Desks:</span>
-              <Link href="/tools/company-name-search" className="text-[#F4B942] hover:underline font-bold">
-                🏢 MCA Name Search ↗
-              </Link>
-              <span className="text-slate-600">•</span>
-              <Link href="/tools/trademark-search" className="text-[#F4B942] hover:underline font-bold">
-                ™️ TM Class Finder ↗
-              </Link>
-              <span className="text-slate-600">•</span>
-              <Link href="/tools/gst-search" className="text-[#F4B942] hover:underline font-bold">
-                🧾 Verify GSTIN ↗
-              </Link>
+            {/* Instant Free Diagnostic Tools Ribbon (2×2 on Mobile, Flex on Desktop) */}
+            <div className="pt-3 border-t border-cyan-900/60 space-y-2">
+              <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider block">
+                Free Verification Desks:
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <Link
+                  href="/tools/company-name-search"
+                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
+                >
+                  <span>🏢</span>
+                  <span className="truncate">MCA Search ↗</span>
+                </Link>
+                <Link
+                  href="/tools/trademark-search"
+                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
+                >
+                  <span>™️</span>
+                  <span className="truncate">TM Finder ↗</span>
+                </Link>
+                <Link
+                  href="/tools/gst-search"
+                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
+                >
+                  <span>🧾</span>
+                  <span className="truncate">Verify GSTIN ↗</span>
+                </Link>
+                <Link
+                  href="/vakil"
+                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-[#F4B942] flex items-center gap-1.5 transition truncate"
+                >
+                  <span>👨‍⚖️</span>
+                  <span className="truncate">Lawyer Desk ↗</span>
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -830,22 +917,22 @@ export default function HomePage() {
       {/* 4. TRUST & SOCIAL PROOF METRICS BANNER                   */}
       {/* ======================================================== */}
       <section className="bg-white border-b border-slate-200 py-6 px-4 sm:px-8">
-        <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">50,000+</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Filings Completed</p>
+        <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-center">
+          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">50,000+</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Filings Completed</p>
           </div>
-          <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Google Verified Rating</p>
+          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Google Verified</p>
           </div>
-          <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">₹999 Token</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Split-Ticket Advance</p>
+          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+            <strong className="text-xl sm:text-3xl font-black text-[#0E7490]">₹999 Token</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Split-Ticket Advance</p>
           </div>
-          <div>
-            <strong className="text-2xl sm:text-3xl font-black text-[#073B5C]">CA & Advocate</strong>
-            <p className="text-[11px] text-slate-500 font-medium">Direct Desk Supervision</p>
+          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">CA & Advocate</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Direct Desk Supervision</p>
           </div>
         </div>
       </section>
@@ -910,8 +997,87 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Dynamic Responsive Service Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 pt-2">
+        {/* Mobile View Switcher: 2×2 Grid vs 2×1 Horizontal List */}
+        <div className="flex sm:hidden items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+          <span className="text-[11px] font-extrabold text-[#073B5C]">
+            Mobile View:
+          </span>
+          <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+            <button
+              type="button"
+              onClick={() => setMobileCatalogLayout('grid')}
+              className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5 ${
+                mobileCatalogLayout === 'grid'
+                  ? 'bg-white text-[#073B5C] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <span>⊞</span> 2×2 Grid
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileCatalogLayout('horizontal')}
+              className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5 ${
+                mobileCatalogLayout === 'horizontal'
+                  ? 'bg-white text-[#073B5C] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <span>☰</span> 2×1 List
+            </button>
+          </div>
+        </div>
+
+        {/* 2×1 Horizontal List View for Mobile (sm:hidden) */}
+        {mobileCatalogLayout === 'horizontal' && (
+          <div className="space-y-2.5 sm:hidden">
+            {filteredServices.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 text-xs">
+                No services match your search query. Try typing another term.
+              </div>
+            ) : (
+              filteredServices.map((srv) => (
+                <Link
+                  key={srv.id}
+                  href={`/services/${srv.slug}`}
+                  className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between gap-3 active:scale-[0.99] transition hover:border-[#0E7490]"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-xl shrink-0">
+                      {srv.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug truncate">
+                        {srv.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500 font-medium">
+                        <span className="truncate">⏱️ {srv.sla}</span>
+                        <span>•</span>
+                        <span className="text-emerald-700 font-bold shrink-0">₹999 Token</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-xs font-black text-[#073B5C] block">
+                      ₹{srv.price.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] bg-[#073B5C] text-[#F4B942] font-black px-2.5 py-1 rounded-lg mt-0.5 inline-block">
+                      Start →
+                    </span>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Dynamic Responsive Service Cards Grid (2×2 on Mobile, 3-4 across on Desktop) */}
+        <div
+          className={`${
+            mobileCatalogLayout === 'horizontal' ? 'hidden sm:grid' : 'grid'
+          } grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-2.5 sm:gap-6 pt-1`}
+        >
           {filteredServices.length === 0 ? (
             <div className="col-span-full py-16 text-center text-slate-400 text-xs">
               No services match your search query. Try typing another term.
@@ -922,33 +1088,33 @@ export default function HomePage() {
               return (
                 <div
                   key={srv.id}
-                  className="bg-white rounded-3xl border border-slate-200/90 p-5 flex flex-col justify-between hover:shadow-xl hover:border-[#0E7490]/50 transition-all group duration-200"
+                  className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 p-3.5 sm:p-5 flex flex-col justify-between hover:shadow-xl hover:border-[#0E7490]/50 transition-all group duration-200"
                 >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-2xl p-2.5 bg-slate-50 rounded-2xl border border-slate-100 group-hover:scale-105 transition-transform">
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-start justify-between gap-1">
+                      <span className="text-xl sm:text-2xl p-2 sm:p-2.5 bg-slate-50 rounded-2xl border border-slate-100 group-hover:scale-105 transition-transform">
                         {srv.icon}
                       </span>
-                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200/60 truncate max-w-[130px]">
+                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-200/60 truncate max-w-[85px] sm:max-w-[130px]">
                         {srv.badge}
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="font-extrabold text-[#073B5C] text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
+                      <h3 className="font-extrabold text-[#073B5C] text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
                         {srv.title}
                       </h3>
-                      <p className="text-slate-500 text-xs mt-1 leading-relaxed line-clamp-2 min-h-[2rem]">
+                      <p className="text-slate-500 text-xs mt-1 leading-relaxed line-clamp-2 min-h-[2rem] hidden sm:block">
                         {srv.desc}
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-600 space-y-1">
+                    <div className="pt-2 border-t border-slate-100 text-[10px] sm:text-[11px] text-slate-600 space-y-1">
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400">Timeline:</span>
-                        <strong className="text-slate-800">{srv.sla}</strong>
+                        <strong className="text-slate-800 truncate ml-1">{srv.sla}</strong>
                       </div>
-                      <div className="flex justify-between items-center">
+                      <div className="hidden sm:flex justify-between items-center">
                         <span className="text-slate-400">Govt Fee:</span>
                         <span className="text-slate-500 truncate max-w-[140px] text-right" title={srv.govtFee}>
                           {srv.govtFee}
@@ -958,19 +1124,19 @@ export default function HomePage() {
                   </div>
 
                   {/* Micro-Commitment Card Footer with ₹999 Advance Anchor */}
-                  <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="pt-2 sm:pt-3 mt-3 sm:mt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-semibold block uppercase">
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-semibold block uppercase">
                         Package Fee
                       </span>
-                      <strong className="text-base font-black text-[#073B5C]">
+                      <strong className="text-xs sm:text-base font-black text-[#073B5C]">
                         ₹{srv.price.toLocaleString()}
                       </strong>
                     </div>
 
                     <Link
                       href={`/services/${srv.slug}`}
-                      className="bg-[#073B5C] group-hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl uppercase tracking-wider text-center transition shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                      className="bg-[#073B5C] group-hover:bg-[#0E7490] text-[#F4B942] font-black text-[11px] sm:text-xs py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl uppercase tracking-wider text-center transition shadow-xs flex items-center justify-center gap-1 cursor-pointer"
                     >
                       {isAdvanceEligible ? 'Start ₹999 →' : 'Apply →'}
                     </Link>
@@ -999,7 +1165,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Full Comparison Table (hidden on mobile to prevent overflow) */}
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 text-[#073B5C]">
@@ -1042,6 +1209,48 @@ export default function HomePage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Responsive 2×1 Comparison Cards (md:hidden) */}
+          <div className="md:hidden space-y-3">
+            {[
+              {
+                capability: 'Filing Execution',
+                nyayalink: '100% Digital & Paperless (Zero visits)',
+                traditional: 'Physical paperwork & office visits',
+              },
+              {
+                capability: 'Pricing Transparency',
+                nyayalink: 'Itemized ₹999 Token + GST Invoice',
+                traditional: 'Hidden retainer charges & markups',
+              },
+              {
+                capability: 'Live Status Tracking',
+                nyayalink: 'Real-time progress logs + Govt SRN sync',
+                traditional: 'Manual calls with uncertain timelines',
+              },
+              {
+                capability: 'Document Vault Security',
+                nyayalink: '256-Bit SSL Lifetime Cloud Vault',
+                traditional: 'Paper files prone to misplacement',
+              },
+            ].map((row, idx) => (
+              <div key={idx} className="bg-slate-50 rounded-2xl border border-slate-200 p-3.5 space-y-2 text-xs">
+                <span className="font-extrabold text-[#073B5C] text-xs block">
+                  {row.capability}
+                </span>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2.5 bg-cyan-50/90 border border-cyan-200 rounded-xl space-y-1">
+                    <span className="font-black text-[#0E7490] block text-[10px] uppercase">NyayaLink</span>
+                    <p className="text-[#073B5C] font-semibold leading-tight">✓ {row.nyayalink}</p>
+                  </div>
+                  <div className="p-2.5 bg-white border border-slate-200 rounded-xl space-y-1">
+                    <span className="font-bold text-slate-400 block text-[10px] uppercase">Traditional</span>
+                    <p className="text-slate-500 leading-tight">✕ {row.traditional}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1059,41 +1268,42 @@ export default function HomePage() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">
+          {/* 2×2 Process Matrix on Mobile, 4 Across on Desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-xs">
+            <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5 sm:space-y-2">
+              <span className="w-7 h-7 sm:w-8 sm:h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-xs sm:text-sm">
                 1
               </span>
-              <strong className="block text-[#073B5C] text-sm">₹999 Booking Token</strong>
-              <p className="text-slate-500 leading-relaxed">
-                Start with a low-friction ₹999 advance. A dedicated CA desk is immediately assigned.
+              <strong className="block text-[#073B5C] text-xs sm:text-sm leading-snug">₹999 Booking Token</strong>
+              <p className="text-slate-500 text-[11px] sm:text-xs leading-relaxed">
+                Start with a low-friction ₹999 advance. Dedicated CA assigned.
               </p>
             </div>
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">
+            <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5 sm:space-y-2">
+              <span className="w-7 h-7 sm:w-8 sm:h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-xs sm:text-sm">
                 2
               </span>
-              <strong className="block text-[#073B5C] text-sm">Vault Upload & CA Review</strong>
-              <p className="text-slate-500 leading-relaxed">
-                Upload smartphone photos or scans to your vault. Our CA team scrutinizes documents.
+              <strong className="block text-[#073B5C] text-xs sm:text-sm leading-snug">Vault Upload & CA</strong>
+              <p className="text-slate-500 text-[11px] sm:text-xs leading-relaxed">
+                Upload smartphone photos to vault. CA scrutinizes documents.
               </p>
             </div>
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">
+            <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5 sm:space-y-2">
+              <span className="w-7 h-7 sm:w-8 sm:h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-xs sm:text-sm">
                 3
               </span>
-              <strong className="block text-[#073B5C] text-sm">Govt Portal Submission</strong>
-              <p className="text-slate-500 leading-relaxed">
-                Direct statutory submission to MCA V3, GSTN, or IP India with live SRN tracking.
+              <strong className="block text-[#073B5C] text-xs sm:text-sm leading-snug">Govt Submission</strong>
+              <p className="text-slate-500 text-[11px] sm:text-xs leading-relaxed">
+                Direct statutory submission to MCA V3, GSTN, or IP India.
               </p>
             </div>
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span className="w-8 h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-sm">
+            <div className="p-3.5 sm:p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5 sm:space-y-2">
+              <span className="w-7 h-7 sm:w-8 sm:h-8 bg-[#073B5C] text-[#F4B942] font-black rounded-xl flex items-center justify-center text-xs sm:text-sm">
                 4
               </span>
-              <strong className="block text-[#073B5C] text-sm">Vault Delivery</strong>
-              <p className="text-slate-500 leading-relaxed">
-                Download your official Certificate of Incorporation, GSTIN, or TM acknowledgment anytime.
+              <strong className="block text-[#073B5C] text-xs sm:text-sm leading-snug">Vault Delivery</strong>
+              <p className="text-slate-500 text-[11px] sm:text-xs leading-relaxed">
+                Download approved official certificates and DIN letters.
               </p>
             </div>
           </div>

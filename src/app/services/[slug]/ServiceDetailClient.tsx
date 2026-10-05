@@ -349,44 +349,44 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 {details.whyShouldBuy}
               </p>
 
-              {/* Trust Badges Ribbon */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
-                  <span className="text-lg">🛡️</span>
-                  <div>
-                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">100% Verified</strong>
-                    <span className="text-[10px] text-slate-500">CA/CS Supervised</span>
+              {/* Trust Badges Ribbon (2×2 on mobile, 4 across on desktop) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2 text-xs">
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                  <span className="text-base sm:text-lg">🛡️</span>
+                  <div className="min-w-0">
+                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">100% Verified</strong>
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">CA/CS Supervised</span>
                   </div>
                 </div>
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
-                  <span className="text-lg">⏱️</span>
-                  <div>
-                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Fast Track SLA</strong>
-                    <span className="text-[10px] text-slate-500">{displaySla}</span>
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                  <span className="text-base sm:text-lg">⏱️</span>
+                  <div className="min-w-0">
+                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">Fast Track SLA</strong>
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">{displaySla}</span>
                   </div>
                 </div>
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
-                  <span className="text-lg">🔒</span>
-                  <div>
-                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Encrypted Vault</strong>
-                    <span className="text-[10px] text-slate-500">256-Bit SSL Cloud</span>
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                  <span className="text-base sm:text-lg">🔒</span>
+                  <div className="min-w-0">
+                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">Encrypted Vault</strong>
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">256-Bit SSL Cloud</span>
                   </div>
                 </div>
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
-                  <span className="text-lg">🧾</span>
-                  <div>
-                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Official Invoicing</strong>
-                    <span className="text-[10px] text-slate-500">GST Input Credit</span>
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                  <span className="text-base sm:text-lg">🧾</span>
+                  <div className="min-w-0">
+                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">GST Invoicing</strong>
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">Input Tax Credit</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* SECTION 2: OFFICIAL DELIVERABLES INCLUDED (SaaS PRICING FEATURE STYLE) */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+            {/* SECTION 2: OFFICIAL DELIVERABLES INCLUDED (2×2 GRID ON MOBILE) */}
+            <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-sm space-y-4 sm:space-y-5">
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
+                  <h2 className="text-base sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
                     <span>📦</span> Official Deliverables Included
                   </h2>
                   <p className="text-xs text-slate-500">Statutory assets delivered directly to your encrypted customer vault upon approval.</p>
@@ -396,23 +396,26 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 2×2 on Mobile, 2 Columns on Desktop */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 {details.deliverables.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 hover:border-cyan-400/50 rounded-2xl transition-all shadow-xs space-y-1.5"
+                    className="p-3 sm:p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 hover:border-cyan-400/50 rounded-2xl transition-all shadow-xs space-y-1 sm:space-y-1.5 flex flex-col justify-between"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#0E7490] text-white text-[10px] font-black flex items-center justify-center shrink-0">
-                        ✓
-                      </span>
-                      <strong className="text-xs sm:text-sm font-extrabold text-[#073B5C] leading-snug">
-                        {item.title}
-                      </strong>
+                    <div>
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#0E7490] text-white text-[9px] sm:text-[10px] font-black flex items-center justify-center shrink-0">
+                          ✓
+                        </span>
+                        <strong className="text-[11px] sm:text-sm font-extrabold text-[#073B5C] leading-tight">
+                          {item.title}
+                        </strong>
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-slate-600 pl-5 sm:pl-7 leading-relaxed font-normal pt-1 line-clamp-3 sm:line-clamp-none">
+                        {item.desc}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-600 pl-7 leading-relaxed font-normal">
-                      {item.desc}
-                    </p>
                   </div>
                 ))}
               </div>
