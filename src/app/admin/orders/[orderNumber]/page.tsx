@@ -1,183 +1,189 @@
-import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import { getSessionUser, isStaff, orderAccess, ROLE_GROUPS } from '@/lib/authz';
+import { plain } from '@/lib/serialize';
+import { formatINR, stateName } from '@/lib/pricing';
 import StatusSelector from '@/app/admin/orders/StatusSelector';
+import DocumentChecklist from '@/components/DocumentChecklist';
+import OrderMessages from '@/components/OrderMessages';
+import OrderProgress from '@/components/OrderProgress';
+import { AssignSelector, PaymentRequestForm, RefundButton } from './AdminOrderActions';
+
+export const dynamic = 'force-dynamic';
 
 interface AdminOrderPageProps {
-  params: {
-    orderNumber: string;
-  };
+  params: { orderNumber: string };
 }
 
 export default async function AdminOrderReviewPage({ params }: AdminOrderPageProps) {
-  const order = await prisma.orders.findUnique({
-    where: { order_number: params.orderNumber },
+  const user = await getSessionUser();
+  if (!user || !isStaff(user.role)) redirect('/login');
+
+  const raw = await prisma.order.findUnique({
+    where: { orderNumber: params.orderNumber },
     include: {
-      services: {
-        include: {
-          service_document_requirements: true,
-        },
-      },
-      users_orders_client_idTousers: true,
-      order_intake_responses: true,
-      order_documents: true,
-      order_status_logs: {
-        orderBy: { created_at: 'desc' },
-      },
+      service: { include: { requirements: { orderBy: { sortOrder: 'asc' } } } },
+      client: { select: { id: true, name: true, email: true, phone: true, gstin: true } },
+      documents: { orderBy: { uploadedAt: 'desc' } },
+      statusLogs: { orderBy: { createdAt: 'desc' }, include: { actor: { select: { name: true } } } },
+      payments: { orderBy: { createdAt: 'asc' } },
+      invoices: { select: { invoiceNo: true } },
     },
   });
+  if (!raw) notFound();
 
-  if (!order) {
-    notFound();
-  }
+  const isFinance = ROLE_GROUPS.finance.includes(user.role);
+  const caseAccess = orderAccess(user, raw) === 'staff';
+  if (!caseAccess && !isFinance) notFound();
 
-  const client = order.users_orders_client_idTousers;
-  const service = order.services;
-  const intakeResponse = order.order_intake_responses[0]?.form_data as Record<string, any> | undefined;
+  const order = plain(raw);
+  const canAssign = ['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD'].includes(user.role);
+  const canRequestPayment = ['SUPER_ADMIN', 'OPS_MANAGER', 'FINANCE_MANAGER', 'CA_CS_LEAD'].includes(user.role);
+  const assignable = canAssign
+    ? await prisma.user.findMany({
+        where: { role: { in: ROLE_GROUPS.assignable } },
+        select: { id: true, name: true, role: true, _count: { select: { assignedOrders: { where: { status: { notIn: ['APPROVED', 'REJECTED'] } } } } } },
+        orderBy: { name: 'asc' },
+      })
+    : [];
+  const intake = (order.intakeData as Record<string, string> | null) || {};
 
   return (
-    <main className="min-h-screen bg-slate-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Navigation Top Bar */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/admin/orders"
-            className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-          >
-            ← Back to Operations Console
+    <main className="min-h-screen bg-slate-100 font-sans text-slate-800">
+      <header className="bg-[#073B5C] text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Link href="/admin/orders" className="text-xs text-[#F4B942] font-bold hover:underline">
+            ← Operations Console
           </Link>
-          <span className="text-xs font-mono text-slate-400">CA/CS Internal Desk</span>
+          <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-200">{user.role.replace(/_/g, ' ')}</span>
         </div>
+      </header>
 
-        {/* Order Overview Header */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Application Reference
-            </span>
-            <h1 className="text-2xl font-bold font-mono text-slate-900">{order.order_number}</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Service: <strong className="text-slate-800">{service.title}</strong>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <span className="text-xs text-slate-400 block">Total Amount</span>
-              <span className="text-lg font-bold text-slate-900">
-                ₹{Number(order.total_amount).toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block mb-1">Lifecycle Status</span>
-              <StatusSelector orderId={order.id} currentStatus={order.status} />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            {/* Uploaded Documents Inspection Box */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Uploaded KYC & Supporting Documents</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-6 flex flex-col lg:flex-row justify-between gap-6">
+          <div className="space-y-3 flex-1">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Application Reference</span>
+              <h1 className="text-xl font-extrabold text-[#073B5C] font-mono">{order.orderNumber}</h1>
+              <p className="text-sm font-bold text-slate-700">{order.service.title}</p>
               <p className="text-xs text-slate-500">
-                Click on any document to open and review the submitted file.
+                {formatINR(order.totalAmount)} · {order.paymentStatus.replace(/_/g, ' ')} · Paid {formatINR(order.amountPaid)} · Place of supply{' '}
+                {stateName(order.clientState)}
               </p>
+            </div>
+            <OrderProgress status={order.status} />
+          </div>
+          {caseAccess && (
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Status & Government Reference</span>
+              <StatusSelector orderId={order.id} currentStatus={order.status} currentSrn={order.srn} />
+            </div>
+          )}
+        </section>
 
-              {order.order_documents.length === 0 ? (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
-                  No documents uploaded by client yet.
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {caseAccess && (
+              <DocumentChecklist
+                orderId={order.id}
+                mode="staff"
+                requirements={order.service.requirements}
+                documents={order.documents}
+                locked={order.status === 'APPROVED' || order.status === 'REJECTED'}
+              />
+            )}
+            {caseAccess && <OrderMessages orderNumber={order.orderNumber} mode="staff" />}
+
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-3">
+              <h3 className="font-extrabold text-[#073B5C] text-sm">Client Intake</h3>
+              {Object.keys(intake).length === 0 ? (
+                <p className="text-xs text-slate-400">No intake answers captured.</p>
               ) : (
-                <div className="space-y-3 pt-2">
-                  {order.order_documents.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/50"
-                    >
-                      <div className="space-y-1">
-                        <span className="font-semibold text-sm text-slate-800 block">
-                          {doc.file_name}
-                        </span>
-                        {doc.file_size && (
-                          <span className="text-xs text-slate-400 block">
-                            Size: {(doc.file_size / 1024).toFixed(1)} KB
-                          </span>
-                        )}
-                      </div>
-
-                      <a
-                        href={doc.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
-                      >
-                        📥 Review File
-                      </a>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  {Object.entries(intake).map(([key, val]) => (
+                    <div key={key} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                      <dt className="text-[10px] uppercase font-bold text-slate-400">{key.replace(/([A-Z])/g, ' $1')}</dt>
+                      <dd className="font-bold text-slate-800 break-words">{String(val) || '—'}</dd>
                     </div>
                   ))}
-                </div>
+                </dl>
               )}
-            </div>
+            </section>
+          </div>
 
-            {/* Client Intake Form Data */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Client Submitted Form Details</h2>
-              {intakeResponse && Object.keys(intakeResponse).length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  {Object.entries(intakeResponse).map(([key, val]) => (
-                    <div key={key} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <span className="text-xs text-slate-400 capitalize block">{key}</span>
-                      <strong className="text-sm text-slate-800">{String(val) || 'N/A'}</strong>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400">No additional intake parameters provided.</p>
+          <aside className="space-y-6">
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-2 text-xs">
+              <h3 className="font-extrabold text-[#073B5C] text-sm">Client</h3>
+              <p className="font-bold text-slate-800">{order.client.name}</p>
+              <a href={`mailto:${order.client.email}`} className="block text-[#0E7490] hover:underline">
+                {order.client.email}
+              </a>
+              {order.client.phone && (
+                <a href={`tel:${order.client.phone}`} className="block text-[#0E7490] hover:underline">
+                  {order.client.phone}
+                </a>
               )}
-            </div>
+              {order.client.gstin && <p className="font-mono text-slate-600">GSTIN {order.client.gstin}</p>}
+            </section>
 
-            {/* Audit Logs */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Filing History Log</h2>
-              <div className="space-y-4">
-                {order.order_status_logs.map((log) => (
-                  <div key={log.id} className="border-l-2 border-orange-500 pl-4 py-1 space-y-1">
-                    <div className="flex justify-between items-center text-xs text-slate-400">
-                      <span className="font-semibold text-slate-700 capitalize">
-                        {log.status.replace('_', ' ')}
+            {canAssign && (
+              <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-2">
+                <h3 className="font-extrabold text-[#073B5C] text-sm">Assigned Desk</h3>
+                <AssignSelector
+                  orderId={order.id}
+                  currentId={order.assignedCAId}
+                  staff={assignable.map((s) => ({ id: s.id, name: s.name, role: s.role, activeCases: s._count.assignedOrders }))}
+                />
+              </section>
+            )}
+
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-3 text-xs">
+              <h3 className="font-extrabold text-[#073B5C] text-sm">Payments</h3>
+              <ul className="space-y-2">
+                {order.payments.map((p) => (
+                  <li key={p.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-1">
+                    <div className="flex justify-between gap-2">
+                      <strong className="text-slate-800">{formatINR(p.amount)}</strong>
+                      <span className="text-[10px] font-bold uppercase text-slate-500">
+                        {p.kind} · {p.status}
                       </span>
-                      <span>{new Date(log.created_at || '').toLocaleDateString('en-IN')}</span>
                     </div>
-                    {log.remarks && <p className="text-xs text-slate-600">{log.remarks}</p>}
-                  </div>
+                    <p className="text-slate-500">{p.description}</p>
+                    {p.gatewayPaymentId && <p className="font-mono text-[10px] text-slate-400">{p.gatewayPaymentId}</p>}
+                    {isFinance && p.status === 'CAPTURED' && <RefundButton paymentId={p.id} amount={p.amount} />}
+                  </li>
                 ))}
-              </div>
-            </div>
-          </div>
+              </ul>
+              {order.invoices.map((inv) => (
+                <Link key={inv.invoiceNo} href={`/invoices/${encodeURIComponent(inv.invoiceNo)}`} className="block text-[#0E7490] font-bold hover:underline">
+                  🧾 {inv.invoiceNo}
+                </Link>
+              ))}
+              {canRequestPayment && order.paymentStatus !== 'UNPAID' && (
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Request additional payment</span>
+                  <PaymentRequestForm orderId={order.id} />
+                </div>
+              )}
+            </section>
 
-          {/* Client Info Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 border-b pb-2">Client Details</h3>
-              <div className="text-xs space-y-2 text-slate-600">
-                <p>
-                  <span className="text-slate-400 block">Full Name</span>
-                  <strong className="text-slate-800">{client.full_name}</strong>
-                </p>
-                <p>
-                  <span className="text-slate-400 block">Email Address</span>
-                  <a href={`mailto:${client.email}`} className="text-orange-600 underline">
-                    {client.email}
-                  </a>
-                </p>
-                <p>
-                  <span className="text-slate-400 block">Mobile Number</span>
-                  <strong className="text-slate-800">{client.phone}</strong>
-                </p>
-              </div>
-            </div>
-          </div>
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-3">
+              <h3 className="font-extrabold text-[#073B5C] text-sm">Audit Trail</h3>
+              <ol className="space-y-3 text-xs">
+                {order.statusLogs.map((log) => (
+                  <li key={log.id} className="border-l-2 border-[#0E7490] pl-3">
+                    <div className="flex justify-between gap-2 text-slate-500">
+                      <strong className="text-slate-700">{log.status.replace(/_/g, ' ')}</strong>
+                      <span className="shrink-0">{new Date(log.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    </div>
+                    {log.remarks && <p className="text-slate-600">{log.remarks}</p>}
+                    <p className="text-[10px] text-slate-400">by {log.actor?.name || 'System'}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </aside>
         </div>
       </div>
     </main>

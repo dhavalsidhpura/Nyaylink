@@ -1,130 +1,81 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { apiHandler, clientIp, HttpError, orderAccess, requireUser } from '@/lib/authz';
+import { MAX_UPLOAD_BYTES, newStorageKey, putObject, sha256, sniffFileType } from '@/lib/storage';
 
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const orderId = formData.get('orderId') as string;
-    const rawReqId = formData.get('documentRequirementId') as string | null;
-    const documentName = (formData.get('documentName') as string) || 'Document';
+const CLOSED_STATUSES = ['APPROVED', 'REJECTED'];
 
-    if (!file || !orderId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required file or order ID' },
-        { status: 400 }
-      );
-    }
+export const POST = apiHandler(async (request: Request) => {
+  const user = await requireUser();
+  const form = await request.formData();
+  const file = form.get('file');
+  const orderId = String(form.get('orderId') || '');
+  const requirementKey = String(form.get('requirementKey') || '') || null;
 
-    // 1. Fetch order details
-    const order = await prisma.orders.findUnique({
-      where: { id: orderId },
-      select: { id: true, service_id: true },
-    });
+  if (!(file instanceof File) || !orderId) throw new HttpError(400, 'A file and order are required.');
+  if (file.size === 0) throw new HttpError(400, 'The file is empty.');
+  if (file.size > MAX_UPLOAD_BYTES) throw new HttpError(413, 'Files must be 10 MB or smaller.');
 
-    if (!order) {
-      return NextResponse.json(
-        { success: false, error: 'Order not found' },
-        { status: 404 }
-      );
-    }
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { service: { include: { requirements: true } } },
+  });
+  const access = order ? orderAccess(user, order) : null;
+  if (!order || !access) throw new HttpError(404, 'Order not found.');
+  const isCaseworker = access === 'staff';
+  if (CLOSED_STATUSES.includes(order.status)) throw new HttpError(409, 'This application is closed for uploads.');
 
-    // 2. Resolve document_requirement_id
-    let docReqId: string;
-    const isUuid =
-      rawReqId &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawReqId);
+  const requirement = requirementKey ? order.service.requirements.find((r) => r.key === requirementKey) : null;
+  if (requirementKey && !requirement) throw new HttpError(400, 'Unknown document requirement.');
 
-    if (isUuid && rawReqId) {
-      docReqId = rawReqId;
-    } else {
-      let req = await prisma.service_document_requirements.findFirst({
-        where: {
-          service_id: order.service_id,
-          document_name: documentName,
-        },
-      });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const type = sniffFileType(buffer);
+  if (!type) throw new HttpError(415, 'Only PDF, JPG and PNG files are accepted.');
 
-      if (!req) {
-        req = await prisma.service_document_requirements.create({
-          data: {
-            service_id: order.service_id,
-            document_name: documentName,
-            description: `Required document for ${documentName}`,
-          },
-        });
-      }
-
-      docReqId = req.id;
-    }
-
-    // 3. Save physical file to public/uploads
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
-    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${uniqueSuffix}-${sanitizedFileName}`;
-    const filePath = path.join(uploadDir, filename);
-
-    await writeFile(filePath, buffer);
-
-    const fileUrl = `/uploads/${filename}`;
-    const fileSizeInt = Math.floor(file.size);
-
-    // 4. Save to PostgreSQL order_documents table with file_size included
-    const existingDoc = await prisma.order_documents.findFirst({
-      where: {
-        order_id: orderId,
-        document_requirement_id: docReqId,
-      },
-    });
-
-    if (existingDoc) {
-      await prisma.order_documents.update({
-        where: { id: existingDoc.id },
-        data: {
-          file_url: fileUrl,
-          file_name: file.name,
-          file_size: fileSizeInt,
-        },
-      });
-    } else {
-      await prisma.order_documents.create({
-        data: {
-          order_id: orderId,
-          document_requirement_id: docReqId,
-          file_url: fileUrl,
-          file_name: file.name,
-          file_size: fileSizeInt,
-        },
-      });
-    }
-
-    // 5. Log activity
-    await prisma.order_status_logs.create({
-      data: {
-        order_id: orderId,
-        status: 'document_uploaded',
-        remarks: `Uploaded document: ${documentName} (${file.name})`,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      fileUrl,
-      fileName: file.name,
-    });
-  } catch (error: any) {
-    console.error('File upload error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process document upload' },
-      { status: 500 }
-    );
+  // Re-upload: the latest version for this requirement is superseded, keeping full history.
+  const previous = requirementKey
+    ? await prisma.vaultDocument.findFirst({
+        where: { orderId, requirementKey, status: { not: 'SUPERSEDED' } },
+        orderBy: { version: 'desc' },
+      })
+    : null;
+  if (previous?.status === 'VERIFIED' && !isCaseworker) {
+    throw new HttpError(409, 'This document is already verified. Contact your compliance desk to replace it.');
   }
-}
+
+  const storageKey = newStorageKey(order.clientId, type.ext);
+  await putObject(storageKey, buffer, type.mime);
+
+  const name = requirement?.label || String(form.get('documentName') || '').slice(0, 120) || file.name.slice(0, 120);
+  const document = await prisma.$transaction(async (tx) => {
+    if (previous) await tx.vaultDocument.update({ where: { id: previous.id }, data: { status: 'SUPERSEDED' } });
+    const doc = await tx.vaultDocument.create({
+      data: {
+        name,
+        requirementKey,
+        storageKey,
+        originalName: file.name.slice(0, 200),
+        mimeType: type.mime,
+        sizeBytes: file.size,
+        sha256: sha256(buffer),
+        version: (previous?.version ?? 0) + 1,
+        supersedesId: previous?.id,
+        category: order.service.category,
+        ownerId: order.clientId,
+        orderId: order.id,
+      },
+    });
+    await tx.documentAccessLog.create({ data: { documentId: doc.id, userId: user.id, action: 'UPLOAD', ip: clientIp(request) } });
+    await tx.orderStatusLog.create({
+      data: {
+        orderId: order.id,
+        status: 'DOCUMENT_UPLOADED',
+        remarks: `${previous ? 'Re-uploaded' : 'Uploaded'}: ${name}${previous ? ` (v${doc.version})` : ''}`,
+        actorId: user.id,
+      },
+    });
+    return doc;
+  });
+
+  return NextResponse.json({ success: true, documentId: document.id, version: document.version }, { status: 201 });
+});

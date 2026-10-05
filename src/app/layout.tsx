@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Providers from '@/components/Providers';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,12 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col min-h-screen">
-        {children}
-        <Footer />
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="lazyOnload"
-        />
+        <Providers>{children}</Providers>
+        <div className="print:hidden">
+          <Footer />
+        </div>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
   );

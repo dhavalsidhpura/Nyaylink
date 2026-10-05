@@ -83,8 +83,8 @@ export default function Header() {
       <div className="bg-nyaya-navy text-slate-300 text-xs py-2 px-4 border-b border-slate-700/50 relative z-50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-6">
-            <a href="tel:+918068929400" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              📞 <strong className="text-white">+91 8068929400</strong> (Mon-Sat 9AM-7PM)
+            <a href="tel:+919920054785" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
+              📞 <strong className="text-white">+91 9920054785</strong> (Mon-Sat 9AM-7PM)
             </a>
             <a href="mailto:info@nyayalink.com" className="hidden sm:flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
               ✉️ info@nyayalink.com
@@ -99,10 +99,10 @@ export default function Header() {
               Client Login
             </Link>
             <Link
-              href="/admin/orders"
+              href="/lawyer/join"
               className="text-slate-400 hover:text-white underline font-medium text-xs"
             >
-              Operations Console
+              For Advocates
             </Link>
           </div>
         </div>
@@ -270,7 +270,13 @@ export default function Header() {
               href="/#catalog-section"
               className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
             >
-              All 55 Services
+              All Services
+            </Link>
+            <Link
+              href="/vakil"
+              className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
+            >
+              वकील Search
             </Link>
           </nav>
 

@@ -6,8 +6,15 @@ dist/
 build/
 .next/
 *.log
+*.tsbuildinfo
 
 # Local uploaded legal documents
 public/uploads/
 
 .env
+
+# Private KYC document storage (local driver)
+storage/
+
+# Scratch & test scripts
+test_api.py

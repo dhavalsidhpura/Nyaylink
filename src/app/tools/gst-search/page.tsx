@@ -5,15 +5,11 @@ import Link from 'next/link';
 
 interface GSTData {
   gstin: string;
-  legalName: string;
-  tradeName: string;
-  status: string;
-  taxpayerType: string;
-  stateCode: string;
   stateName: string;
-  registrationDate: string;
-  address: string;
-  filingStatus: { returnType: string; period: string; status: string }[];
+  stateGstCode: string;
+  pan: string;
+  holderType: string;
+  registrationNumber: number;
 }
 
 export default function GSTSearchTool() {
@@ -45,19 +41,11 @@ export default function GSTSearchTool() {
 
       setData({
         gstin: json.gstin,
-        legalName: json.legalName,
-        tradeName: json.tradeName,
-        status: json.status,
-        taxpayerType: 'Regular Taxpayer',
-        stateCode: json.stateCode,
         stateName: json.stateName,
-        registrationDate: '14/06/2021',
-        address: json.principalAddress,
-        filingStatus: [
-          { returnType: 'GSTR-3B', period: 'July 2026', status: 'FILED' },
-          { returnType: 'GSTR-1', period: 'July 2026', status: 'FILED' },
-          { returnType: 'GSTR-3B', period: 'August 2026', status: 'PENDING' },
-        ],
+        stateGstCode: json.stateGstCode,
+        pan: json.pan,
+        holderType: json.holderType,
+        registrationNumber: json.registrationNumber,
       });
     } catch {
       setErrorMsg('GSTN portal lookup service temporarily unavailable.');
@@ -82,13 +70,13 @@ export default function GSTSearchTool() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full flex-grow space-y-8">
         <div className="text-center space-y-3">
           <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-            🧾 GSTN Public Portal Engine
+            🧾 GSTIN Decoder
           </span>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#073B5C]">
-            Live GSTIN Verification & Filing Status
+            GSTIN Format & Check-Digit Verification
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Verify official business trade names, active GST standing, and monthly return filing records.
+            Instantly check whether a GSTIN is well-formed and see the state, PAN and entity type encoded in it.
           </p>
         </div>
 
@@ -132,49 +120,37 @@ export default function GSTSearchTool() {
                     <h3 className="font-mono text-base font-extrabold text-[#0E7490]">{data.gstin}</h3>
                   </div>
                   <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full text-[10px] uppercase">
-                    Status: {data.status}
+                    ✓ Check digit valid
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Legal Entity Name</span>
-                    <strong className="text-slate-900">{data.legalName}</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Registered State</span>
+                    <strong>{data.stateName} (Code: {data.stateGstCode})</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Trade Name</span>
-                    <strong className="text-slate-900">{data.tradeName}</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Embedded PAN</span>
+                    <strong className="font-mono">{data.pan}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Jurisdiction State</span>
-                    <strong>{data.stateName} (Code: {data.stateCode})</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Entity Type (from PAN)</span>
+                    <strong>{data.holderType}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Principal Address</span>
-                    <span className="text-[11px] leading-tight block">{data.address}</span>
+                    <span className="text-slate-400 block text-[10px] uppercase">Registration # under this PAN in state</span>
+                    <strong>{data.registrationNumber}</strong>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 space-y-2">
-                  <span className="font-bold text-[#073B5C] block">Recent Return Filing Records:</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {data.filingStatus.map((ret, i) => (
-                      <div key={i} className="p-2.5 bg-white rounded-xl border flex justify-between items-center text-[11px]">
-                        <div>
-                          <strong>{ret.returnType}</strong>
-                          <span className="text-slate-400 block text-[10px]">{ret.period}</span>
-                        </div>
-                        <span
-                          className={`text-[9px] font-extrabold px-2 py-0.5 rounded ${
-                            ret.status === 'FILED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {ret.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <p className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+                  A valid format does not confirm the registration is active. For the legal name, status and return filing
+                  history, search on the{' '}
+                  <a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" className="text-[#0E7490] font-bold underline">
+                    official GST portal
+                  </a>
+                  .
+                </p>
 
                 <div className="pt-2">
                   <Link

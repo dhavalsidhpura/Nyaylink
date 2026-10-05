@@ -7,20 +7,47 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ==========================================
+// ENUMS
+// ==========================================
+
 enum Role {
   SUPER_ADMIN
   OPS_MANAGER
   CA_CS_LEAD
   COMPLIANCE_EXEC
   FINANCE_MANAGER
+  LAWYER
   CLIENT
 }
 
 enum OrderStatus {
-  SUBMITTED
+  PENDING_PAYMENT
+  DOCS_PENDING
   IN_PROGRESS
   QUERY_RAISED
   APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentKind {
+  FULL // professional fee + govt fee + GST, collected at checkout
+  MILESTONE // additional instalment requested by ops (e.g. extra govt fee / stamp duty)
+  CONSULTATION // वकील Search consultation booking
 }
 
 enum LeadStatus {
@@ -34,29 +61,97 @@ enum DocStatus {
   PENDING_REVIEW
   VERIFIED
   REJECTED
+  SUPERSEDED
 }
 
 enum TxnType {
   CLIENT_PAYMENT
   GOVT_FEES_DEBIT
   CA_PAYOUT
+  LAWYER_PAYOUT
   REFUND
 }
 
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String?
-  password  String
-  role      Role     @default(CLIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum LawyerVerification {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
 
-  orders         Order[]         @relation("ClientOrders")
-  assignedOrders Order[]         @relation("AssignedCAOrders")
-  documents      VaultDocument[]
-  leads          Lead[]          @relation("AssignedLeads")
+enum ConsultationMode {
+  VIDEO
+  PHONE
+  IN_PERSON
+}
+
+enum ConsultationStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+}
+
+// ==========================================
+// IDENTITY, AUTH & CONSENT (DPDP)
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?   @unique
+  password      String? // null for OTP-only accounts
+  role          Role      @default(CLIENT)
+  state         String? // billing state code (e.g. "MH") — drives CGST/SGST vs IGST
+  gstin         String?
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orders         Order[]          @relation("ClientOrders")
+  assignedOrders Order[]          @relation("AssignedCAOrders")
+  documents      VaultDocument[]  @relation("DocumentOwner")
+  reviewedDocs   VaultDocument[]  @relation("DocumentReviewer")
+  leads          Lead[]           @relation("AssignedLeads")
+  statusLogs     OrderStatusLog[]
+  messages       OrderMessage[]
+  consents       Consent[]
+  accessLogs     DocumentAccessLog[]
+  lawyerProfile  LawyerProfile?
+  consultations  Consultation[]   @relation("ClientConsultations")
+}
+
+model OtpCode {
+  id         String    @id @default(cuid())
+  identifier String // normalised email or +91 phone
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, createdAt])
+}
+
+model Consent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  purpose   String // e.g. "TERMS_PRIVACY", "KYC_PROCESSING"
+  version   String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Lead {
@@ -72,54 +167,154 @@ model Lead {
   createdAt      DateTime   @default(now())
 }
 
-model Service {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  category      String
-  startingPrice Float
-  govtFeeNote   String
-  sla           String
-  sacCode       String   @default("998221")
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  orders        Order[]
+// Monotonic counters for gap-free invoice numbers and readable order numbers.
+model Counter {
+  key   String @id
+  value Int    @default(0)
 }
+
+// ==========================================
+// SERVICE CATALOG (single source of truth for pricing)
+// ==========================================
+
+model Service {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  category        String
+  professionalFee Decimal  @db.Decimal(12, 2)
+  govtFee         Decimal  @default(0) @db.Decimal(12, 2) // fixed govt fee collected upfront (pass-through, no GST)
+  govtFeeNote     String
+  gstRate         Decimal  @default(18) @db.Decimal(5, 2)
+  sla             String
+  sacCode         String   @default("998221")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders       Order[]
+  requirements ServiceDocRequirement[]
+}
+
+model ServiceDocRequirement {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  key       String
+  label     String
+  required  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  @@unique([serviceId, key])
+}
+
+// ==========================================
+// ORDERS, PAYMENTS, INVOICES
+// ==========================================
 
 model Order {
-  id           String      @id @default(cuid())
-  orderNumber  String      @unique
-  srn          String      @unique
-  serviceId    String
-  service      Service     @relation(fields: [serviceId], references: [id])
-  clientId     String
-  client       User        @relation("ClientOrders", fields: [clientId], references: [id])
-  assignedCAId String?
-  assignedCA   User?       @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
-  amount       Float
-  govtFee      Float       @default(0)
-  status       OrderStatus @default(SUBMITTED)
-  state        String      @default("MH")
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  srn             String?       @unique // government SRN / ARN — set by the CA once issued
+  idempotencyKey  String?       @unique
+  serviceId       String
+  service         Service       @relation(fields: [serviceId], references: [id])
+  clientId        String
+  client          User          @relation("ClientOrders", fields: [clientId], references: [id])
+  assignedCAId    String?
+  assignedCA      User?         @relation("AssignedCAOrders", fields: [assignedCAId], references: [id])
+  professionalFee Decimal       @db.Decimal(12, 2)
+  govtFee         Decimal       @default(0) @db.Decimal(12, 2)
+  gstAmount       Decimal       @db.Decimal(12, 2)
+  totalAmount     Decimal       @db.Decimal(12, 2)
+  amountPaid      Decimal       @default(0) @db.Decimal(12, 2)
+  status          OrderStatus   @default(PENDING_PAYMENT)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  clientState     String        @default("MH")
+  intakeData      Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  documents VaultDocument[]
-  invoices  Invoice[]
-  ledger    LedgerEntry[]
+  documents  VaultDocument[]
+  invoices   Invoice[]
+  ledger     LedgerEntry[]
+  statusLogs OrderStatusLog[]
+  payments   Payment[]
+  messages   OrderMessage[]
+
+  @@index([clientId])
+  @@index([assignedCAId])
 }
 
-model VaultDocument {
-  id           String    @id @default(cuid())
-  name         String
-  fileUrl      String
-  category     String
-  status       DocStatus @default(PENDING_REVIEW)
-  rejectNote   String?
-  ownerId      String
-  owner        User      @relation(fields: [ownerId], references: [id])
-  orderId      String?
-  order        Order?    @relation(fields: [orderId], references: [id])
-  uploadedAt   DateTime  @default(now())
+model Payment {
+  id               String               @id @default(cuid())
+  kind             PaymentKind
+  status           PaymentAttemptStatus @default(CREATED)
+  amount           Decimal              @db.Decimal(12, 2)
+  // amount = taxableAmount + gstAmount + pass-through (govt fees / advocate fee collected on their behalf)
+  taxableAmount    Decimal              @default(0) @db.Decimal(12, 2)
+  gstAmount        Decimal              @default(0) @db.Decimal(12, 2)
+  description      String
+  gatewayOrderId   String?              @unique
+  gatewayPaymentId String?              @unique
+  orderId          String?
+  order            Order?               @relation(fields: [orderId], references: [id])
+  consultationId   String?
+  consultation     Consultation?        @relation(fields: [consultationId], references: [id])
+  capturedAt       DateTime?
+  createdAt        DateTime             @default(now())
+
+  invoice Invoice?
+
+  @@index([orderId])
+  @@index([consultationId])
+}
+
+model OrderStatusLog {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  status    String // OrderStatus value or an event like DOCUMENT_UPLOADED
+  remarks   String?
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model OrderMessage {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  body       String
+  isInternal Boolean  @default(false) // staff-only note, hidden from client
+  isQuery    Boolean  @default(false) // staff query that needs a client response
+  createdAt  DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  invoiceNo      String   @unique
+  orderId        String?
+  order          Order?   @relation(fields: [orderId], references: [id])
+  paymentId      String?  @unique
+  payment        Payment? @relation(fields: [paymentId], references: [id])
+  billedToName   String
+  billedToGstin  String?
+  placeOfSupply  String // state code
+  sacCode        String   @default("998221")
+  taxableAmount  Decimal  @db.Decimal(12, 2)
+  cgst           Decimal  @default(0) @db.Decimal(12, 2)
+  sgst           Decimal  @default(0) @db.Decimal(12, 2)
+  igst           Decimal  @default(0) @db.Decimal(12, 2)
+  reimbursements Decimal  @default(0) @db.Decimal(12, 2) // govt fees collected as pure agent (outside GST value)
+  totalAmount    Decimal  @db.Decimal(12, 2)
+  createdAt      DateTime @default(now())
 }
 
 model LedgerEntry {
@@ -127,36 +322,163 @@ model LedgerEntry {
   txnNo       String   @unique
   type        TxnType
   description String
-  debit       Float    @default(0)
-  credit      Float    @default(0)
-  balance     Float
+  debit       Decimal  @default(0) @db.Decimal(12, 2)
+  credit      Decimal  @default(0) @db.Decimal(12, 2)
   mode        String   @default("RAZORPAY")
   orderId     String?
   order       Order?   @relation(fields: [orderId], references: [id])
   createdAt   DateTime @default(now())
 }
 
-model Invoice {
-  id            String   @id @default(cuid())
-  invoiceNo     String   @unique
-  orderId       String
-  order         Order    @relation(fields: [orderId], references: [id])
-  sacCode       String   @default("998221")
-  taxableAmount Float
-  cgst          Float
-  sgst          Float
-  igst          Float    @default(0)
-  totalAmount   Float
-  createdAt     DateTime @default(now())
+// ==========================================
+// DOCUMENT VAULT (private storage + access audit)
+// ==========================================
+
+model VaultDocument {
+  id             String    @id @default(cuid())
+  name           String
+  requirementKey String? // ServiceDocRequirement.key this file satisfies
+  storageKey     String    @unique
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  sha256         String
+  version        Int       @default(1)
+  supersedesId   String?   @unique
+  supersedes     VaultDocument? @relation("DocumentVersions", fields: [supersedesId], references: [id])
+  supersededBy   VaultDocument? @relation("DocumentVersions")
+  category       String
+  status         DocStatus @default(PENDING_REVIEW)
+  rejectNote     String?
+  ownerId        String
+  owner          User      @relation("DocumentOwner", fields: [ownerId], references: [id])
+  orderId        String?
+  order          Order?    @relation(fields: [orderId], references: [id])
+  reviewedById   String?
+  reviewedBy     User?     @relation("DocumentReviewer", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?
+  uploadedAt     DateTime  @default(now())
+
+  accessLogs DocumentAccessLog[]
+
+  @@index([orderId])
+  @@index([ownerId])
 }
 
-model ServicePricing {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  category        String
-  baseFee         Float    // NyayaLink Professional Fee (e.g., 6999)
-  govtFeeNote     String   // Display note (e.g., "₹0 MCA + State Stamp Duty")
-  isActive        Boolean  @default(true)
-  updatedAt       DateTime @updatedAt
+model DocumentAccessLog {
+  id         String        @id @default(cuid())
+  documentId String
+  document   VaultDocument @relation(fields: [documentId], references: [id])
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  action     String // UPLOAD | DOWNLOAD | REVIEW
+  ip         String?
+  createdAt  DateTime      @default(now())
+
+  @@index([documentId])
+}
+
+// ==========================================
+// वकील SEARCH — LAWYER MARKETPLACE
+// ==========================================
+
+model PracticeArea {
+  id      String          @id @default(cuid())
+  slug    String          @unique
+  name    String
+  lawyers LawyerProfile[]
+}
+
+model LawyerProfile {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id])
+  slug                String             @unique
+  barCouncil          String // e.g. "Bar Council of Maharashtra & Goa"
+  enrollmentNo        String             @unique
+  enrollmentYear      Int
+  verification        LawyerVerification @default(PENDING)
+  verificationNote    String?
+  verifiedAt          DateTime?
+  isListed            Boolean            @default(true)
+  bio                 String
+  city                String
+  languages           String[]
+  courts              String[]
+  consultationFee     Decimal            @db.Decimal(12, 2)
+  consultationMinutes Int                @default(30)
+  modes               ConsultationMode[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  practiceAreas PracticeArea[]
+  availability  AvailabilityRule[]
+  timeOff       LawyerTimeOff[]
+  consultations Consultation[]
+  payouts       Payout[]
+
+  @@index([city])
+}
+
+// Weekly recurring availability, expressed in IST minutes-from-midnight.
+model AvailabilityRule {
+  id          String        @id @default(cuid())
+  lawyerId    String
+  lawyer      LawyerProfile @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+  weekday     Int // 0 = Sunday … 6 = Saturday
+  startMinute Int
+  endMinute   Int
+
+  @@index([lawyerId])
+}
+
+model LawyerTimeOff {
+  id       String        @id @default(cuid())
+  lawyerId String
+  lawyer   LawyerProfile @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+  startsAt DateTime
+  endsAt   DateTime
+  reason   String?
+}
+
+model Consultation {
+  id            String             @id @default(cuid())
+  number        String             @unique
+  lawyerId      String
+  lawyer        LawyerProfile      @relation(fields: [lawyerId], references: [id])
+  clientId      String
+  client        User               @relation("ClientConsultations", fields: [clientId], references: [id])
+  startsAt      DateTime
+  endsAt        DateTime
+  mode          ConsultationMode
+  status        ConsultationStatus @default(PENDING_PAYMENT)
+  holdExpiresAt DateTime? // unpaid bookings release the slot after this
+  fee           Decimal            @db.Decimal(12, 2)
+  platformFee   Decimal            @db.Decimal(12, 2)
+  gstAmount     Decimal            @db.Decimal(12, 2)
+  totalAmount   Decimal            @db.Decimal(12, 2)
+  clientNotes   String? // intake: what the client needs help with
+  lawyerNotes   String? // private to the lawyer
+  meetingUrl    String?
+  payoutId      String?
+  payout        Payout?            @relation(fields: [payoutId], references: [id])
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  payments Payment[]
+
+  @@index([lawyerId, startsAt])
+  @@index([clientId])
+}
+
+model Payout {
+  id            String         @id @default(cuid())
+  lawyerId      String
+  lawyer        LawyerProfile  @relation(fields: [lawyerId], references: [id])
+  amount        Decimal        @db.Decimal(12, 2)
+  status        PayoutStatus   @default(PENDING)
+  reference     String? // bank UTR
+  paidAt        DateTime?
+  createdAt     DateTime       @default(now())
+  consultations Consultation[]
 }

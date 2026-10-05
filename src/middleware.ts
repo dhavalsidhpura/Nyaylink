@@ -1,26 +1,57 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export function middleware(request: NextRequest) {
+// Edge-level gate (defence in depth). Every route handler still calls requireUser/requireRole,
+// which re-checks the role against the database.
+const STAFF_ROLES = ['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'];
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // 1. Simulating Admin Route Protection (/admin)
-  if (pathname.startsWith('/admin')) {
-    // In production, verify session cookie / JWT token role here
-    const authHeader = request.headers.get('authorization');
-    console.log(`🔒 Accessing Admin Console: ${pathname}`);
-    
-    // Pass through for now, or redirect to login if unauthenticated
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    return new NextResponse('Server misconfigured: NEXTAUTH_SECRET is not set.', { status: 500 });
   }
 
-  // 2. Simulating Customer Dashboard Route Protection (/dashboard)
-  if (pathname.startsWith('/dashboard')) {
-    console.log(`👤 Accessing Client Dashboard: ${pathname}`);
+  const token = await getToken({ req: request, secret });
+  const role = token?.role as string | undefined;
+  const isApi = pathname.startsWith('/api/');
+
+  const deny = (status: 401 | 403) => {
+    if (isApi) {
+      return NextResponse.json(
+        { success: false, error: status === 401 ? 'Please sign in to continue.' : 'Forbidden.' },
+        { status }
+      );
+    }
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
+  };
+
+  if (!token) return deny(401);
+
+  if ((pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) && !STAFF_ROLES.includes(role || '')) {
+    return deny(403);
+  }
+
+  if ((pathname.startsWith('/lawyer/dashboard') || pathname.startsWith('/api/lawyer/')) && role !== 'LAWYER') {
+    // /api/lawyer/apply is open to any signed-in user who wants to join.
+    if (pathname !== '/api/lawyer/apply') return deny(403);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/dashboard/:path*',
+    '/orders/:path*',
+    '/invoices/:path*',
+    '/lawyer/dashboard/:path*',
+    '/lawyer/join',
+    '/api/admin/:path*',
+    '/api/lawyer/:path*',
+  ],
 };

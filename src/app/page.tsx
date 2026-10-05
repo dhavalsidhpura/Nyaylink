@@ -31,9 +31,28 @@ export default function HomePage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleQuickFormSubmit = (e: React.FormEvent) => {
+  const handleQuickFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingQuick(true);
+
+    const selectedService = servicesList.find((s) => s.slug === quickService);
+
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: quickName,
+          phone: quickPhone,
+          email: quickEmail,
+          source: 'Homepage Quick Filing Form',
+          complianceType: selectedService?.title || quickService,
+        }),
+      });
+    } catch (err) {
+      console.error('Lead capture failed, continuing to checkout:', err);
+    }
+
     // Redirect directly into the dedicated service intake flow with prefilled data
     const queryParams = new URLSearchParams({
       name: quickName,
@@ -52,7 +71,7 @@ export default function HomePage() {
           <div className="flex items-center gap-6">
             <span>📍 Mumbai HQ: Charkop, Kandivali West</span>
             <span>📞 Direct Desk: <strong>+91 9920054785</strong></span>
-            <span>✉️ compliance@nyayalink.com</span>
+            <span>✉️ info@nyayalink.com</span>
           </div>
           <div className="flex items-center gap-4 text-[#F4B942] font-semibold">
             <span>⚡ ISO 9001:2015 Certified Portal</span>
@@ -629,30 +648,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Full Footer */}
-      <footer className="bg-[#052840] text-slate-300 text-xs pt-12 pb-8 border-t border-[#0E7490]/40 antialiased">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-700/60 pb-6">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow">
-                Nyaya<span className="text-[#F4B942]">Link</span>
-              </Link>
-              <span className="text-xs text-slate-400">Corporate Legal Tech Portal</span>
-            </div>
-            <div className="flex gap-4 text-xs text-slate-300">
-              <Link href="/tools/company-name-search" className="hover:text-white">MCA Search</Link>
-              <Link href="/tools/trademark-search" className="hover:text-white">TM Finder</Link>
-              <Link href="/tools/gst-search" className="hover:text-white">GST Lookup</Link>
-              <Link href="/dashboard" className="text-[#F4B942] font-bold">Client Login</Link>
-            </div>
-          </div>
-          <div className="text-center text-[10px] text-slate-400">
-            © 2026 NyayaLink Tech Solutions Private Limited. Charkop, Kandivali West, Mumbai 400067.
-          </div>
-        </div>
-      </footer>
-
-      {/* 10. Sticky Action Bar for Mobile Devices */}
+      {/* 9. Sticky Action Bar for Mobile Devices */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-2.5 px-4 flex items-center justify-between z-50 border-t border-cyan-800 shadow-2xl">
         <a
           href="tel:+919920054785"
