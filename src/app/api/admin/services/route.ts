@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { apiHandler, HttpError, requireRole, ROLE_GROUPS } from '@/lib/authz';
-import { syncCatalog, syncServiceRequirements, requirementKey } from '@/lib/catalog';
+import { syncCatalog, syncServiceRequirements, requirementKey, invalidateServiceCache } from '@/lib/catalog';
 import { plain } from '@/lib/serialize';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +49,7 @@ export const PATCH = apiHandler(async (req: Request) => {
     data,
     include: { requirements: { orderBy: { sortOrder: 'asc' } } },
   });
+  invalidateServiceCache();
   return NextResponse.json({ success: true, service: plain(service) });
 });
 
@@ -109,5 +110,6 @@ export const POST = apiHandler(async (req: Request) => {
     include: { requirements: { orderBy: { sortOrder: 'asc' } } },
   });
 
+  invalidateServiceCache();
   return NextResponse.json({ success: true, service: plain(created) }, { status: 201 });
 });

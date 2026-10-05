@@ -41,7 +41,8 @@ export default function HomePage() {
   const [servicesList, setServicesList] = useState<typeof MASTER_SERVICES>(MASTER_SERVICES || []);
 
   useEffect(() => {
-    fetch('/api/services')
+    const controller = new AbortController();
+    fetch('/api/services', { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         if (data?.success && Array.isArray(data.services) && data.services.length > 0) {
@@ -67,7 +68,13 @@ export default function HomePage() {
           setServicesList(Array.from(map.values()));
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          // ignore network failures silently as master data is already loaded
+        }
+      });
+
+    return () => controller.abort();
   }, []);
 
   // Close hero search on click outside
