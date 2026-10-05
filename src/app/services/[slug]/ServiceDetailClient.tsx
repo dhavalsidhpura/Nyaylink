@@ -6,7 +6,12 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { MASTER_SERVICES } from '@/data/services';
 import { getServiceStructure } from '@/data/serviceDetails';
-import { computeQuote, formatINR, INDIAN_STATES } from '@/lib/pricing';
+import {
+  computeQuote,
+  formatINR,
+  INDIAN_STATES,
+  getStateStampDuty,
+} from '@/lib/pricing';
 import { openRazorpayCheckout } from '@/lib/checkout-client';
 
 export interface ServicePricing {
@@ -18,8 +23,28 @@ export interface ServicePricing {
   sacCode: string;
 }
 
-const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 const DRAFT_KEY = (slug: string) => `nyayalink:intake:${slug}`;
+
+// Dynamic document icons mapping based on document keyword
+function getDocIcon(docText: string): { icon: string; title: string } {
+  const lower = docText.toLowerCase();
+  if (lower.includes('pan') || lower.includes('aadhaar') || lower.includes('id proof') || lower.includes('passport')) {
+    return { icon: '🪪', title: 'Identity Proof (PAN / Aadhaar)' };
+  }
+  if (lower.includes('address') || lower.includes('electricity') || lower.includes('utility') || lower.includes('bank statement')) {
+    return { icon: '⚡', title: 'Address & Utility Proof' };
+  }
+  if (lower.includes('rent') || lower.includes('noc') || lower.includes('property') || lower.includes('deed')) {
+    return { icon: '🏢', title: 'Office Premises & NOC' };
+  }
+  if (lower.includes('photo') || lower.includes('dsc') || lower.includes('signature') || lower.includes('specimen')) {
+    return { icon: '📸', title: 'Photographs & Digital Signature' };
+  }
+  if (lower.includes('license') || lower.includes('certificate') || lower.includes('registration') || lower.includes('moa')) {
+    return { icon: '📜', title: 'Prior Registrations / Charter' };
+  }
+  return { icon: '📄', title: 'Statutory Documentation' };
+}
 
 function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
   const params = useParams();
@@ -44,33 +69,37 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
   };
 
   const details = getServiceStructure(slug);
+  const isStateSpecificService = masterService.category === 'company-reg' || slug.includes('incorporation') || slug.includes('company') || slug.includes('llp');
 
   const { data: session, status: sessionStatus } = useSession();
   const signedIn = sessionStatus === 'authenticated';
 
-  // Form States
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  // Selection states
+  const [selectedState, setSelectedState] = useState('MH');
+  const [payAdvance, setPayAdvance] = useState(true); // true = ₹999 impulse advance, false = full amount
+
+  // Modals
+  const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+
+  // Quick Checkout Form in Modal
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [panNumber, setPanNumber] = useState('');
-
-  const [businessName, setBusinessName] = useState(prefilledName);
-  const [selectedState, setSelectedState] = useState('MH');
-  const [consent, setConsent] = useState(false);
+  const [entityName, setEntityName] = useState(prefilledName);
+  const [consent, setConsent] = useState(true);
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
   const [pendingOrder, setPendingOrder] = useState<string | null>(null);
-  // One key per checkout attempt: double-clicks and retries return the same order instead of duplicates.
   const idempotencyKey = useRef<string>('');
 
   useEffect(() => {
-    if (prefilledName) setBusinessName(prefilledName);
+    if (prefilledName) setEntityName(prefilledName);
   }, [prefilledName]);
 
-  // Restore a draft saved before the user was sent to sign in.
+  // Restore draft saved before auth redirect
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY(slug));
@@ -78,9 +107,9 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
       const d = JSON.parse(raw);
       setFullName(d.fullName || '');
       setPhone(d.phone || '');
-      setPanNumber(d.panNumber || '');
-      setBusinessName(d.businessName || prefilledName);
+      setEntityName(d.entityName || prefilledName);
       setSelectedState(d.selectedState || 'MH');
+      if (d.openCheckout) setIsCheckoutModalOpen(true);
     } catch {
       /* storage unavailable */
     }
@@ -90,25 +119,69 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
     if (signedIn && !fullName && session?.user?.name) setFullName(session.user.name);
   }, [signedIn, session, fullName]);
 
-  const panValid = PAN_REGEX.test(panNumber);
-  const quote = useMemo(
-    () => (pricing ? computeQuote(pricing, selectedState) : null),
-    [pricing, selectedState]
+  // Pricing calculations
+  const baseProfFee = pricing ? pricing.professionalFee : masterService.price;
+  const gstRate = pricing?.gstRate || 18;
+  const stateStamp = useMemo(() => getStateStampDuty(selectedState), [selectedState]);
+
+  // Compute GST on professional fee
+  const baseQuote = useMemo(
+    () =>
+      computeQuote(
+        { professionalFee: baseProfFee, govtFee: isStateSpecificService ? stateStamp.amount : (pricing?.govtFee || 0), gstRate },
+        selectedState
+      ),
+    [baseProfFee, isStateSpecificService, stateStamp.amount, pricing?.govtFee, gstRate, selectedState]
   );
-  const totalDue = quote?.total ?? masterService.price;
+
+  const dynamicGovtFee = isStateSpecificService ? stateStamp.amount : (pricing?.govtFee || 0);
+  const totalEstimatedCost = baseQuote.total;
+  const advanceAmount = Math.min(999, totalEstimatedCost);
+  const activePayAmount = payAdvance ? advanceAmount : totalEstimatedCost;
+
+  // Simplified 3-4 document pills from details.specificDocs
+  const simplifiedDocs = useMemo(() => {
+    const list = details.specificDocs || [];
+    const seenTitles = new Set<string>();
+    const result: { icon: string; title: string; original: string }[] = [];
+
+    for (const d of list) {
+      const parsed = getDocIcon(d);
+      if (!seenTitles.has(parsed.title)) {
+        seenTitles.add(parsed.title);
+        result.push({ icon: parsed.icon, title: parsed.title, original: d });
+      }
+      if (result.length >= 4) break;
+    }
+
+    // Fallbacks if fewer than 3
+    if (result.length === 0) {
+      result.push(
+        { icon: '🪪', title: 'PAN & Aadhaar / Identity', original: 'Director / Applicant Identification Proof' },
+        { icon: '⚡', title: 'Registered Address Proof', original: 'Electricity bill under 2 months old' },
+        { icon: '🏢', title: 'No-Objection Certificate', original: 'NOC from commercial premises owner' },
+        { icon: '📸', title: 'Passport Photo & Specimen', original: 'Color passport photograph' }
+      );
+    }
+    return result;
+  }, [details.specificDocs]);
 
   const saveDraftAndSignIn = () => {
     try {
-      sessionStorage.setItem(DRAFT_KEY(slug), JSON.stringify({ fullName, phone, panNumber, businessName, selectedState }));
+      sessionStorage.setItem(
+        DRAFT_KEY(slug),
+        JSON.stringify({ fullName, phone, entityName, selectedState, openCheckout: true })
+      );
     } catch {
       /* storage unavailable */
     }
-    router.push(`/login?callbackUrl=${encodeURIComponent(`/services/${slug}#intake-form-section`)}`);
+    router.push(`/login?callbackUrl=${encodeURIComponent(`/services/${slug}`)}`);
   };
 
-  const handlePayment = async (e: React.FormEvent) => {
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signedIn) return saveDraftAndSignIn();
+
     setIsProcessing(true);
     setCheckoutError('');
     if (!idempotencyKey.current) idempotencyKey.current = crypto.randomUUID();
@@ -120,13 +193,21 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
         body: JSON.stringify({
           serviceSlug: slug,
           clientState: selectedState,
-          consent,
-          intake: { applicantName: fullName, applicantPan: panNumber, mobile: phone, entityName: businessName },
+          consent: true,
+          isAdvance: payAdvance,
+          intake: {
+            applicantName: fullName,
+            mobile: phone,
+            entityName: entityName || details.title,
+            selectedState,
+            bookingPlan: payAdvance ? 'ADVANCE_999' : 'FULL_PAYMENT',
+          },
         }),
       });
+
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setCheckoutError(data.error || 'Could not create your order. Please try again.');
+        setCheckoutError(data.error || 'Could not initiate your filing order. Please try again.');
         return;
       }
 
@@ -138,7 +219,8 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
       setPendingOrder(data.orderNumber);
 
       if (!data.checkout) {
-        setCheckoutError(data.paymentError || 'Payment gateway is unavailable. Your order is saved — you can pay from your order page.');
+        // Gateway unavailable - order is saved, redirect to order room
+        router.push(`/orders/${data.orderNumber}`);
         return;
       }
 
@@ -156,8 +238,8 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-20 lg:pb-0">
-      {/* Top Bar */}
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 flex flex-col antialiased pb-28 lg:pb-12">
+      {/* 1. TOP NAV STRIP */}
       <header className="bg-[#073B5C] text-white py-3.5 px-4 sm:px-8 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -169,144 +251,214 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-xs text-white/90 hover:text-white font-semibold">
-              Vault Login
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link href="/vakil" className="text-xs text-[#F4B942] hover:text-amber-300 font-bold transition">
+              👨‍⚖️ Talk to a Lawyer
             </Link>
-            <Link href="/#catalog-section" className="text-xs text-[#F4B942] font-extrabold hover:underline">
+            <Link href="/dashboard" className="text-xs text-white/90 hover:text-white font-semibold">
+              Vault Dashboard
+            </Link>
+            <Link href="/#catalog-section" className="text-xs text-cyan-200 hover:text-white transition">
               ← All Services
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Strip */}
-      <section className="bg-[#073B5C] text-white py-8 sm:py-10 px-4 sm:px-6 border-b border-cyan-900 shadow-inner">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="bg-[#0E7490] text-[#F4B942] font-extrabold text-[10px] uppercase px-3 py-1 rounded-full border border-cyan-400/30">
-                ⚡ {details.badge}
-              </span>
-              <span className="text-cyan-200 text-xs font-mono">SAC: {pricing?.sacCode || masterService.sacCode}</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              {details.title}
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-              {details.whyShouldBuy}
-            </p>
-          </div>
-
-          <div className="flex gap-4 sm:gap-6 bg-white/10 p-3.5 sm:p-4 rounded-2xl border border-white/15 text-xs text-white">
-            <div>
-              <span className="text-slate-300 text-[10px] block uppercase">Timeframe</span>
-              <strong className="text-sm sm:text-base font-extrabold text-[#F4B942]">{details.timeframe}</strong>
-            </div>
-            <div className="border-l border-white/20 pl-4 sm:pl-6">
-              <span className="text-slate-300 text-[10px] block uppercase">Official Fees</span>
-              <strong className="text-sm sm:text-base font-extrabold text-emerald-300">{pricing?.govtFeeNote || masterService.govtFee}</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Dual-Column Content */}
+      {/* 2. MAIN 65/35 GRID LAYOUT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
-          {/* LEFT COLUMN: Structured Pattern Data (7 Cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* ======================================================== */}
+          {/* LEFT COLUMN (65% width): Education, Deliverables & Trust */}
+          {/* ======================================================== */}
+          <div className="lg:col-span-8 space-y-8">
             
-            {/* Block 1: Who Should Buy & Why You Should Buy */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-[#073B5C] font-extrabold text-sm">
-                  <span>🎯</span>
-                  <h4>Who Should Buy</h4>
+            {/* HERO SECTION */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="bg-[#073B5C] text-[#F4B942] font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-cyan-400/20 shadow-sm">
+                  ⚡ {details.badge || 'Govt Portal Assured'}
+                </span>
+                <span className="bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md">
+                  SAC: {pricing?.sacCode || masterService.sacCode}
+                </span>
+                <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
+                  <span>★ 4.9/5</span>
+                  <span className="text-slate-400 font-normal">(1,200+ filings)</span>
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl font-black text-[#073B5C] tracking-tight leading-tight">
+                {details.title}
+              </h1>
+
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-3xl font-medium">
+                {details.whyShouldBuy}
+              </p>
+
+              {/* Trust Badges Ribbon */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
+                  <span className="text-lg">🛡️</span>
+                  <div>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">100% Verified</strong>
+                    <span className="text-[10px] text-slate-500">CA/CS Supervised</span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
+                  <span className="text-lg">⏱️</span>
+                  <div>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Fast Track SLA</strong>
+                    <span className="text-[10px] text-slate-500">{pricing?.sla || masterService.sla}</span>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
+                  <span className="text-lg">🔒</span>
+                  <div>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Encrypted Vault</strong>
+                    <span className="text-[10px] text-slate-500">256-Bit SSL Cloud</span>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2.5">
+                  <span className="text-lg">🧾</span>
+                  <div>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px]">Official Invoicing</strong>
+                    <span className="text-[10px] text-slate-500">GST Input Credit</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 2: OFFICIAL DELIVERABLES INCLUDED (SaaS PRICING FEATURE STYLE) */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
+                    <span>📦</span> Official Deliverables Included
+                  </h2>
+                  <p className="text-xs text-slate-500">Statutory assets delivered directly to your encrypted customer vault upon approval.</p>
+                </div>
+                <span className="hidden sm:inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
+                  All-Inclusive Kit
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {details.deliverables.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 hover:border-cyan-400/50 rounded-2xl transition-all shadow-xs space-y-1.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#0E7490] text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                        ✓
+                      </span>
+                      <strong className="text-xs sm:text-sm font-extrabold text-[#073B5C] leading-snug">
+                        {item.title}
+                      </strong>
+                    </div>
+                    <p className="text-xs text-slate-600 pl-7 leading-relaxed font-normal">
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION 3: SIMPLIFIED DOCUMENTS (PROGRESSIVE DISCLOSURE GRID) */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
+                    <span>📁</span> Required Documents
+                  </h2>
+                  <p className="text-xs text-slate-500">Simple smartphone photos or clear scans. Uploaded privately right after booking.</p>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400">
+                  {details.specificDocs.length} items total
+                </span>
+              </div>
+
+              {/* 3-4 Horizontal Document Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                {simplifiedDocs.map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 bg-gradient-to-b from-slate-50 to-white border border-slate-200 rounded-2xl flex flex-col items-center text-center space-y-1.5 hover:border-[#0E7490] transition shadow-xs"
+                  >
+                    <span className="text-2xl">{doc.icon}</span>
+                    <strong className="text-[11px] font-extrabold text-[#073B5C] leading-tight line-clamp-2">
+                      {doc.title}
+                    </strong>
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
+                      Required
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Progressive Disclosure Link */}
+              <div className="pt-2 flex items-center justify-between text-xs">
+                <button
+                  type="button"
+                  onClick={() => setIsDocsModalOpen(true)}
+                  className="font-extrabold text-[#0E7490] hover:text-[#073B5C] hover:underline flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>📋 + View complete documentation guidelines ({details.specificDocs.length} items)</span>
+                  <span>→</span>
+                </button>
+                <span className="text-[11px] text-slate-400 hidden sm:inline">PDF, JPG, PNG accepted (up to 10MB)</span>
+              </div>
+            </div>
+
+            {/* SECTION 4: WHO SHOULD APPLY & WHY BUY */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-2">
+                <div className="flex items-center gap-2 text-[#073B5C] font-extrabold text-sm border-b border-slate-100 pb-2">
+                  <span className="text-lg">🎯</span>
+                  <h3>Who Should Apply</h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal pt-1">
                   {details.whoShouldBuy}
                 </p>
               </div>
 
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-[#073B5C] font-extrabold text-sm">
-                  <span>💡</span>
-                  <h4>Why You Should Buy</h4>
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-2">
+                <div className="flex items-center gap-2 text-[#073B5C] font-extrabold text-sm border-b border-slate-100 pb-2">
+                  <span className="text-lg">💡</span>
+                  <h3>Strategic Advantage</h3>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed font-normal pt-1">
                   {details.whyShouldBuy}
                 </p>
               </div>
             </div>
 
-            {/* Block 2: Specific Documents Required */}
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-4">
-              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                <div>
-                  <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2">
-                    <span>📁</span> Specific Documents Required
-                  </h3>
-                  <p className="text-xs text-slate-500">Keep clear colour scans or phone photos ready — you&apos;ll upload them in your order page right after payment:</p>
-                </div>
-                <span className="bg-cyan-100 text-[#0E7490] text-[10px] font-extrabold px-2.5 py-1 rounded-full">
-                  {details.specificDocs.length} Requirements
-                </span>
-              </div>
-
-              <div className="space-y-2 text-xs">
-                {details.specificDocs.map((doc, idx) => (
-                  <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-start gap-2.5">
-                    <span className="text-emerald-700 font-extrabold text-sm mt-0.5">✓</span>
-                    <span className="text-slate-700 font-medium leading-relaxed">{doc}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Block 3: Important Considerations */}
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-amber-200/80 bg-amber-50/20 shadow-sm space-y-3">
-              <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2 border-b border-amber-200/60 pb-3">
-                <span>⚠️</span> Important Regulatory Considerations
-              </h3>
-
-              <div className="space-y-2 text-xs">
-                {details.importantConsiderations.map((note, idx) => (
-                  <div key={idx} className="flex items-start gap-2.5 text-slate-700">
-                    <span className="text-amber-600 font-black">•</span>
-                    <span className="leading-relaxed">{note}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Block 4: Deliverables Kit */}
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-4">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2">
-                  <span>📦</span> Official Deliverables Included
+            {/* SECTION 5: REGULATORY CONSIDERATIONS */}
+            {details.importantConsiderations && details.importantConsiderations.length > 0 && (
+              <div className="bg-amber-50/50 rounded-3xl p-6 border border-amber-200 shadow-xs space-y-3">
+                <h3 className="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
+                  <span>⚠️</span> Important Statutory & Regulatory Considerations
                 </h3>
-                <p className="text-xs text-slate-500">Delivered directly to your encrypted customer vault upon approval.</p>
+                <div className="space-y-1.5 text-xs text-amber-900 leading-relaxed">
+                  {details.importantConsiderations.map((note, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="font-bold text-amber-600">•</span>
+                      <span>{note}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                {details.deliverables.map((item, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
-                    <strong className="text-[#073B5C] font-bold block">{item.title}</strong>
-                    <p className="text-slate-500 text-[11px] leading-tight">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Block 5: FAQs Accordion */}
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-4">
-              <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C] flex items-center gap-2 border-b border-slate-100 pb-3">
-                <span>💡</span> Frequently Asked Questions
+            {/* SECTION 6: FAQS ACCORDION */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+              <h3 className="text-lg sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span>💬</span> Frequently Asked Questions
               </h3>
 
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2.5 text-xs">
                 {details.faqs.map((faq, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden">
                     <button
@@ -314,11 +466,11 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
                       onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                       className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
                     >
-                      <span>{faq.q}</span>
-                      <span className="text-sm text-slate-400 font-mono">{openFaq === idx ? '−' : '+'}</span>
+                      <span className="pr-4">{faq.q}</span>
+                      <span className="text-base text-[#0E7490] font-mono shrink-0">{openFaq === idx ? '−' : '+'}</span>
                     </button>
                     {openFaq === idx && (
-                      <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                      <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100 font-normal">
                         {faq.a}
                       </div>
                     )}
@@ -329,286 +481,377 @@ function ServiceDetailContent({ pricing }: { pricing: ServicePricing | null }) {
 
           </div>
 
-          {/* RIGHT COLUMN: Sticky 3-Step Intake Widget (5 Cols) */}
-          <div className="lg:col-span-5" id="intake-form-section">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xl space-y-6 sticky top-20">
+          {/* ======================================================== */}
+          {/* RIGHT COLUMN (35% width): Sticky "Split-Ticket" Card     */}
+          {/* ======================================================== */}
+          <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
+            <div className="bg-white rounded-3xl border-2 border-slate-200/90 p-6 sm:p-7 shadow-xl space-y-5">
               
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="font-extrabold text-[#073B5C] text-base sm:text-lg">Filing Intake Form</h3>
-                  <span className="text-[11px] text-slate-400">Step {currentStep} of 3 • CA Supervised Desk</span>
+              {/* Header with Fast-Track Badge */}
+              <div className="space-y-1 border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between">
+                  <span className="bg-cyan-100 text-[#0E7490] font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                    ⚡ Fast-Track Filing
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-bold">CA Supervised</span>
                 </div>
-                <div className="flex gap-1.5">
-                  <span className={`w-2.5 h-2.5 rounded-full ${currentStep >= 1 ? 'bg-[#0E7490]' : 'bg-slate-200'}`}></span>
-                  <span className={`w-2.5 h-2.5 rounded-full ${currentStep >= 2 ? 'bg-[#0E7490]' : 'bg-slate-200'}`}></span>
-                  <span className={`w-2.5 h-2.5 rounded-full ${currentStep === 3 ? 'bg-[#0E7490]' : 'bg-slate-200'}`}></span>
+                <h3 className="font-black text-[#073B5C] text-lg sm:text-xl">
+                  {details.title}
+                </h3>
+              </div>
+
+              {/* STATE SELECTION DROPDOWN */}
+              <div className="space-y-1.5">
+                <label htmlFor="card-state" className="block text-xs font-bold text-[#073B5C]">
+                  {isStateSpecificService ? 'Select Incorporation State' : 'Select Operational State (GST)'}
+                </label>
+                <select
+                  id="card-state"
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-extrabold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490] cursor-pointer"
+                >
+                  {INDIAN_STATES.map((st) => (
+                    <option key={st.code} value={st.code}>
+                      {st.name} {isStateSpecificService && stateStamp.baseStamp ? `(₹${(stateStamp.baseStamp + 131).toLocaleString()} Stamp)` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-400">
+                  {isStateSpecificService
+                    ? `Stamp Duty calculated automatically for ${stateStamp.breakdown}.`
+                    : 'Determines Place of Supply for valid GST tax invoice.'}
+                </p>
+              </div>
+
+              {/* PRICING BREAKDOWN MATRIX */}
+              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 font-medium">NyayaLink Professional Fee</span>
+                  <strong className="text-slate-900 font-extrabold">{formatINR(baseProfFee)}</strong>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 font-medium">GST @ {gstRate}%</span>
+                  <strong className="text-slate-900 font-extrabold">{formatINR(baseQuote.gstAmount)}</strong>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 font-medium flex items-center gap-1">
+                    <span>Govt Stamp Duty & Fee</span>
+                    {isStateSpecificService && <span className="text-[10px] text-emerald-700 font-bold">(Live)</span>}
+                  </span>
+                  <strong className="text-slate-900 font-extrabold">
+                    {dynamicGovtFee > 0 ? formatINR(dynamicGovtFee) : '₹0 (At Actuals)'}
+                  </strong>
+                </div>
+
+                <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm font-black text-[#073B5C]">
+                  <span>Total Estimated Outlay</span>
+                  <span className="text-base text-slate-900">{formatINR(totalEstimatedCost)}</span>
                 </div>
               </div>
 
-              <form onSubmit={handlePayment} className="space-y-4 text-xs">
-                
-                {/* Step 1: Applicant Identity & PAN */}
-                {currentStep === 1 && (
-                  <div className="space-y-3.5">
-                    {!signedIn && sessionStatus !== 'loading' && (
-                      <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C] flex flex-col gap-2">
-                        <span>
-                          Sign in with a one-time code to save this application to your vault. Your answers here are kept.
-                        </span>
-                        <button type="button" onClick={saveDraftAndSignIn} className="self-start font-bold underline cursor-pointer">
-                          Sign in / Create account →
-                        </button>
-                      </div>
-                    )}
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label htmlFor="pan" className="font-bold text-[#073B5C]">Applicant / Director PAN</label>
-                        {panNumber.length === 10 && (
-                          <span className={`font-extrabold text-[10px] ${panValid ? 'text-emerald-700' : 'text-rose-700'}`}>
-                            {panValid ? '✓ Format valid' : 'Invalid format'}
-                          </span>
-                        )}
-                      </div>
-                      <input
-                        id="pan"
-                        type="text"
-                        maxLength={10}
-                        autoComplete="off"
-                        value={panNumber}
-                        onChange={(e) => setPanNumber(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                        placeholder="ABCDE1234F"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">Checked against Income Tax records by our CA team during document review.</p>
-                    </div>
+              {/* SPLIT-TICKET PROPOSITION BOX */}
+              <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-200/90 rounded-2xl text-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-emerald-800 tracking-wider">
+                    💳 Split-Ticket Option
+                  </span>
+                  <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+                    Save Capital
+                  </span>
+                </div>
 
-                    <div>
-                      <label htmlFor="fullName" className="block font-bold text-[#073B5C] mb-1">Applicant Full Name (as on PAN) *</label>
-                      <input
-                        id="fullName"
-                        type="text"
-                        required
-                        autoComplete="name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                    </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPayAdvance(true)}
+                    className={`flex-1 py-2 px-2.5 rounded-xl border text-[11px] font-bold text-center cursor-pointer transition ${
+                      payAdvance
+                        ? 'bg-white text-emerald-800 border-emerald-400 shadow-xs'
+                        : 'bg-transparent text-slate-500 border-transparent hover:bg-white/60'
+                    }`}
+                  >
+                    <div>₹999 Advance</div>
+                    <div className="text-[9px] font-normal text-slate-400">Balance later</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayAdvance(false)}
+                    className={`flex-1 py-2 px-2.5 rounded-xl border text-[11px] font-bold text-center cursor-pointer transition ${
+                      !payAdvance
+                        ? 'bg-white text-[#073B5C] border-cyan-400 shadow-xs'
+                        : 'bg-transparent text-slate-500 border-transparent hover:bg-white/60'
+                    }`}
+                  >
+                    <div>Pay Full {formatINR(totalEstimatedCost)}</div>
+                    <div className="text-[9px] font-normal text-slate-400">One-time</div>
+                  </button>
+                </div>
 
-                    <div>
-                      <label htmlFor="phone" className="block font-bold text-[#073B5C] mb-1">Mobile Number (+91) *</label>
-                      <input
-                        id="phone"
-                        type="tel"
-                        inputMode="numeric"
-                        autoComplete="tel"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="10-digit mobile"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                    </div>
+                <p className="text-[10px] text-slate-500 leading-tight">
+                  {payAdvance
+                    ? 'Start name reservation and document drafting today for ₹999. Remaining balance is billed after CA verification.'
+                    : 'Complete payment upfront. Direct fast-track filing into statutory portal queue.'}
+                </p>
+              </div>
 
-                    {signedIn && (
-                      <p className="text-[11px] text-slate-500">
-                        Invoices and updates go to <strong>{session?.user?.email}</strong>.
-                      </p>
-                    )}
+              {/* THE IMPULSE CTA BUTTON */}
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsCheckoutModalOpen(true)}
+                  className="w-full bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-sm py-4 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
+                >
+                  <span>Start Now for {formatINR(activePayAmount)} {payAdvance ? 'Advance' : ''} →</span>
+                </button>
 
-                    <button
-                      type="button"
-                      disabled={!fullName || phone.replace(/\D/g, '').length < 10 || (panNumber.length > 0 && !panValid)}
-                      onClick={() => setCurrentStep(2)}
-                      className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-white font-extrabold text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer"
-                    >
-                      Continue to Details →
-                    </button>
-                  </div>
-                )}
+                {/* SLA BADGE DIRECTLY UNDER CTA */}
+                <div className="p-2.5 bg-cyan-50/70 border border-cyan-200/80 rounded-xl text-center">
+                  <span className="text-xs font-extrabold text-[#073B5C] flex items-center justify-center gap-1.5">
+                    <span>⚡ Typical Turnaround:</span>
+                    <span className="text-[#0E7490]">{pricing?.sla || masterService.sla}</span>
+                  </span>
+                </div>
+              </div>
 
-                {/* Step 2: Entity Name & State */}
-                {currentStep === 2 && (
-                  <div className="space-y-3.5">
-                    <div>
-                      <label className="font-bold text-[#073B5C] block mb-1">Proposed Entity / Brand / Case Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        placeholder="e.g. Acme Enterprises / Brand Name"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                    </div>
+              {/* TRUST SIGNALS */}
+              <div className="pt-1 space-y-1.5 text-[11px] text-slate-500 text-center font-medium">
+                <div className="flex items-center justify-center gap-3 text-slate-600 font-semibold text-[10px]">
+                  <span>🔒 256-Bit SSL</span>
+                  <span>•</span>
+                  <span>🛡️ 100% Name Guarantee</span>
+                  <span>•</span>
+                  <span>🤝 Zero Hidden Fees</span>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Government stamp duty is strictly pass-through at actuals. Never marked up.
+                </p>
+              </div>
 
-                    <div>
-                      <label htmlFor="state" className="block font-bold text-[#073B5C] mb-1">Operational State *</label>
-                      <select
-                        id="state"
-                        value={selectedState}
-                        onChange={(e) => setSelectedState(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-bold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      >
-                        {INDIAN_STATES.map((st) => (
-                          <option key={st.code} value={st.code}>
-                            {st.name}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-[10px] text-slate-400 mt-1">Determines registration jurisdiction and GST (CGST+SGST vs IGST).</p>
-                    </div>
-
-                    <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C]">
-                      <span>Filing Service: <strong>{details.title}</strong></span>
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(1)}
-                        className="w-1/3 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl cursor-pointer"
-                      >
-                        ← Back
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!businessName}
-                        onClick={() => setCurrentStep(3)}
-                        className="w-2/3 bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-white font-extrabold py-3 rounded-xl uppercase tracking-wider transition cursor-pointer"
-                      >
-                        Review Quotation →
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 3: Quotation & Checkout */}
-                {currentStep === 3 && (
-                  <div className="space-y-4">
-                    {quote ? (
-                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Professional fee</span>
-                          <strong className="text-slate-900">{formatINR(quote.professionalFee)}</strong>
-                        </div>
-                        {quote.gst.intraState ? (
-                          <>
-                            <div className="flex justify-between">
-                              <span className="text-slate-600">CGST @ {quote.gstRate / 2}%</span>
-                              <strong className="text-slate-900">{formatINR(quote.gst.cgst)}</strong>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-600">SGST @ {quote.gstRate / 2}%</span>
-                              <strong className="text-slate-900">{formatINR(quote.gst.sgst)}</strong>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="flex justify-between">
-                            <span className="text-slate-600">IGST @ {quote.gstRate}%</span>
-                            <strong className="text-slate-900">{formatINR(quote.gst.igst)}</strong>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Government fees (at actuals, no GST)</span>
-                          <strong className="text-slate-900">{quote.govtFee > 0 ? formatINR(quote.govtFee) : 'Billed separately'}</strong>
-                        </div>
-                        {pricing?.govtFeeNote && <p className="text-[10px] text-slate-500">{pricing.govtFeeNote}</p>}
-                        <div className="flex justify-between border-t border-slate-200 pt-2 font-extrabold text-[#073B5C] text-sm">
-                          <span>Pay now</span>
-                          <span className="text-emerald-700">{formatINR(quote.total)}</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500">
-                          Any state stamp duty or additional government fee is requested separately at actuals, with a receipt — never marked up.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900">
-                        Online checkout isn&apos;t available for this service yet. Please call us for a quote.
-                      </div>
-                    )}
-
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
-                      <span className="font-bold block text-[#073B5C]">What happens next</span>
-                      <span>1. Pay securely via Razorpay · 2. Upload the {details.specificDocs.length} documents listed · 3. A CA/CS reviews and files · 4. Track it all in your dashboard.</span>
-                    </div>
-
-                    <label className="flex items-start gap-2 text-[11px] text-slate-600">
-                      <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 accent-[#0E7490]" />
-                      <span>
-                        I consent to NyayaLink and its empanelled professionals processing my KYC documents (PAN, Aadhaar etc.) solely to
-                        deliver this service, and I agree to the{' '}
-                        <Link href="/terms" target="_blank" className="text-[#0E7490] underline">Terms</Link>,{' '}
-                        <Link href="/privacy" target="_blank" className="text-[#0E7490] underline">Privacy Policy</Link> and{' '}
-                        <Link href="/refund-policy" target="_blank" className="text-[#0E7490] underline">Refund Policy</Link>. Government
-                        approval timelines depend on the authority and are not guaranteed.
-                      </span>
-                    </label>
-
-                    {checkoutError && (
-                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-800 font-semibold space-y-1" role="alert">
-                        <span className="block">{checkoutError}</span>
-                        {pendingOrder && (
-                          <Link href={`/orders/${pendingOrder}`} className="underline font-bold">Open order {pendingOrder} →</Link>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(2)}
-                        className="w-1/3 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl cursor-pointer"
-                      >
-                        ← Back
-                      </button>
-                      {signedIn ? (
-                        <button
-                          type="submit"
-                          disabled={isProcessing || !quote || !consent}
-                          className="w-2/3 bg-[#F4B942] hover:bg-amber-500 disabled:bg-slate-300 text-[#073B5C] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          {isProcessing ? 'Opening secure payment…' : `Pay ${formatINR(totalDue)} →`}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={saveDraftAndSignIn}
-                          className="w-2/3 bg-[#073B5C] text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider shadow-md cursor-pointer"
-                        >
-                          Sign in to continue →
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-400 text-center">
-                      NyayaLink is a legal-technology platform, not a law firm. Services are delivered by independent, qualified CAs, CSs and advocates.
-                    </p>
-                  </div>
-                )}
-
-              </form>
             </div>
           </div>
 
         </div>
       </main>
 
-      {/* Floating Bottom Bar for Mobile Devices */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-3 px-4 flex items-center justify-between z-40 border-t border-cyan-800 shadow-2xl">
-        <div>
-          <span className="text-[10px] text-slate-300 block">{quote ? 'Total incl. GST' : 'Starting at'}</span>
-          <strong className="text-base font-black text-[#F4B942]">{formatINR(totalDue)}</strong>
+      {/* ======================================================== */}
+      {/* 3. MOBILE FIXED BOTTOM SHEET / BAR (lg:hidden)          */}
+      {/* ======================================================== */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-3.5 px-4 flex items-center justify-between z-40 border-t border-cyan-800 shadow-2xl">
+        <div className="space-y-0.5">
+          <span className="text-[10px] text-cyan-200 font-bold block uppercase tracking-wider">
+            {payAdvance ? 'Booking Token' : 'Total Package'}
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <strong className="text-lg font-black text-[#F4B942]">
+              {formatINR(activePayAmount)}
+            </strong>
+            {payAdvance && (
+              <span className="text-[10px] text-slate-300">
+                (Total: {formatINR(totalEstimatedCost)})
+              </span>
+            )}
+          </div>
         </div>
+
         <button
-          onClick={() => {
-            const formElem = document.getElementById('intake-form-section');
-            formElem?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="bg-[#F4B942] text-[#073B5C] font-black text-xs px-5 py-2.5 rounded-xl uppercase tracking-wider shadow cursor-pointer"
+          type="button"
+          onClick={() => setIsCheckoutModalOpen(true)}
+          className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider shadow cursor-pointer active:scale-95 transition"
         >
-          Apply Now ↑
+          Start for {formatINR(activePayAmount)} →
         </button>
       </div>
+
+      {/* ======================================================== */}
+      {/* 4. EXPRESS CHECKOUT MODAL                                */}
+      {/* ======================================================== */}
+      {isCheckoutModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                  Express Filing Setup
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
+                  {details.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCheckoutModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center cursor-pointer transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-xs">
+              
+              {!signedIn && (
+                <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C]">
+                  <span>⚡ An account will be created automatically using your phone or email to track your filing.</span>
+                </div>
+              )}
+
+              {/* Applicant Name */}
+              <div>
+                <label className="block font-bold text-[#073B5C] mb-1">
+                  Applicant Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Rahul Sharma"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                />
+              </div>
+
+              {/* Mobile Number */}
+              <div>
+                <label className="block font-bold text-[#073B5C] mb-1">
+                  WhatsApp / Mobile Number (+91) *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="10-digit mobile number"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                />
+              </div>
+
+              {/* Proposed Name / Brand */}
+              <div>
+                <label className="block font-bold text-[#073B5C] mb-1">
+                  Proposed Company / Brand / Entity Name
+                </label>
+                <input
+                  type="text"
+                  value={entityName}
+                  onChange={(e) => setEntityName(e.target.value)}
+                  placeholder="e.g. Acme Innovations (can finalize later with CA)"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                />
+              </div>
+
+              {/* Selected State & Amount Summary */}
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-500 block">Jurisdiction: {selectedState}</span>
+                  <strong className="text-slate-800 text-xs">
+                    {payAdvance ? '₹999 Booking Token' : 'Full Payment'}
+                  </strong>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 block">Total Package:</span>
+                  <strong className="text-emerald-700 text-xs font-black">
+                    {formatINR(totalEstimatedCost)}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Consent checkbox */}
+              <label className="flex items-start gap-2 text-[10px] text-slate-500 leading-tight">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 accent-[#0E7490]"
+                />
+                <span>
+                  I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link> and{' '}
+                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>. Documents are securely verified by certified CAs.
+                </span>
+              </label>
+
+              {checkoutError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
+                  {checkoutError}
+                  {pendingOrder && (
+                    <div className="pt-1">
+                      <Link href={`/orders/${pendingOrder}`} className="underline text-[#073B5C]">
+                        Open Saved Order #{pendingOrder} →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* CTA in Modal */}
+              <button
+                type="submit"
+                disabled={isProcessing || !fullName || phone.length < 10}
+                className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isProcessing ? 'Connecting Gateway…' : `Confirm & Pay ${formatINR(activePayAmount)} →`}
+              </button>
+
+              <p className="text-[9px] text-slate-400 text-center">
+                🔒 256-Bit SSL Encrypted. Invoices and tracking sent immediately.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 5. ALL REQUIREMENTS FULL MODAL                          */}
+      {/* ======================================================== */}
+      {isDocsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                  Document Checklist
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
+                  All Required Documents
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDocsModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center cursor-pointer transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="overflow-y-auto space-y-2.5 text-xs pr-1">
+              <p className="text-slate-500 text-[11px] pb-1">
+                You do not need these immediately. You can book now and upload them anytime inside your secure Vault:
+              </p>
+              {details.specificDocs.map((doc, idx) => (
+                <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-start gap-2.5">
+                  <span className="text-emerald-700 font-black text-sm mt-0.5">✓</span>
+                  <span className="text-slate-700 font-medium leading-relaxed">{doc}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-xs">
+              <span className="text-slate-400 text-[11px]">Format: PDF, PNG, JPG (&lt; 10MB)</span>
+              <button
+                type="button"
+                onClick={() => setIsDocsModalOpen(false)}
+                className="bg-[#073B5C] text-[#F4B942] font-bold px-4 py-2 rounded-xl cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

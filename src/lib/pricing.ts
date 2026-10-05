@@ -112,3 +112,38 @@ export function formatINR(amount: number | string): string {
   if (!Number.isFinite(n)) return '₹0';
   return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
 }
+
+export interface StateStampRule {
+  name: string;
+  baseStamp: number;
+  panTanFee: number;
+  note: string;
+}
+
+export const STATE_STAMP_RULES: Record<string, StateStampRule> = {
+  MH: { name: 'Maharashtra', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  DL: { name: 'Delhi', baseStamp: 300, panTanFee: 131, note: '₹300 Stamp + ₹131 PAN/TAN' },
+  KA: { name: 'Karnataka', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  GJ: { name: 'Gujarat', baseStamp: 500, panTanFee: 131, note: '₹500 Stamp + ₹131 PAN/TAN' },
+  UP: { name: 'Uttar Pradesh', baseStamp: 500, panTanFee: 131, note: '₹500 Stamp + ₹131 PAN/TAN' },
+  PB: { name: 'Punjab', baseStamp: 2000, panTanFee: 131, note: '₹2,000 Stamp + ₹131 PAN/TAN' },
+  TN: { name: 'Tamil Nadu', baseStamp: 800, panTanFee: 131, note: '₹800 Stamp + ₹131 PAN/TAN' },
+  TS: { name: 'Telangana', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  WB: { name: 'West Bengal', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  RJ: { name: 'Rajasthan', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  HR: { name: 'Haryana', baseStamp: 600, panTanFee: 131, note: '₹600 Stamp + ₹131 PAN/TAN' },
+  KL: { name: 'Kerala', baseStamp: 2000, panTanFee: 131, note: '₹2,000 Stamp + ₹131 PAN/TAN' },
+  AP: { name: 'Andhra Pradesh', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  MP: { name: 'Madhya Pradesh', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  BR: { name: 'Bihar', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+  OD: { name: 'Odisha', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
+};
+
+export function getStateStampDuty(stateCode: string): { amount: number; breakdown: string; baseStamp: number } {
+  const rule = STATE_STAMP_RULES[stateCode] || { name: 'Standard State Rate', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' };
+  return {
+    amount: rule.baseStamp + rule.panTanFee,
+    breakdown: rule.note,
+    baseStamp: rule.baseStamp,
+  };
+}

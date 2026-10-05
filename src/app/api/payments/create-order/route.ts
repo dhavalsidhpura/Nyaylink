@@ -15,6 +15,7 @@ const schema = z.object({
   clientState: z.string().length(2).refine(isValidState, 'unknown state'),
   intake: z.record(z.string().max(500)).default({}),
   consent: z.literal(true, { errorMap: () => ({ message: 'Please accept the terms and KYC consent to continue.' }) }),
+  isAdvance: z.boolean().optional(),
 });
 
 async function tryCheckout(paymentId: string, userId: string) {
@@ -39,7 +40,7 @@ export const POST = apiHandler(async (request: Request) => {
   if (idempotencyKey) {
     const existing = await prisma.order.findUnique({
       where: { idempotencyKey },
-      include: { payments: { where: { kind: 'FULL' } } },
+      include: { payments: { where: { status: { in: ['CREATED', 'FAILED'] } }, orderBy: { createdAt: 'desc' } } },
     });
     if (existing) {
       if (existing.clientId !== user.id) throw new HttpError(409, 'Idempotency key already used.');
@@ -57,6 +58,12 @@ export const POST = apiHandler(async (request: Request) => {
     body.clientState
   );
 
+  const isAdvance = body.isAdvance === true;
+  const advanceAmount = Math.min(999, quote.total);
+  const paymentAmount = isAdvance ? advanceAmount : quote.total;
+  const paymentTaxable = isAdvance ? Math.round((advanceAmount / 1.18) * 100) / 100 : quote.professionalFee;
+  const paymentGst = isAdvance ? Math.round((advanceAmount - paymentTaxable) * 100) / 100 : quote.gstAmount;
+
   let created;
   try {
     created = await prisma.$transaction(async (tx) => {
@@ -72,16 +79,16 @@ export const POST = apiHandler(async (request: Request) => {
           totalAmount: quote.total,
           clientState: body.clientState,
           intakeData: body.intake,
-          statusLogs: { create: { status: 'PENDING_PAYMENT', remarks: 'Order created, awaiting payment.', actorId: user.id } },
+          statusLogs: { create: { status: 'PENDING_PAYMENT', remarks: isAdvance ? 'Order initialized with ₹999 booking advance.' : 'Order created, awaiting payment.', actorId: user.id } },
         },
       });
       const payment = await tx.payment.create({
         data: {
-          kind: 'FULL',
-          amount: quote.total,
-          taxableAmount: quote.professionalFee,
-          gstAmount: quote.gstAmount,
-          description: `${service.title} (${order.orderNumber})`,
+          kind: isAdvance ? 'MILESTONE' : 'FULL',
+          amount: paymentAmount,
+          taxableAmount: paymentTaxable,
+          gstAmount: paymentGst,
+          description: isAdvance ? `Booking Advance: ${service.title} (${order.orderNumber})` : `${service.title} (${order.orderNumber})`,
           orderId: order.id,
         },
       });
