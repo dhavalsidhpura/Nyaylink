@@ -314,6 +314,12 @@ export default function HomePage() {
                     <Link href="/services/private-limited-company" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">
                       Private Limited Company <span className="text-[10px] text-emerald-700 ml-1">₹999 Token</span>
                     </Link>
+                    <Link href="/services/startup-india-dpiit-recognition" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-amber-700">
+                      Startup India DPIIT <span className="text-[10px] text-amber-600 ml-1">80-IAC Tax Exemption</span>
+                    </Link>
+                    <Link href="/services/mca-inc-20a-commencement-of-business" className="block p-2 hover:bg-slate-50 rounded-lg">
+                      MCA Form INC-20A (Commencement)
+                    </Link>
                     <Link href="/services/llp-registration" className="block p-2 hover:bg-slate-50 rounded-lg">LLP Registration</Link>
                     <Link href="/services/one-person-company" className="block p-2 hover:bg-slate-50 rounded-lg">One Person Company (OPC)</Link>
                     <Link href="/services/public-limited-company" className="block p-2 hover:bg-slate-50 rounded-lg">Public Limited Company</Link>
@@ -339,6 +345,7 @@ export default function HomePage() {
                       GST Registration <span className="text-[10px] text-emerald-700 ml-1">From ₹999</span>
                     </Link>
                     <Link href="/services/gst-return-filing" className="block p-2 hover:bg-slate-50 rounded-lg">Monthly GST Returns (3B/1)</Link>
+                    <Link href="/services/dir-3-kyc-director-filing" className="block p-2 hover:bg-slate-50 rounded-lg font-semibold text-[#073B5C]">Director DIR-3 KYC Filing</Link>
                     <Link href="/services/income-tax-return-itr" className="block p-2 hover:bg-slate-50 rounded-lg">Income Tax Return (ITR)</Link>
                     <Link href="/services/tds-return-filing" className="block p-2 hover:bg-slate-50 rounded-lg">TDS Return (24Q / 26Q)</Link>
                     <Link href="/services/pf-esic-registration" className="block p-2 hover:bg-slate-50 rounded-lg">PF & ESIC Registration</Link>
@@ -379,8 +386,14 @@ export default function HomePage() {
                   <span>📜</span> Licenses & Permits <span className="text-[10px]">▾</span>
                 </button>
                 {openDropdown === 'lic' && (
-                  <div className="absolute top-full left-0 w-72 bg-white text-slate-800 shadow-2xl rounded-2xl border border-slate-200 p-3 space-y-1 z-50 animate-in fade-in duration-100 text-xs">
-                    <Link href="/services/fssai-food-license" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">FSSAI Food License</Link>
+                  <div className="absolute top-full left-0 w-80 bg-white text-slate-800 shadow-2xl rounded-2xl border border-slate-200 p-3 space-y-1 z-50 animate-in fade-in duration-100 text-xs">
+                    <Link href="/services/msme-udyam-registration" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-emerald-800">
+                      MSME Udyam Registration <span className="text-[10px] text-emerald-600 ml-1">Govt Subsidies</span>
+                    </Link>
+                    <Link href="/services/shop-and-establishment-license" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">
+                      Shop & Establishment (Gumasta)
+                    </Link>
+                    <Link href="/services/fssai-food-license" className="block p-2 hover:bg-slate-50 rounded-lg">FSSAI Food License</Link>
                     <Link href="/services/import-export-code-iec" className="block p-2 hover:bg-slate-50 rounded-lg">Import Export Code (IEC)</Link>
                     <Link href="/services/iso-certification" className="block p-2 hover:bg-slate-50 rounded-lg">ISO 9001:2015 Certification</Link>
                     <Link href="/services/fssai-renewal" className="block p-2 hover:bg-slate-50 rounded-lg">FSSAI Annual Renewal</Link>
