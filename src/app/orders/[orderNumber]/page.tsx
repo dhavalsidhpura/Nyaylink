@@ -87,6 +87,21 @@ export default async function OrderTrackingPage({ params }: Props) {
           <OrderProgress status={order.status} />
         </section>
 
+        {order.paymentStatus === 'PARTIALLY_PAID' && order.status === 'DOCS_PENDING' && (
+          <section className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-2 shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎉</span>
+              <h2 className="text-sm sm:text-base font-extrabold text-emerald-900">
+                Advance Booking Received! Your Dedicated Compliance Desk Is Ready
+              </h2>
+            </div>
+            <p className="text-xs text-emerald-800 leading-relaxed">
+              We have received your ₹{formatINR(order.amountPaid)} booking advance. A Chartered Accountant / Legal Counsel has been assigned to your case. 
+              <strong> Please upload the required documents below</strong> so our team can draft your statutory application and reserve your entity name. The remaining balance will only be billed once your documents are verified.
+            </p>
+          </section>
+        )}
+
         {duePayments.length > 0 && (
           <section className="bg-amber-50 border border-amber-300 rounded-3xl p-5 space-y-3">
             <h2 className="text-sm font-extrabold text-amber-900">Payment due</h2>

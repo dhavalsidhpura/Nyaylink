@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
@@ -20,8 +20,38 @@ export default function HomePage() {
   const [quickState, setQuickState] = useState('Maharashtra');
   const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
 
-  const servicesList = MASTER_SERVICES || [];
+  const [servicesList, setServicesList] = useState<typeof MASTER_SERVICES>(MASTER_SERVICES || []);
   const categoriesList = ALL_CATEGORIES || [];
+
+  useEffect(() => {
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.services) && data.services.length > 0) {
+          const map = new Map<string, any>();
+          for (const s of MASTER_SERVICES) map.set(s.slug, s);
+          for (const s of data.services) {
+            const existing = map.get(s.slug);
+            map.set(s.slug, {
+              id: s.slug,
+              slug: s.slug,
+              title: s.title,
+              category: s.category,
+              price: Number(s.professionalFee),
+              govtFee: s.govtFeeNote || 'Direct statutory portal charges',
+              sla: s.sla || '5–7 working days',
+              sacCode: s.sacCode || '998221',
+              badge: existing?.badge || 'Govt Verified',
+              icon: existing?.icon || '🏢',
+              desc: existing?.desc || 'Professional statutory and legal filing executed by Chartered Accountants.',
+              docs: s.requirements?.map((r: any) => r.label).join(', ') || existing?.docs || 'ID & Address Proof',
+            });
+          }
+          setServicesList(Array.from(map.values()));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredServices = servicesList.filter((service) => {
     const matchesCategory = activeCategory === 'all' || service.category === activeCategory;

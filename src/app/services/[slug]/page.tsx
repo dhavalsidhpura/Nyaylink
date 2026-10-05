@@ -1,8 +1,39 @@
+import type { Metadata } from 'next';
 import { getServiceBySlug } from '@/lib/catalog';
 import { num } from '@/lib/serialize';
+import { formatINR } from '@/lib/pricing';
 import ServiceDetailClient from './ServiceDetailClient';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const service = await getServiceBySlug(params.slug);
+  if (!service) {
+    return {
+      title: 'Legal & Compliance Filing | NyayaLink',
+      description: 'Professional legal and compliance filing portal supervised directly by Chartered Accountants.',
+    };
+  }
+
+  const title = `${service.title} in India | NyayaLink`;
+  const description = `Fast-track ${service.title} with dedicated CA/CS supervision. Transparent professional fee at ${formatINR(num(service.professionalFee))}, statutory government fee transparency, and ₹999 booking advance.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'NyayaLink',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
+}
 
 // Pricing and requirements come directly from the Service table (the same source the checkout API charges from),
 // so changes made in the Admin Console reflect instantly.
