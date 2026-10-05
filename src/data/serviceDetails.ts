@@ -1276,6 +1276,148 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { q: 'Can I file a case after 30 days of cheque bounce?', a: 'If the statutory 30-day notice window is missed, the criminal remedy under Section 138 cannot be filed, though a civil recovery suit may still be pursued.' },
     ],
   },
+
+  // ==========================================
+  // 8. CORE LICENSES & SECRETARIAL ADDITIONS
+  // ==========================================
+  'msme-udyam-registration': {
+    slug: 'msme-udyam-registration',
+    title: 'MSME Udyam Registration',
+    category: 'licenses-permits',
+    badge: 'Govt Subsidies & Benefits',
+    whoShouldBuy: 'Micro, small, and medium enterprises, manufacturing units, service providers, and traders seeking government recognition and subsidies.',
+    whyShouldBuy: 'Unlocks a 50% discount on Trademark government fees (saves ₹4,500), collateral-free bank loans under CGTMSE, lower interest rates, and legal protection against delayed buyer payments under MSMED Act.',
+    timeframe: '24–48 hours for issuance of official green Udyam certificate.',
+    specificDocs: [
+      'Applicant Aadhaar Card (linked with active mobile number for OTP)',
+      'Entity PAN Card (Proprietor PAN for proprietorships, Company PAN for corporate entities)',
+      'Bank Account Number and IFSC code',
+      'Commercial address proof and primary business activity details',
+    ],
+    importantConsiderations: [
+      'Udyam registration is lifetime and does not require annual renewal fees.',
+      'Investment and turnover figures are verified automatically against Income Tax and GSTN databases.',
+    ],
+    deliverables: [
+      { title: 'Official MSME Udyam Registration Certificate', desc: 'Government certificate with permanent Udyam Registration Number and verifiable QR code.' },
+      { title: 'Enterprise Classification Docket', desc: 'Clear classification as Micro, Small, or Medium with eligible government scheme list.' },
+      { title: 'Trademark Fee Subsidy Voucher Guide', desc: 'Step-by-step guidance to claim ₹4,500 government fee waiver on Trademark filings.' },
+    ],
+    faqs: [
+      { q: 'Is Udyam Registration mandatory?', a: 'While not legally mandatory to operate, it is essential to access government subsidies, tender preferences, and trademark fee waivers.' },
+      { q: 'Can traders register under MSME Udyam?', a: 'Yes, wholesale and retail traders are eligible for Udyam registration for priority sector lending benefits.' },
+    ],
+  },
+
+  'shop-and-establishment-license': {
+    slug: 'shop-and-establishment-license',
+    title: 'Shop & Establishment (Gumasta License)',
+    category: 'licenses-permits',
+    badge: 'State Labor Act Registration',
+    whoShouldBuy: 'Every commercial office, retail shop, restaurant, cafe, cloud kitchen, and service firm operating from physical or commercial premises.',
+    whyShouldBuy: 'Mandatory statutory proof of commercial business existence required by municipal corporations, banks for current account opening, and state labor inspectors.',
+    timeframe: '3–7 working days depending on state municipal labor department approval.',
+    specificDocs: [
+      'Electricity Bill / Utility Bill of the commercial premises (< 2 months old)',
+      'Rent Agreement & No-Objection Certificate (NOC) from landlord',
+      'Owner / Partner / Director PAN, Aadhaar, and passport photograph',
+      'Photo of the business storefront with signage display',
+    ],
+    importantConsiderations: [
+      'Must be applied for within 30 days of commencing commercial operations at the physical address.',
+      'Employee working hours, overtime, and mandatory weekly holidays are governed under this act.',
+    ],
+    deliverables: [
+      { title: 'Official Shop & Establishment Registration Certificate', desc: 'Municipal labor department certificate valid across state jurisdiction.' },
+      { title: 'Statutory Labor Compliance Guidelines', desc: 'Summary of mandatory employee registers, working hour limits, and holiday rules.' },
+    ],
+    faqs: [
+      { q: 'Is Shop Act mandatory for home-based businesses or freelancers?', a: 'Yes, if you operate commercially or require a corporate bank current account in states like Maharashtra, Gujarat, and Delhi, banks mandate a Shop Act license.' },
+    ],
+  },
+
+  'startup-india-dpiit-recognition': {
+    slug: 'startup-india-dpiit-recognition',
+    title: 'Startup India DPIIT Recognition',
+    category: 'company-reg',
+    badge: 'Section 80-IAC Tax Exemption',
+    whoShouldBuy: 'Private Limited Companies and LLPs incorporated within the last 10 years working towards innovation, development, or commercialization of new products or scalable tech.',
+    whyShouldBuy: 'Enables 100% income tax exemption for 3 consecutive financial years under Section 80-IAC, angel tax relief under Section 56(2)(viib), and up to 80% rebate on patent fees.',
+    timeframe: '5–10 working days for DPIIT evaluation and certificate allotment.',
+    specificDocs: [
+      'Certificate of Incorporation (CoI) and MoA / AoA',
+      'Detailed Pitch Deck or Business Plan outlining innovation and scalability',
+      'Proof of concept, prototype link, website URL, or patent application (if any)',
+      'Director KYC and declaration of employment/turnover potential',
+    ],
+    importantConsiderations: [
+      'The company must not be formed by splitting up or reconstruction of an existing business.',
+      'Annual turnover must not have exceeded ₹100 Crores in any previous financial year.',
+    ],
+    deliverables: [
+      { title: 'Official DPIIT Recognition Certificate', desc: 'Central Ministry of Commerce certificate with unique DIPP number.' },
+      { title: 'Section 80-IAC Tax Exemption Application Docket', desc: 'Detailed filing preparation for Inter-Ministerial Board (IMB) tax holiday review.' },
+      { title: 'Government Tender EMD Exemption Letter', desc: 'Statutory waiver certificate from prior turnover and experience requirements in public tenders.' },
+    ],
+    faqs: [
+      { q: 'Can an existing profitable company apply for Startup India?', a: 'Yes, as long as it was incorporated less than 10 years ago, turnover is below ₹100 Cr, and the business showcases innovative scalability.' },
+    ],
+  },
+
+  'mca-inc-20a-commencement-of-business': {
+    slug: 'mca-inc-20a-commencement-of-business',
+    title: 'MCA Form INC-20A (Commencement of Business)',
+    category: 'company-reg',
+    badge: '180-Day Mandatory Filing',
+    whoShouldBuy: 'Every Private Limited and Public Limited Company incorporated in India with share capital.',
+    whyShouldBuy: 'Mandatory statutory declaration verifying that subscribers to the Memorandum have deposited their agreed share capital into the corporate bank account. Failure to file incurs a ₹50,000 fine on the company and ₹1,000/day on directors, leading to automatic strike-off.',
+    timeframe: '2–4 working days for CA certification and MCA SRN generation.',
+    specificDocs: [
+      'Bank statement of the company showing deposit of subscription money by all directors/shareholders',
+      'Board Resolution approving Commencement of Business filing',
+      'Proof of registered office address with photograph of external name board',
+      'Class-3 Digital Signature Certificate (DSC) of active Director',
+    ],
+    importantConsiderations: [
+      'Must be filed within 180 days from the date of incorporation.',
+      'The company cannot borrow money or start commercial transactions legally until Form INC-20A is approved.',
+    ],
+    deliverables: [
+      { title: 'MCA Approved Form INC-20A e-Challan', desc: 'Official Ministry of Corporate Affairs filing receipt with unique SRN.' },
+      { title: 'Practicing CA / CS Certification Dossier', desc: 'Statutory scrutiny certification under Section 10A of the Companies Act 2013.' },
+    ],
+    faqs: [
+      { q: 'What happens if we do not file INC-20A within 180 days?', a: 'The Registrar of Companies (ROC) can initiate suo-motu strike-off of the company name and disqualify the directors from future corporate appointments.' },
+    ],
+  },
+
+  'dir-3-kyc-director-filing': {
+    slug: 'dir-3-kyc-director-filing',
+    title: 'Director DIR-3 KYC Annual Filing',
+    category: 'company-reg',
+    badge: 'Annual Mandatory DIN KYC',
+    whoShouldBuy: 'Every individual holding an active Director Identification Number (DIN) or Designated Partner Identification Number (DPIN).',
+    whyShouldBuy: 'Mandatory annual requirement under Rule 12A of Companies Rules to keep DIN active. Non-filing results in immediate DIN deactivation and a mandatory government penalty of ₹5,000 per director to reactivate.',
+    timeframe: '24–48 hours for electronic verification and MCA acknowledgment.',
+    specificDocs: [
+      'Director PAN Card',
+      'Aadhaar Card with matching name and date of birth',
+      'Valid Passport / Voter ID for address verification',
+      'Personal Mobile Number and Personal Email ID (for live MCA dual-OTP verification)',
+      'Digital Signature Certificate (DSC) of Director (for Web-Form filing)',
+    ],
+    importantConsiderations: [
+      'Due date is on or before 30th September of every financial year.',
+      'Even disqualified directors or directors not currently appointed in any active company must file DIR-3 KYC to avoid penalties.',
+    ],
+    deliverables: [
+      { title: 'MCA DIR-3 KYC Filing Receipt', desc: 'Official SRN challan confirming active DIN status for the current financial year.' },
+      { title: 'DIN Status Compliance Report', desc: 'Registry verification report confirming active director standing across all appointed companies.' },
+    ],
+    faqs: [
+      { q: 'What is DIR-3 KYC Web vs e-Form?', a: 'Directors whose email and mobile remain unchanged from previous filings can use DIR-3 KYC Web (OTP based). If details changed or filing for the first time, an e-Form with DSC is required.' },
+    ],
+  },
 };
 
 export function getServiceStructure(slug: string): ServiceStructure {

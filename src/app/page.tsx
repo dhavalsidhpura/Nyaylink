@@ -408,9 +408,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            <a href="#catalog-section" className="text-[#F4B942] hover:text-amber-300 font-extrabold flex items-center gap-1">
-              Explore All 35+ Services ↓
-            </a>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/packages"
+                className="bg-[#F4B942]/15 hover:bg-[#F4B942]/25 text-[#F4B942] border border-[#F4B942]/30 px-3 py-1 rounded-xl font-black flex items-center gap-1.5 transition text-xs"
+              >
+                <span>📦</span> Packages & Bundles <span className="bg-[#F4B942] text-[#073B5C] text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">Save 45%</span>
+              </Link>
+
+              <a href="#catalog-section" className="text-cyan-200 hover:text-white font-extrabold flex items-center gap-1 text-xs">
+                Explore All 40+ Services ↓
+              </a>
+            </div>
           </nav>
         </div>
       </header>
@@ -440,6 +449,13 @@ export default function HomePage() {
 
             {/* Quick links inside drawer */}
             <div className="space-y-2 text-xs">
+              <Link
+                href="/packages"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block p-3 bg-gradient-to-r from-[#0E7490] to-cyan-800 text-[#F4B942] rounded-xl font-black border border-cyan-400/40 text-center shadow-md"
+              >
+                📦 Bundled Packages (Save up to 48%) →
+              </Link>
               <Link
                 href="/dashboard"
                 onClick={() => setIsMobileMenuOpen(false)}
