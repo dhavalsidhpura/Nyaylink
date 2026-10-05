@@ -15,35 +15,55 @@ function requirementKey(label: string, index: number) {
   return slug || `doc-${index + 1}`;
 }
 
+let syncPromise: Promise<void> | null = null;
+
 /** Inserts any catalog services missing from the DB. Never overwrites admin-edited prices. */
 export async function syncCatalog() {
-  const existing = new Set((await prisma.service.findMany({ select: { slug: true } })).map((s) => s.slug));
+  if (syncPromise) return syncPromise;
 
-  for (const item of MASTER_SERVICES) {
-    if (existing.has(item.slug)) continue;
-    const docs = STRUCTURED_SERVICES[item.slug]?.specificDocs ?? item.docs.split(',').map((d) => d.trim()).filter(Boolean);
-    const seen = new Set<string>();
-    await prisma.service.create({
-      data: {
-        slug: item.slug,
-        title: item.title,
-        category: item.category,
-        professionalFee: item.price,
-        govtFee: 0,
-        govtFeeNote: item.govtFee,
-        sla: item.sla,
-        sacCode: item.sacCode,
-        requirements: {
-          create: docs.map((label, i) => {
-            let key = requirementKey(label, i);
-            if (seen.has(key)) key = `${key}-${i + 1}`;
-            seen.add(key);
-            return { key, label, sortOrder: i };
-          }),
-        },
-      },
-    });
-  }
+  syncPromise = (async () => {
+    const existing = new Set((await prisma.service.findMany({ select: { slug: true } })).map((s) => s.slug));
+
+    for (const item of MASTER_SERVICES) {
+      if (existing.has(item.slug)) continue;
+      const docs = STRUCTURED_SERVICES[item.slug]?.specificDocs ?? item.docs.split(',').map((d) => d.trim()).filter(Boolean);
+      const seen = new Set<string>();
+      try {
+        await prisma.service.create({
+          data: {
+            slug: item.slug,
+            title: item.title,
+            category: item.category,
+            professionalFee: item.price,
+            govtFee: 0,
+            govtFeeNote: item.govtFee,
+            sla: item.sla,
+            sacCode: item.sacCode,
+            requirements: {
+              create: docs.map((label, i) => {
+                let key = requirementKey(label, i);
+                if (seen.has(key)) key = `${key}-${i + 1}`;
+                seen.add(key);
+                return { key, label, sortOrder: i };
+              }),
+            },
+          },
+        });
+        existing.add(item.slug);
+      } catch (err: any) {
+        // P2002 is Prisma's unique constraint violation code (e.g. created concurrently)
+        if (err?.code === 'P2002') {
+          existing.add(item.slug);
+          continue;
+        }
+        throw err;
+      }
+    }
+  })().finally(() => {
+    syncPromise = null;
+  });
+
+  return syncPromise;
 }
 
 export async function getActiveService(slug: string) {
