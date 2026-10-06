@@ -18,6 +18,7 @@ export default function TrademarkSearchTool() {
   const [businessType, setBusinessType] = useState('42');
   const [isSearching, setIsSearching] = useState(false);
   const [result, setResult] = useState<TMResult | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,6 +217,59 @@ export default function TrademarkSearchTool() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Trademark Search FAQs */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">Frequently Asked Questions on Trademarks</h3>
+            <p className="text-xs text-slate-500">Essential insights on IP India classifications, brand protection, objections, and fee subsidies.</p>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            {[
+              {
+                q: 'What is the Nice Classification system (Classes 1 to 45)?',
+                a: 'The Nice Classification is an internationally recognized system dividing goods and services into 45 distinct classes. Classes 1 to 34 cover physical manufactured goods (e.g., Class 25 for clothing, Class 9 for electronics/software hardware, Class 30 for food products). Classes 35 to 45 cover commercial services (e.g., Class 35 for retail & advertising, Class 42 for SaaS & IT services, Class 43 for hospitality & food service).',
+              },
+              {
+                q: 'What is phonetic similarity and why does it cause objections?',
+                a: 'Trademark examiners under Section 11 of the Trade Marks Act 1999 assess both visual spelling and acoustic pronunciation. Even if your brand spelling differs (e.g., "Kool" vs "Cool", "Luv" vs "Love"), if the spoken sound creates public confusion with a prior registered mark in the same class, the registrar will issue an objection.',
+              },
+              {
+                q: 'What is the difference between the ™ and ® symbols?',
+                a: 'The ™ (TM) symbol signifies that you have officially submitted Form TM-A to the government and holds a pending application status. The ® (Registered) symbol can legally only be used after the Registrar issues the final Certificate of Registration following examination and the 4-month Journal advertisement period.',
+              },
+              {
+                q: 'How can startups and MSMEs claim a 50% government fee subsidy?',
+                a: 'The official statutory government filing fee is ₹9,000 per class for corporate entities. However, individual proprietors, DPIIT-recognized startups, and enterprises with a valid MSME Udyam Registration Certificate receive a 50% statutory rebate, paying only ₹4,500 per class in government fees.',
+              },
+              {
+                q: 'What happens if my trademark application receives an Examination Report objection?',
+                a: 'Over 65% of trademark applications in India receive an initial examination report citing Section 9 (distinctiveness) or Section 11 (conflict with existing mark). You have 30 calendar days to submit a formal written legal rebuttal drafted by an IPR advocate. If accepted, the mark proceeds directly to publication in the official Trade Marks Journal.',
+              },
+              {
+                q: 'How long is a trademark valid once registered?',
+                a: 'A registered trademark in India is valid for 10 years from the original application date. It can be renewed indefinitely every 10 years by filing Form TM-R before expiry.',
+              },
+            ].map((faq, idx) => (
+              <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <span className="pr-4">{faq.q}</span>
+                  <span className="text-sm text-[#0E7490] font-mono shrink-0">{openFaq === idx ? '−' : '+'}</span>
+                </button>
+                {openFaq === idx && (
+                  <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>

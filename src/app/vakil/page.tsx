@@ -141,6 +141,49 @@ export default async function VakilSearchPage({ searchParams }: Props) {
           </ul>
         )}
 
+        {/* Lawyer Consultation FAQs */}
+        <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">Frequently Asked Questions on Advocate Consultations</h3>
+            <p className="text-xs text-slate-500">How verified lawyer consultations, booking fees, privacy, and chamber representation work.</p>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            {[
+              {
+                q: 'How does NyayaLink verify advocates listed on the platform?',
+                a: 'Every advocate is vetted by validating their State Bar Council enrolment number, years of active practice, and strict compliance with the Bar Council of India (BCI) Rules. Only advocates in verified good standing are listed.',
+              },
+              {
+                q: 'Are legal consultations confidential and protected by privilege?',
+                a: 'Yes. All consultations and documents shared are strictly confidential and governed by Section 126 of the Indian Evidence Act, 1872, ensuring complete attorney-client privilege.',
+              },
+              {
+                q: 'What consultation modes are supported (Video, Phone, Chamber)?',
+                a: 'Advocates offer consultations via encrypted 1-on-1 video calls, direct phone calls, or scheduled in-person meetings at their registered chamber/office, as indicated on their verified profile.',
+              },
+              {
+                q: 'What happens if an advocate is unable to join the scheduled consultation?',
+                a: 'If a scheduled consultation cannot take place due to an advocate scheduling conflict, you are entitled to a 100% immediate refund or free rescheduling to a convenient alternative time slot.',
+              },
+              {
+                q: 'Can an advocate represent me in court or draft legal notices after the call?',
+                a: 'Yes. The initial consultation provides strategic legal counsel. If ongoing court representation (via Vakalatnama), legal notice drafting, or contract negotiation is required, you and the advocate may mutually formalize an extended engagement.',
+              },
+            ].map((faq, idx) => (
+              <details key={idx} className="group border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                <summary className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer list-none select-none">
+                  <span className="pr-4">{faq.q}</span>
+                  <span className="text-sm text-[#0E7490] font-mono shrink-0 group-open:rotate-45 transition-transform duration-200">+</span>
+                </summary>
+                <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+
         <aside className="text-[11px] text-slate-500 bg-white border border-slate-200 rounded-2xl p-4 leading-relaxed">
           <strong className="text-[#073B5C]">Disclaimer:</strong> In line with Bar Council of India rules, advocates on वकील Search do not
           advertise or solicit work. Profiles contain only factual information supplied by the advocate and verified against their State Bar

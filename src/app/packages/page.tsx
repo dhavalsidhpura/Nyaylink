@@ -290,20 +290,36 @@ export default function PackagesPage() {
         <div className="space-y-2.5 text-xs">
           {[
             {
-              q: 'How does NyayaLink execute bundled services so quickly?',
-              a: 'Instead of submitting documents sequentially to multiple different accountants, our integrated CA and CS desk takes your identity and business premises proofs once and files across MCA V3, GSTN, FoSCoS, and DGFT in parallel.',
+              q: 'Why should I choose a bundled package instead of individual registrations?',
+              a: 'Bundles combine complementary legal, tax, and licensing services (e.g., Private Limited + GST + MSME + Trademark + Bank Account Setup) at up to 40% discount compared to ordering separately. More importantly, bundling guarantees all registrations align under the exact same entity names, addresses, and authorized signers without discrepancies.',
+            },
+            {
+              q: 'How does NyayaLink execute bundled services so quickly in parallel?',
+              a: 'Instead of submitting documents sequentially to multiple independent accountants, our centralized CA, CS, and Legal desk takes your identity and business premises proofs once and coordinates MCA V3, GSTN, FoSCoS, and DGFT filings simultaneously.',
             },
             {
               q: 'Can I swap or remove a service from a pre-made package?',
-              a: 'Yes. If you already possess an active GSTIN or Udyam certificate, notify our assigned CA during your onboarding review. We will adjust your package scope and deduct the fee credit accordingly.',
+              a: 'Yes. If you already possess an active GSTIN, Udyam certificate, or existing trademark, simply inform your assigned CA during your onboarding review. We will deduct that service and credit the amount against your remaining balance or add-on services.',
             },
             {
               q: 'Are statutory government stamp duties included in package fees?',
               a: 'Package fees cover 100% of NyayaLink professional legal, CA, and drafting services. Standard state-level stamp duties (e.g. Maharashtra or Delhi company stamp duty) and official trademark registry application fees are passed through strictly at actual government receipts with zero markup.',
             },
             {
-              q: 'How does the Annual Compliance Retainer work after year 1?',
-              a: 'The Annual Compliance Retainer guarantees zero late penalties throughout the financial year. At the end of the 12-month period, you can renew at your locked-in loyalty rate or transition to self-serve filing anytime.',
+              q: 'What post-incorporation support is provided with Startup & Growth packages?',
+              a: 'Every bundle includes dedicated post-incorporation execution: corporate bank account opening support with premier partner banks, drafting founder bylaws & equity agreements, mandatory MCA Form INC-20A (Commencement of Business) filing, and automated GST return scheduling.',
+            },
+            {
+              q: 'How does the Annual Compliance Retainer work after Year 1?',
+              a: 'The Annual Compliance Retainer guarantees zero late penalties throughout the financial year. It covers all mandatory MCA filings (AOC-4, MGT-7), statutory board resolutions, Director DIR-3 KYC, and Income Tax returns. At the end of the 12-month period, you can renew at your locked-in loyalty rate or transition to self-serve anytime.',
+            },
+            {
+              q: 'Can bundled packages support multi-state operations and branch registrations?',
+              a: 'Yes. For e-commerce sellers, restaurant chains, and logistics companies expanding across states, our corporate desk manages multi-state GST registrations, Principal Place of Business (PPoB), and Additional Place of Business (APoB) documentation seamlessly.',
+            },
+            {
+              q: 'Can I start a package with the ₹999 Advance Token?',
+              a: 'Absolutely. You can initiate any bundled package with a ₹999 advance token. Our CA desk immediately begins company name approval, digital signatures (DSC), and legal drafting. You settle the remaining package fee only after preliminary verification is complete.',
             },
           ].map((faq, idx) => (
             <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">

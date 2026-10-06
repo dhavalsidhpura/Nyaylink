@@ -1359,20 +1359,36 @@ export default function HomePage() {
           <div className="space-y-2.5 text-xs">
             {[
               {
-                q: 'What is the ₹999 Advance Token option?',
-                a: 'The ₹999 advance allows you to start your statutory filing (including name reservation and legal drafting) without committing the full package fee upfront. Once your documents are CA-verified, the remaining balance is billed in your order tracking room.',
+                q: 'What is the ₹999 Advance Token option and how does it work?',
+                a: 'The ₹999 advance token allows you to initiate your statutory filing (including MCA name reservation, constitutional document drafting, and CA pre-audit) without paying the full package fee upfront. Once your documents are CA-verified and the name is reserved, the remaining balance is settled transparently in your Order Tracking Room.',
               },
               {
                 q: 'How does NyayaLink guarantee government filing accuracy?',
-                a: 'Every filing undergoes a 2-stage verification process: automated pre-audit checks, followed by scrutiny from certified Chartered Accountants and High Court Advocates before government submission.',
+                a: 'Every filing undergoes a 2-stage verification workflow: automated algorithmic validation against MCA V3, GSTN, and IP India rules, followed by meticulous scrutiny and digital certification from practicing Chartered Accountants, Company Secretaries, or High Court Advocates before submission.',
               },
               {
-                q: 'Are there any hidden costs after making payment?',
-                a: 'No. Our quotations display transparent breakdowns of professional retainers, 18% GST, and statutory government fees upfront.',
+                q: 'Are government statutory fees and state stamp duties included?',
+                a: 'NyayaLink packages clearly itemize professional fees and standard portal charges. State-specific stamp duties (which vary by authorized capital and registered state, e.g., Maharashtra, Delhi, Karnataka) and official registry fees are passed through strictly at actual government challan receipts with zero markup.',
               },
               {
-                q: 'How do I download my approved government certificates?',
-                a: 'Once approved by the statutory authority (MCA, GSTN, DGFT, IP India), all certificates, DIN letters, and bylaws are placed directly in your encrypted digital Vault for lifetime access.',
+                q: 'Is the entire registration process 100% online and paperless?',
+                a: 'Yes, 100% digital and paperless. You never need to visit a physical government office or courier physical papers. Identity verification and document signing are handled securely via Class-3 Digital Signature Certificates (DSC) or Aadhaar OTP, and all documents are stored in your encrypted NyayaLink Vault.',
+              },
+              {
+                q: 'How long does company incorporation or registration take from start to finish?',
+                a: 'Private Limited and LLP incorporations typically complete within 3 to 7 working days, subject to Central Registration Centre (CRC) processing. GST registrations take 3 to 5 working days, while MSME Udyam certificates are issued within 24 to 48 hours.',
+              },
+              {
+                q: 'Can my business claim GST Input Tax Credit (ITC) on NyayaLink invoices?',
+                a: 'Yes. NyayaLink issues valid GST tax invoices with our active GSTIN for all professional services. Simply enter your company GSTIN during checkout or in your Vault profile, and you can claim full 18% Input Tax Credit on your monthly GSTR-3B filings.',
+              },
+              {
+                q: 'What post-incorporation compliances are required after company registration?',
+                a: 'Under the Companies Act 2013, newly incorporated companies must complete three mandatory steps: (1) Open a corporate bank current account and file MCA Form INC-20A (Commencement of Business) within 180 days, (2) Appoint a statutory auditor via Form ADT-1 within 30 days, and (3) Complete annual Director DIR-3 KYC filings before September 30.',
+              },
+              {
+                q: 'How do I download and preserve my approved government certificates?',
+                a: 'Once approved by statutory authorities (MCA, GSTN, DGFT, or IP India), all official certificates (Certificate of Incorporation, PAN/TAN cards, GSTIN registration certificate, Trademark TM-A receipts) are permanently archived in your encrypted digital Vault with verifiable QR codes for instant lifetime download.',
               },
             ].map((faq, idx) => (
               <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden">

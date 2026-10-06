@@ -1304,8 +1304,10 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Trademark Fee Subsidy Voucher Guide', desc: 'Step-by-step guidance to claim ₹4,500 government fee waiver on Trademark filings.' },
     ],
     faqs: [
-      { q: 'Is Udyam Registration mandatory?', a: 'While not legally mandatory to operate, it is essential to access government subsidies, tender preferences, and trademark fee waivers.' },
-      { q: 'Can traders register under MSME Udyam?', a: 'Yes, wholesale and retail traders are eligible for Udyam registration for priority sector lending benefits.' },
+      { q: 'Is Udyam Registration mandatory?', a: 'While not legally mandatory to operate, it is essential to access government subsidies, priority sector bank lending, tender preferences, and a 50% discount on Trademark statutory fees.' },
+      { q: 'Can traders register under MSME Udyam?', a: 'Yes. Wholesale and retail traders are fully eligible for Udyam registration, unlocking access to priority sector lending schemes and credit guarantees.' },
+      { q: 'How does Udyam protect against delayed customer payments?', a: 'Under the MSMED Act, buyers must settle dues within 45 days. Delayed payments incur compound interest at 3x the RBI bank rate, and disputes can be filed directly on the MSME Samadhaan portal.' },
+      { q: 'Does Udyam registration require annual renewal?', a: 'No. Udyam Registration is issued with lifetime validity and does not require periodic renewal fees. Investment and turnover figures update automatically from ITR and GSTN filings.' },
     ],
   },
 
@@ -1332,7 +1334,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Statutory Labor Compliance Guidelines', desc: 'Summary of mandatory employee registers, working hour limits, and holiday rules.' },
     ],
     faqs: [
-      { q: 'Is Shop Act mandatory for home-based businesses or freelancers?', a: 'Yes, if you operate commercially or require a corporate bank current account in states like Maharashtra, Gujarat, and Delhi, banks mandate a Shop Act license.' },
+      { q: 'Is Shop Act mandatory for home-based businesses or freelancers?', a: 'Yes, if you operate commercially or require a corporate bank current account in states like Maharashtra, Gujarat, and Delhi, banks mandate a Shop Act license as address proof.' },
+      { q: 'Do I need separate Shop Act registrations for different branches?', a: 'Yes. Shop & Establishment licenses are premises-specific and governed by the local municipal corporation where each branch or store operates.' },
+      { q: 'What is the validity period of a Shop Act license?', a: 'Depending on the state, licenses are either issued with lifetime validity (e.g. Maharashtra Gumasta under the 2017 Act for entities with <10 employees) or require renewal every 1 to 5 years.' },
     ],
   },
 
@@ -1360,7 +1364,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Government Tender EMD Exemption Letter', desc: 'Statutory waiver certificate from prior turnover and experience requirements in public tenders.' },
     ],
     faqs: [
-      { q: 'Can an existing profitable company apply for Startup India?', a: 'Yes, as long as it was incorporated less than 10 years ago, turnover is below ₹100 Cr, and the business showcases innovative scalability.' },
+      { q: 'Can an existing profitable company apply for Startup India?', a: 'Yes, as long as it was incorporated less than 10 years ago, turnover is below ₹100 Cr, and the business demonstrates innovative, scalable potential.' },
+      { q: 'How does Section 80-IAC 3-year tax exemption work?', a: 'After DPIIT recognition, a Private Limited company can apply to the Inter-Ministerial Board (IMB) to receive 100% tax exemption on profits for any 3 consecutive years out of its first 10 years.' },
+      { q: 'Does Startup India recognition exempt us from Angel Tax?', a: 'Yes. Eligible startups filing Form 2 under Section 56(2)(viib) are exempt from tax on share premiums received from investors exceeding fair market value.' },
     ],
   },
 
@@ -1387,7 +1393,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'Practicing CA / CS Certification Dossier', desc: 'Statutory scrutiny certification under Section 10A of the Companies Act 2013.' },
     ],
     faqs: [
-      { q: 'What happens if we do not file INC-20A within 180 days?', a: 'The Registrar of Companies (ROC) can initiate suo-motu strike-off of the company name and disqualify the directors from future corporate appointments.' },
+      { q: 'What happens if we do not file INC-20A within 180 days?', a: 'The Registrar of Companies (ROC) can initiate suo-motu strike-off of the company name, freeze corporate banking facilities, and disqualify directors with fines of ₹50,000 + ₹1,000 per day of default.' },
+      { q: 'Can we file INC-20A before opening our bank account?', a: 'No. The filing strictly mandates attaching bank statement proof demonstrating that each shareholder deposited their exact agreed subscription capital into the company account.' },
+      { q: 'Does an LLP require Form INC-20A?', a: 'No. Form INC-20A applies strictly to companies registered under the Companies Act 2013 having share capital (Private Limited, Public Limited, OPC). LLPs file Form 3 instead.' },
     ],
   },
 
@@ -1415,7 +1423,9 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { title: 'DIN Status Compliance Report', desc: 'Registry verification report confirming active director standing across all appointed companies.' },
     ],
     faqs: [
-      { q: 'What is DIR-3 KYC Web vs e-Form?', a: 'Directors whose email and mobile remain unchanged from previous filings can use DIR-3 KYC Web (OTP based). If details changed or filing for the first time, an e-Form with DSC is required.' },
+      { q: 'What is DIR-3 KYC Web vs e-Form?', a: 'Directors whose email and mobile remain unchanged from previous filings can file DIR-3 KYC Web via simple OTP authentication. If mobile/email details changed or filing for the first time, a full e-Form certified by DSC and practicing CA/CS is required.' },
+      { q: 'What is the government penalty for filing after September 30?', a: 'Filing after the annual September 30 deadline incurs a mandatory government late fee of ₹5,000 per DIN, and the DIN is marked as "Deactivated due to non-filing of DIR-3 KYC" until settled.' },
+      { q: 'Do directors who resigned during the year still need to file?', a: 'Yes. Any individual allocated an active DIN/DPIN must file DIR-3 KYC annually, regardless of whether they currently hold an active directorship.' },
     ],
   },
 };
@@ -1445,7 +1455,9 @@ export function getServiceStructure(slug: string): ServiceStructure {
       { title: 'Official Filing Acknowledgment', desc: 'Direct government receipt with tracking reference.' },
     ],
     faqs: [
-      { q: 'How do I track filing status?', a: 'Live updates are displayed in real-time inside your Vault Dashboard.' },
+      { q: 'How do I track my filing status?', a: 'Live milestone updates and government challans are displayed in real-time inside your secure Vault Dashboard.' },
+      { q: 'Are government statutory fees included?', a: 'NyayaLink professional retainers are fixed; variable statutory registry fees and stamp duties are passed through strictly at actual government challan receipts with zero markup.' },
+      { q: 'What happens after I submit my documents?', a: 'A certified Chartered Accountant or Legal Associate reviews them within 2 hours, identifies any defects, and submits the finalized dossier directly to the respective government portal.' },
     ],
   };
 }
