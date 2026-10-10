@@ -1428,6 +1428,127 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { q: 'Do directors who resigned during the year still need to file?', a: 'Yes. Any individual allocated an active DIN/DPIN must file DIR-3 KYC annually, regardless of whether they currently hold an active directorship.' },
     ],
   },
+
+  'trademark-hearing-representation': {
+    slug: 'trademark-hearing-representation',
+    title: 'Trademark Hearing & Registry Representation',
+    category: 'trademark-ipr',
+    badge: 'Senior TM Advocate',
+    whoShouldBuy: 'Brand owners and startups who received an official Notice of Hearing from the Trade Marks Registry following an unresolved Section 9 or Section 11 examination objection.',
+    whyShouldBuy: 'Oral representation before the Hearing Officer is the final opportunity to argue distinctive character and prior user rights before an application is formally abandoned or refused. Empanelled advocates ensure strong case law presentation.',
+    timeframe: '3–5 days preparation + appearance on scheduled date',
+    specificDocs: [
+      'Official Notice of Hearing from Trade Marks Registry',
+      'Original Examination Report and written objection reply',
+      'Evidence of prior use (invoices, marketing collaterals, website screenshots)',
+      'Signed Form TM-48 (Power of Attorney in favor of appearing advocate)',
+    ],
+    importantConsiderations: [
+      'Hearings in India are conducted virtually via video conference or in-person at regional registry branches.',
+      'Failure to attend a scheduled hearing leads to automatic abandonment under the Trade Marks Act.',
+    ],
+    deliverables: [
+      { title: 'Oral Hearing Case Law Submission Dossier', desc: 'Comprehensive legal argument binder citing Supreme Court and IPAB precedents.' },
+      { title: 'Advocate Appearance & Representation', desc: 'Live oral advocacy before the Deputy / Assistant Registrar of Trade Marks.' },
+      { title: 'Hearing Outcome Order & Publication Notice', desc: 'Official record of order (Accepted for Advertisement / Advertised as Accepted).' },
+    ],
+    faqs: [
+      { q: 'Can I attend the trademark hearing in person?', a: 'Under current IP India digital guidelines, hearings are predominantly conducted via video conference. Our empanelled advocates represent you directly; applicant attendance is optional.' },
+      { q: 'What happens if the hearing officer still objects?', a: 'If the mark is refused post-hearing, our advocates can file a Review Petition under Rule 119 within 30 days or file an appeal before the High Court.' },
+      { q: 'Do I need a new TM-48 Power of Attorney?', a: 'Yes, a fresh Form TM-48 authorizing the specific arguing counsel to represent your entity before the Registry bench is required.' },
+    ],
+  },
+
+  'trademark-watch-monitoring': {
+    slug: 'trademark-watch-monitoring',
+    title: 'Trademark Watch & Gazette Monitoring (Annual)',
+    category: 'trademark-ipr',
+    badge: '1-Year Brand Shield',
+    whoShouldBuy: 'Companies, D2C brands, tech startups, and intellectual property owners looking to protect their trademark against infringement, copycats, and confusingly similar filings.',
+    whyShouldBuy: 'The Trade Marks Registry publishes thousands of new applications every week. If a competitor files a similar brand name, you only have a strict 4-month window to file an Opposition (Form TM-O). Automated monitoring ensures you never miss a threat.',
+    timeframe: 'Continuous 52-week monitoring with weekly alert digest',
+    specificDocs: [
+      'Registered trademark registration certificate or pending application receipt',
+      'Brand logo vector and primary wordmark',
+      'Designated NICE classes of business operation',
+    ],
+    importantConsiderations: [
+      'Monitoring covers phonetic, visual, and transliterated similarities across all 45 classes in the official Trade Marks Journal.',
+      'Filing an Opposition (TM-O) requires separate legal fees if an infringing mark is detected and contested.',
+    ],
+    deliverables: [
+      { title: 'Weekly Trade Marks Journal Algorithmic Scan', desc: 'Automated AI audit of all newly advertised marks published by IP India.' },
+      { title: 'Instant Conflict Warning Dossier', desc: 'Immediate notification with risk score, similarity analysis, and opposition deadline.' },
+      { title: 'Quarterly IP Portfolio Health Report', desc: 'Executive summary of your brand footprint and active class protection coverage.' },
+    ],
+    faqs: [
+      { q: 'How often is the Trade Marks Journal published?', a: 'The official Trade Marks Journal is published on Mondays by the Controller General of Patents, Designs and Trade Marks. Our system scans every issue within 24 hours of release.' },
+      { q: 'What is the deadline to block a competitor trademark?', a: 'Section 21 of the Trade Marks Act mandates a strict 4-month opposition window from the date of advertisement in the Journal. No extensions are granted by law.' },
+      { q: 'Can this service monitor multiple classes?', a: 'Yes. The subscription protects your designated mark across all allied and related classes specified during enrollment.' },
+    ],
+  },
+
+  'virtual-cfo-services': {
+    slug: 'virtual-cfo-services',
+    title: 'Virtual CFO (vCFO) Strategic Advisory',
+    category: 'tax-accounting',
+    badge: 'Founder CFO',
+    whoShouldBuy: 'Early-stage funded startups, scaling D2C brands, and growth SMEs with monthly revenues of ₹10L–₹5Cr that require senior financial leadership without hiring an expensive full-time ₹40L/year CFO.',
+    whyShouldBuy: 'Get high-level financial strategy, unit economics analysis, cash burn runways, investor-ready MIS dashboards, and proactive tax optimization directly from senior Chartered Accountants.',
+    timeframe: 'Ongoing monthly strategic retainer',
+    specificDocs: [
+      'Audited financial statements for the past 2 financial years',
+      '12-month historical bank statements in Excel / CSV format',
+      'Access to existing accounting software (Zoho Books / Tally / QuickBooks)',
+      'Current Cap Table and shareholding structure',
+    ],
+    importantConsiderations: [
+      'Includes regular bi-weekly strategy calls with founders and management.',
+      'Statutory audit certification and tax audit signing remain independent under ICAI independence guidelines.',
+    ],
+    deliverables: [
+      { title: 'Monthly Executive Investor MIS', desc: 'P&L, Balance Sheet, Cash Flow, and KPI analysis presented in investor-grade formats.' },
+      { title: 'Rolling 12-Month Cash Burn & Runway Model', desc: 'Predictive financial modeling to manage working capital and plan future fundraising.' },
+      { title: 'Unit Economics & Pricing Optimization', desc: 'Gross margin, CAC, LTV, and contribution margin breakdown by product/service.' },
+      { title: 'Bi-Weekly Founder Strategy Consultation', desc: 'Dedicated 60-minute strategy session with your designated Senior CA / Financial Strategist.' },
+    ],
+    faqs: [
+      { q: 'How is a Virtual CFO different from a regular accountant?', a: 'An accountant records historical transactions. A Virtual CFO analyzes forward-looking data: cash runway, gross margins, fundraising strategy, tax exposure, and board reporting.' },
+      { q: 'Can the vCFO help communicate with our investors?', a: 'Yes. We prepare standardized quarterly investor update decks and can join board or investor review calls to present financial performance.' },
+      { q: 'Is there a minimum contract commitment?', a: 'We offer flexible month-to-month retainers with a 30-day notice period, as well as discounted annual retainers.' },
+    ],
+  },
+
+  'us-delaware-company-registration': {
+    slug: 'us-delaware-company-registration',
+    title: 'US Delaware C-Corp Incorporation (Global VC Ready)',
+    category: 'company-reg',
+    badge: 'YC & Global VC Ready',
+    whoShouldBuy: 'Indian founders building global SaaS, AI, or export businesses who plan to raise venture capital from US investors (Y Combinator, Techstars, Sequoia) or integrate Stripe, Mercury, and US banking.',
+    whyShouldBuy: 'Delaware is the world standard for venture-backed corporate law. Over 68% of Fortune 500 companies and nearly all VC-funded startups are incorporated in Delaware due to its Court of Chancery, business-friendly laws, and investor familiar equity structures.',
+    timeframe: '7–10 working days',
+    specificDocs: [
+      'Passports of all founders and directors',
+      'Proof of address (utility bill or bank statement under 2 months old)',
+      'Proposed Delaware company name and authorized stock breakdown (standard: 10,000,000 shares at $0.00001 par value)',
+      'Brief description of cross-border software or commercial activities',
+    ],
+    importantConsiderations: [
+      'Requires an annual Delaware Franchise Tax report and registered agent renewal.',
+      'Complies with RBI Overseas Direct Investment (ODI) regulations for Indian resident founders.',
+    ],
+    deliverables: [
+      { title: 'Delaware Certificate of Incorporation', desc: 'Official corporate charter filed and stamped by the Delaware Division of Corporations.' },
+      { title: 'Federal Employer Identification Number (EIN)', desc: 'Official US IRS tax identification number needed for US banking and Stripe.' },
+      { title: '1-Year US Registered Agent Service', desc: 'Statutory physical registered agent in Delaware for official legal service of process.' },
+      { title: 'Standard Post-Incorporation Startup Bylaws', desc: 'Stock Purchase Agreements, Action by Incorporator, and Board Resolutions.' },
+    ],
+    faqs: [
+      { q: 'Do Indian founders need a US visa or physical presence to incorporate?', a: 'No. 100% of the incorporation and EIN application is completed digitally without requiring a US visit or visa.' },
+      { q: 'Can we open a US bank account like Mercury or Brex?', a: 'Yes. With your stamped Delaware Certificate of Incorporation and IRS EIN, founders can apply online for US business accounts with Mercury Bank or Brex.' },
+      { q: 'What is the standard share capitalization for venture startups?', a: 'The standard venture structure is 10,000,000 common shares with a par value of $0.00001 per share, keeping initial franchise taxes at the minimum $400/year.' },
+    ],
+  },
 };
 
 export function getServiceStructure(slug: string): ServiceStructure {

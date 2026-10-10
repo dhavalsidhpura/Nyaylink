@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BRAND } from '@/lib/constants';
 
 export default function Footer() {
   return (
@@ -21,8 +22,9 @@ export default function Footer() {
             <li><Link href="/services/public-limited-company" className="hover:text-[#F4B942] transition-colors">Public Limited Company</Link></li>
             <li><Link href="/services/section-8-company" className="hover:text-[#F4B942] transition-colors">Section 8 Company (NGO)</Link></li>
             <li><Link href="/services/nidhi-company-registration" className="hover:text-[#F4B942] transition-colors">Nidhi Company Setup</Link></li>
-            <li><Link href="/services/indian-subsidiary-registration" className="hover:text-[#F4B942] transition-colors">Indian Subsidiary</Link></li>
-            <li><Link href="/services/partnership-proprietorship" className="hover:text-[#F4B942] transition-colors">Proprietorship / Partnership</Link></li>
+            <li><Link href="/services/indian-subsidiary-registration" className="hover:text-[#F4B942] transition-colors">Indian Subsidiary (FDI)</Link></li>
+            <li><Link href="/services/startup-india-dpiit-recognition" className="hover:text-[#F4B942] transition-colors">Startup India DPIIT Recognition</Link></li>
+            <li><Link href="/services/us-delaware-company-registration" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">US Delaware C-Corp (YC)</Link></li>
           </ul>
         </div>
 
@@ -32,13 +34,13 @@ export default function Footer() {
             Licenses & Permits
           </h4>
           <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/fssai-license" className="hover:text-[#F4B942] transition-colors">FSSAI Food License</Link></li>
-            <li><Link href="/services/fssai-maintenance" className="hover:text-[#F4B942] transition-colors">FSSAI Renewal & Return</Link></li>
-            <li><Link href="/services/import-export-code" className="hover:text-[#F4B942] transition-colors">IEC [Import/Export Code]</Link></li>
+            <li><Link href="/services/fssai-food-license" className="hover:text-[#F4B942] transition-colors">FSSAI Food License</Link></li>
+            <li><Link href="/services/fssai-renewal" className="hover:text-[#F4B942] transition-colors">FSSAI Renewal</Link></li>
+            <li><Link href="/services/import-export-code-iec" className="hover:text-[#F4B942] transition-colors">IEC [Import/Export Code]</Link></li>
             <li><Link href="/services/iso-certification" className="hover:text-[#F4B942] transition-colors">ISO Certification</Link></li>
-            <li><Link href="/services/udyam-registration" className="hover:text-[#F4B942] transition-colors">MSME / Udyam Registration</Link></li>
-            <li><Link href="/services/shop-and-establishment" className="hover:text-[#F4B942] transition-colors">Shop & Establishment Act</Link></li>
-            <li><Link href="/services/gs1-barcode-bis" className="hover:text-[#F4B942] transition-colors">GS1 Barcode & BIS License</Link></li>
+            <li><Link href="/services/msme-udyam-registration" className="hover:text-[#F4B942] transition-colors">MSME / Udyam Registration</Link></li>
+            <li><Link href="/services/shop-and-establishment-license" className="hover:text-[#F4B942] transition-colors">Shop & Establishment Act</Link></li>
+            <li><Link href="/services/business-registration-license" className="hover:text-[#F4B942] transition-colors">Proprietorship Registration</Link></li>
           </ul>
         </div>
 
@@ -49,10 +51,11 @@ export default function Footer() {
           </h4>
           <ul className="space-y-2 text-slate-300 font-medium">
             <li><Link href="/services/trademark-registration" className="hover:text-[#F4B942] transition-colors">TM Registration (™ / ®)</Link></li>
-            <li><Link href="/services/trademark-objection-reply" className="hover:text-[#F4B942] transition-colors">TM Objection Reply</Link></li>
+            <li><Link href="/services/trademark-objection" className="hover:text-[#F4B942] transition-colors">TM Objection Reply</Link></li>
+            <li><Link href="/services/trademark-hearing-representation" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">TM Hearing Representation</Link></li>
+            <li><Link href="/services/trademark-watch-monitoring" className="hover:text-[#F4B942] transition-colors">TM Watch & Gazette Monitor</Link></li>
             <li><Link href="/services/trademark-renewal" className="hover:text-[#F4B942] transition-colors">Trademark Renewal</Link></li>
             <li><Link href="/services/trademark-opposition" className="hover:text-[#F4B942] transition-colors">Trademark Opposition</Link></li>
-            <li><Link href="/services/trademark-assignment" className="hover:text-[#F4B942] transition-colors">Trademark Assignment</Link></li>
             <li><Link href="/services/copyright-registration" className="hover:text-[#F4B942] transition-colors">Copyright Registration</Link></li>
             <li><Link href="/services/logo-design" className="hover:text-[#F4B942] transition-colors">Logo & Brand Identity</Link></li>
           </ul>
@@ -66,42 +69,45 @@ export default function Footer() {
           <ul className="space-y-2 text-slate-300 font-medium">
             <li><Link href="/services/gst-registration" className="hover:text-[#F4B942] transition-colors">GST Registration</Link></li>
             <li><Link href="/services/gst-return-filing" className="hover:text-[#F4B942] transition-colors">Monthly GST Return (3B/1)</Link></li>
-            <li><Link href="/services/gst-nil-return" className="hover:text-[#F4B942] transition-colors">GST Nil Return Filing</Link></li>
-            <li><Link href="/services/gstr-9-annual-return" className="hover:text-[#F4B942] transition-colors">GSTR-9 Annual Return</Link></li>
+            <li><Link href="/services/gst-nil-return-filing" className="hover:text-[#F4B942] transition-colors">GST Nil Return Filing</Link></li>
+            <li><Link href="/services/gstr-9-annual-filing" className="hover:text-[#F4B942] transition-colors">GSTR-9 Annual Return</Link></li>
             <li><Link href="/services/gst-lut-filing" className="hover:text-[#F4B942] transition-colors">GST LUT Export Filing</Link></li>
-            <li><Link href="/services/gst-amendment" className="hover:text-[#F4B942] transition-colors">GST Amendment / Modification</Link></li>
+            <li><Link href="/services/gst-modification" className="hover:text-[#F4B942] transition-colors">GST Amendment / Modification</Link></li>
+            <li><Link href="/services/gst-eway-bill-generation" className="hover:text-[#F4B942] transition-colors">GST E-Way Bill Setup</Link></li>
           </ul>
         </div>
 
-        {/* Column 5: Accounting & HR */}
+        {/* Column 5: Accounting & Secretarial */}
         <div className="space-y-3">
           <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Accounting & Payroll
+            Accounting & Strategic
           </h4>
           <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/online-bookkeeping" className="hover:text-[#F4B942] transition-colors">Online Bookkeeping</Link></li>
-            <li><Link href="/services/tax-planning" className="hover:text-[#F4B942] transition-colors">Tax Planning & Advisory</Link></li>
-            <li><Link href="/services/income-tax-return" className="hover:text-[#F4B942] transition-colors">Income Tax Return (ITR)</Link></li>
-            <li><Link href="/services/tds-tcs-return" className="hover:text-[#F4B942] transition-colors">TDS / TCS Quarterly Return</Link></li>
-            <li><Link href="/services/pf-esic-registration-returns" className="hover:text-[#F4B942] transition-colors">PF & ESIC Returns</Link></li>
-            <li><Link href="/services/professional-tax" className="hover:text-[#F4B942] transition-colors">Professional Tax (PTEC/PTRC)</Link></li>
-            <li><Link href="/services/hr-payroll-posh" className="hover:text-[#F4B942] transition-colors">HRMS & POSH Compliance</Link></li>
+            <li><Link href="/services/virtual-cfo-services" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">Virtual CFO (vCFO) Advisory</Link></li>
+            <li><Link href="/services/online-bookkeeping" className="hover:text-[#F4B942] transition-colors">Online Bookkeeping Retainer</Link></li>
+            <li><Link href="/services/income-tax-return-itr" className="hover:text-[#F4B942] transition-colors">Income Tax Return (ITR)</Link></li>
+            <li><Link href="/services/tds-return-filing" className="hover:text-[#F4B942] transition-colors">TDS / TCS Quarterly Return</Link></li>
+            <li><Link href="/services/pf-esic-registration" className="hover:text-[#F4B942] transition-colors">PF & ESIC Registration</Link></li>
+            <li><Link href="/services/mca-inc-20a-commencement-of-business" className="hover:text-[#F4B942] transition-colors">MCA INC-20A Commencement</Link></li>
+            <li><Link href="/services/dir-3-kyc-director-filing" className="hover:text-[#F4B942] transition-colors">Director DIR-3 KYC Annual</Link></li>
           </ul>
         </div>
 
-        {/* Column 6: Account & Legal Tech */}
+        {/* Column 6: Technology, ODR & Portals */}
         <div className="space-y-3">
           <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Client Portal & Account
+            Tech & Legal Portals
           </h4>
           <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/login" className="hover:text-[#F4B942] transition-colors font-bold text-white">→ Client Login</Link></li>
-            <li><Link href="/register" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">→ Register / Sign Up</Link></li>
+            <li><Link href="/services/scale-your-business" className="hover:text-[#F4B942] transition-colors">Scale Your Business</Link></li>
+            <li><Link href="/services/ai-solutions" className="hover:text-[#F4B942] transition-colors">AI Agents & Chatbots</Link></li>
+            <li><Link href="/services/software-app-development" className="hover:text-[#F4B942] transition-colors">Custom App & CRM Dev</Link></li>
+            <li><Link href="/services/website-ecommerce" className="hover:text-[#F4B942] transition-colors">E-Commerce & Next.js</Link></li>
+            <li><Link href="/services/cheque-bounce-notice-138" className="hover:text-[#F4B942] transition-colors">Sec 138 Cheque Notice</Link></li>
+            <li><Link href="/vakil" className="hover:text-[#F4B942] transition-colors font-bold text-emerald-400">👨‍⚖️ वकील Search</Link></li>
+            <li><Link href="/packages" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">📦 Bundled Packages</Link></li>
+            <li><Link href="/ca/dashboard" className="hover:text-[#F4B942] transition-colors font-bold text-cyan-300">📊 CA & Expert Portal</Link></li>
             <li><Link href="/dashboard" className="hover:text-[#F4B942] transition-colors">My Documents Vault</Link></li>
-            <li><Link href="/services/gem-registration" className="hover:text-[#F4B942] transition-colors">GeM Vendor Portal</Link></li>
-            <li><Link href="/services/virtual-cxo-services" className="hover:text-[#F4B942] transition-colors">Virtual CXO Solutions</Link></li>
-            <li><Link href="/services/digital-signature-certificate" className="hover:text-[#F4B942] transition-colors">Class 3 DSC Token</Link></li>
-            <li><Link href="/services/online-dispute-resolution" className="hover:text-[#F4B942] transition-colors">Online Dispute Resolution</Link></li>
           </ul>
         </div>
 
@@ -114,13 +120,13 @@ export default function Footer() {
         <div className="space-y-2 bg-[#073B5C] p-4 rounded-xl border border-slate-700">
           <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Corporate Head Office</h5>
           <p className="text-slate-300 font-medium">
-            📍 <strong>Address:</strong> Charkop, Kandivali West, Mumbai - 400067, Maharashtra, India
+            📍 <strong>Address:</strong> {BRAND.address}
           </p>
           <p className="text-slate-300 font-medium">
-            📞 <strong>Phone:</strong> <a href="tel:+919920054785" className="text-[#F4B942] hover:underline font-bold">+91 9920054785</a>
+            📞 <strong>Phone:</strong> <a href={`tel:${BRAND.phoneTel}`} className="text-[#F4B942] hover:underline font-bold">{BRAND.phone}</a>
           </p>
           <p className="text-slate-300 font-medium">
-            ✉️ <strong>Support Email:</strong> <a href="mailto:info@nyayalink.com" className="text-[#F4B942] hover:underline">info@nyayalink.com</a>
+            ✉️ <strong>Support Email:</strong> <a href={`mailto:${BRAND.supportEmail}`} className="text-[#F4B942] hover:underline">{BRAND.supportEmail}</a>
           </p>
         </div>
 
@@ -131,7 +137,7 @@ export default function Footer() {
             For any statutory compliance issues, escalation, or service feedback, mail directly to our legal grievance desk:
           </p>
           <p className="pt-1">
-            <strong>Grievance Mail:</strong> <a href="mailto:complain@nyayalink.com" className="text-[#F4B942] font-bold hover:underline text-xs">complain@nyayalink.com</a>
+            <strong>Grievance Mail:</strong> <a href={`mailto:${BRAND.grievanceEmail}`} className="text-[#F4B942] font-bold hover:underline text-xs">{BRAND.grievanceEmail}</a>
           </p>
         </div>
 
@@ -164,7 +170,7 @@ export default function Footer() {
       {/* 4. COPYRIGHT & MANDATORY POLICIES BAR */}
       <div className="bg-[#031c2d] py-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© 2026 NyayaLink — Your Link to Justice. All Rights Reserved. Charkop, Kandivali West, Mumbai 400067.</p>
+          <p>© {new Date().getFullYear()} {BRAND.name} — {BRAND.tagline}. All Rights Reserved. {BRAND.city} {BRAND.pincode}.</p>
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-300">
             <Link href="/packages" className="text-[#F4B942] hover:underline font-bold">Bundled Packages</Link>
             <span>•</span>

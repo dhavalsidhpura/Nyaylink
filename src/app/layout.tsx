@@ -18,9 +18,54 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+
 export const metadata: Metadata = {
-  title: 'NyayaLink — India’s Premier Legal & Corporate Compliance Platform',
-  description: 'Digital incorporation, licensing, and compliance platform supported by certified CAs and Advocates in Mumbai.',
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'NyayaLink — India’s Premier Legal & Corporate Compliance Platform',
+    template: '%s | NyayaLink',
+  },
+  description:
+    'Digital company incorporation, GST filings, trademark protection, and corporate compliance supervised directly by certified CAs and Advocates in Mumbai.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'NyayaLink — India’s Premier Legal & Corporate Compliance Platform',
+    description:
+      'Digital company incorporation, GST filings, trademark protection, and corporate compliance supervised directly by certified CAs and Advocates in Mumbai.',
+    url: baseUrl,
+    siteName: 'NyayaLink',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NyayaLink — India’s Premier Legal & Corporate Compliance Platform',
+    description:
+      'Digital company incorporation, GST filings, trademark protection, and corporate compliance supervised directly by certified CAs and Advocates in Mumbai.',
+  },
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LegalService',
+  name: 'NyayaLink',
+  url: baseUrl,
+  logo: `${baseUrl}/icon.png`,
+  description: 'Digital incorporation, licensing, and corporate compliance platform in Mumbai, India.',
+  telephone: '+919920054785',
+  email: 'info@nyayalink.com',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Charkop, Kandivali West',
+    addressLocality: 'Mumbai',
+    addressRegion: 'Maharashtra',
+    postalCode: '400067',
+    addressCountry: 'IN',
+  },
+  priceRange: '₹₹',
 };
 
 export default function RootLayout({
@@ -33,6 +78,10 @@ export default function RootLayout({
       <head>
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="anonymous" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen bg-[#F0F4F8] antialiased`}>
         <Providers>{children}</Providers>

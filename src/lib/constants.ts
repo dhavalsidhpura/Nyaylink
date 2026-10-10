@@ -1,0 +1,16 @@
+export const BRAND = {
+  name: 'NyayaLink',
+  tagline: 'Your Link to Justice',
+  legalName: process.env.SUPPLIER_LEGAL_NAME || 'NyayaLink Legal Services',
+  phone: '+91 9920054785',
+  phoneTel: '+919920054785',
+  whatsappUrl: 'https://wa.me/919920054785?text=Hello%20NyayaLink%20I%20need%20assistance',
+  supportEmail: 'info@nyayalink.com',
+  grievanceEmail: 'complain@nyayalink.com',
+  address: 'Charkop, Kandivali West, Mumbai - 400067, Maharashtra, India',
+  city: 'Mumbai',
+  state: 'Maharashtra',
+  pincode: '400067',
+  gstin: process.env.SUPPLIER_GSTIN || '27AAECN1234F1Z5',
+  sacCode: '998221',
+} as const;

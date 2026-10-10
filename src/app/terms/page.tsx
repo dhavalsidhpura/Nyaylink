@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | NyayaLink',
+  description: 'Review the terms of service governing the NyayaLink legal technology platform, client responsibilities, and professional execution standards.',
+};
 
 export default function TermsPage() {
   return (

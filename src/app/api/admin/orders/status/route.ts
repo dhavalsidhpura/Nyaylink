@@ -4,6 +4,7 @@ import { OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { apiHandler, HttpError, orderAccess, requireRole, ROLE_GROUPS } from '@/lib/authz';
 import { sendNotificationEmail, buildStatusUpdateEmail } from '@/lib/email';
+import { notifyStatusUpdateWhatsApp } from '@/lib/whatsapp';
 
 const schema = z.object({
   orderId: z.string().min(1),
@@ -16,7 +17,7 @@ export const PATCH = apiHandler(async (request: Request) => {
   const user = await requireRole(ROLE_GROUPS.caseworkers);
   const { orderId, newStatus, remarks, srn } = schema.parse(await request.json());
 
-  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { client: true } });
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { client: true, service: true } });
   if (!order || orderAccess(user, order) !== 'staff') throw new HttpError(404, 'Order not found.');
   if (order.paymentStatus === 'UNPAID' && !['PENDING_PAYMENT', 'REJECTED'].includes(newStatus)) {
     throw new HttpError(409, 'Work cannot start on an unpaid order.');
@@ -43,6 +44,18 @@ export const PATCH = apiHandler(async (request: Request) => {
     subject: `Status Update [${order.orderNumber}]: ${newStatus.replace(/_/g, ' ')}`,
     html: buildStatusUpdateEmail(order.client.name, order.orderNumber, newStatus, remarks),
   });
+
+  if (order.client.phone) {
+    await notifyStatusUpdateWhatsApp({
+      phone: order.client.phone,
+      clientName: order.client.name,
+      orderNumber: order.orderNumber,
+      serviceTitle: order.service.title,
+      status: newStatus,
+      srn: srn || undefined,
+      remarks: remarks || undefined,
+    });
+  }
 
   return NextResponse.json({ success: true, status: updated.status, srn: updated.srn });
 });

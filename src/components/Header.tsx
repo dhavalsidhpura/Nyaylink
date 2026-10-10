@@ -104,6 +104,12 @@ export default function Header() {
             >
               For Advocates
             </Link>
+            <Link
+              href="/ca/dashboard"
+              className="text-slate-400 hover:text-[#F4B942] underline font-medium text-xs transition-colors"
+            >
+              For CAs / Experts
+            </Link>
           </div>
         </div>
       </div>

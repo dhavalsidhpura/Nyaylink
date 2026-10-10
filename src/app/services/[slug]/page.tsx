@@ -2,12 +2,16 @@ import type { Metadata } from 'next';
 import { getServiceBySlug } from '@/lib/catalog';
 import { num } from '@/lib/serialize';
 import { formatINR } from '@/lib/pricing';
+import { getServiceStructure } from '@/data/serviceDetails';
 import ServiceDetailClient from './ServiceDetailClient';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const service = await getServiceBySlug(params.slug);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+  const canonicalUrl = `${baseUrl}/services/${params.slug}`;
+
   if (!service) {
     return {
       title: 'Legal & Compliance Filing | NyayaLink',
@@ -21,9 +25,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
+      url: canonicalUrl,
       type: 'website',
       siteName: 'NyayaLink',
     },
@@ -39,6 +47,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 // so changes made in the Admin Console reflect instantly.
 export default async function ServicePage({ params }: { params: { slug: string } }) {
   const service = await getServiceBySlug(params.slug);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+  const structure = getServiceStructure(params.slug);
+
   const serviceData = service
     ? {
         slug: service.slug,
@@ -60,5 +71,97 @@ export default async function ServicePage({ params }: { params: { slug: string }
       }
     : null;
 
-  return <ServiceDetailClient serviceData={serviceData} />;
+  // Schema.org Structured Data (Service + FAQPage + BreadcrumbList)
+  const jsonLdService = service
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: service.title,
+        description: structure.whyShouldBuy || `${service.title} with dedicated CA/CS supervision`,
+        serviceType: service.category,
+        provider: {
+          '@type': 'LegalService',
+          name: 'NyayaLink',
+          url: baseUrl,
+          telephone: '+919920054785',
+          priceRange: '₹₹',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Mumbai',
+            addressRegion: 'Maharashtra',
+            postalCode: '400067',
+            addressCountry: 'IN',
+          },
+        },
+        offers: {
+          '@type': 'Offer',
+          price: num(service.professionalFee),
+          priceCurrency: 'INR',
+          availability: 'https://schema.org/InStock',
+          url: `${baseUrl}/services/${service.slug}`,
+        },
+      }
+    : null;
+
+  const jsonLdFaq = structure?.faqs?.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: structure.faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.a,
+          },
+        })),
+      }
+    : null;
+
+  const jsonLdBreadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Services',
+        item: `${baseUrl}/#catalog-section`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: service?.title || 'Service Detail',
+        item: `${baseUrl}/services/${params.slug}`,
+      },
+    ],
+  };
+
+  return (
+    <>
+      {jsonLdService && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdService) }}
+        />
+      )}
+      {jsonLdFaq && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }}
+        />
+      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
+      />
+      <ServiceDetailClient serviceData={serviceData} />
+    </>
+  );
 }

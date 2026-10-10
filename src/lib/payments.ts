@@ -6,6 +6,7 @@ import { nextInvoiceNumber } from '@/lib/counters';
 import { splitGst, SUPPLIER_STATE } from '@/lib/pricing';
 import { num } from '@/lib/serialize';
 import { sendNotificationEmail, buildPaymentReceiptEmail, buildConsultationConfirmedEmail } from '@/lib/email';
+import { notifyOrderCreatedWhatsApp } from '@/lib/whatsapp';
 
 // SAC for the platform facilitation fee on consultations — confirm with your CA.
 const CONSULTATION_SAC = '998599';
@@ -176,6 +177,16 @@ export async function capturePayment(gatewayOrderId: string, gatewayPaymentId: s
           `/orders/${payment.order.orderNumber}`
         ),
       });
+
+      if (payment.order.client.phone) {
+        await notifyOrderCreatedWhatsApp({
+          phone: payment.order.client.phone,
+          clientName: payment.order.client.name,
+          orderNumber: payment.order.orderNumber,
+          serviceTitle: payment.order.service.title,
+          amountPaid: num(payment.amount),
+        });
+      }
     } else if (payment.consultation && !result.slotLost) {
       const c = payment.consultation;
       await sendNotificationEmail({

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { apiHandler, clientIp, HttpError, orderAccess, requireRole, ROLE_GROUPS } from '@/lib/authz';
 import { sendNotificationEmail, buildDocumentRejectedEmail } from '@/lib/email';
+import { notifyDocQueryWhatsApp } from '@/lib/whatsapp';
 
 const schema = z.discriminatedUnion('status', [
   z.object({ documentId: z.string().min(1), status: z.literal('VERIFIED') }),
@@ -15,7 +16,7 @@ export const PATCH = apiHandler(async (request: Request) => {
 
   const doc = await prisma.vaultDocument.findUnique({
     where: { id: input.documentId },
-    include: { order: true, owner: { select: { name: true, email: true } } },
+    include: { order: true, owner: { select: { name: true, email: true, phone: true } } },
   });
   if (!doc || !doc.order || orderAccess(user, doc.order) !== 'staff') throw new HttpError(404, 'Document not found.');
   if (doc.status === 'SUPERSEDED') throw new HttpError(409, 'A newer version of this document exists.');
@@ -45,6 +46,16 @@ export const PATCH = apiHandler(async (request: Request) => {
       subject: `Action needed on ${doc.order.orderNumber}: re-upload ${doc.name}`,
       html: buildDocumentRejectedEmail(doc.owner.name, doc.order.orderNumber, doc.name, rejectNote!),
     });
+
+    if (doc.owner.phone) {
+      await notifyDocQueryWhatsApp({
+        phone: doc.owner.phone,
+        clientName: doc.owner.name,
+        orderNumber: doc.order.orderNumber,
+        docName: doc.name,
+        rejectNote: rejectNote!,
+      });
+    }
   }
 
   return NextResponse.json({ success: true, document: { id: document.id, status: document.status } });
