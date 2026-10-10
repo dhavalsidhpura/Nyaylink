@@ -8,6 +8,7 @@ const MENU_COMPANY_REG = {
     title: 'Incorporation & Setup',
     items: [
       { name: 'Private Limited Company', slug: 'private-limited-company' },
+      { name: 'US Delaware C-Corp (YC Ready)', slug: 'us-delaware-company-registration' },
       { name: 'LLP Registration', slug: 'llp-registration' },
       { name: 'One Person Company (OPC)', slug: 'one-person-company' },
       { name: 'Public Limited Company', slug: 'public-limited-company' },
@@ -36,6 +37,8 @@ const MENU_TRADEMARK = {
     title: 'Trademark & Brand Protection',
     items: [
       { name: 'Trademark Registration', slug: 'trademark-registration' },
+      { name: 'Trademark Hearing Representation', slug: 'trademark-hearing-representation' },
+      { name: 'Trademark Watch & Gazette Monitoring', slug: 'trademark-watch-monitoring' },
       { name: 'Trademark Renewal', slug: 'trademark-renewal' },
       { name: 'Trademark Objection Reply', slug: 'trademark-objection-reply' },
       { name: 'Trademark Opposition', slug: 'trademark-opposition' },
@@ -66,6 +69,7 @@ const MENU_TAX_GST = {
   column2: {
     title: 'TDS & Direct Taxation',
     items: [
+      { name: 'Virtual CFO (vCFO) Advisory', slug: 'virtual-cfo-services' },
       { name: 'TDS Quarterly Return (26Q/24Q)', slug: 'tds-tcs-return' },
       { name: 'Income Tax Return (ITR-1 to 7)', slug: 'income-tax-return' },
       { name: 'Tax Planning & Advisory', slug: 'tax-planning' },

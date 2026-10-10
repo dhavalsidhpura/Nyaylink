@@ -283,10 +283,10 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/admin"
+              href="/ca/dashboard"
               className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow flex items-center gap-1"
             >
-              <span>⚡</span> CA Console
+              <span>📊</span> CA Partner Portal
             </Link>
           </div>
         </div>
@@ -313,6 +313,9 @@ export default function HomePage() {
                     </div>
                     <Link href="/services/private-limited-company" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">
                       Private Limited Company <span className="text-[10px] text-emerald-700 ml-1">₹999 Token</span>
+                    </Link>
+                    <Link href="/services/us-delaware-company-registration" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#F4B942]">
+                      US Delaware C-Corp <span className="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-black ml-1">YC Ready</span>
                     </Link>
                     <Link href="/services/startup-india-dpiit-recognition" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-amber-700">
                       Startup India DPIIT <span className="text-[10px] text-amber-600 ml-1">80-IAC Tax Exemption</span>
@@ -341,6 +344,9 @@ export default function HomePage() {
                 </button>
                 {openDropdown === 'tax' && (
                   <div className="absolute top-full left-0 w-72 bg-white text-slate-800 shadow-2xl rounded-2xl border border-slate-200 p-3 space-y-1 z-50 animate-in fade-in duration-100 text-xs">
+                    <Link href="/services/virtual-cfo-services" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#F4B942]">
+                      Virtual CFO (vCFO) Advisory <span className="text-[10px] bg-cyan-100 text-[#073B5C] px-1.5 py-0.5 rounded font-black ml-1">Strategic</span>
+                    </Link>
                     <Link href="/services/gst-registration" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">
                       GST Registration <span className="text-[10px] text-emerald-700 ml-1">From ₹999</span>
                     </Link>
@@ -367,6 +373,12 @@ export default function HomePage() {
                   <div className="absolute top-full left-0 w-72 bg-white text-slate-800 shadow-2xl rounded-2xl border border-slate-200 p-3 space-y-1 z-50 animate-in fade-in duration-100 text-xs">
                     <Link href="/services/trademark-registration" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#073B5C]">
                       Trademark Registration (™) <span className="text-[10px] text-emerald-700 ml-1">₹999 Token</span>
+                    </Link>
+                    <Link href="/services/trademark-hearing-representation" className="block p-2 hover:bg-slate-50 rounded-lg font-bold text-[#F4B942]">
+                      TM Hearing Representation <span className="text-[10px] text-amber-700 ml-1">High Court Adv.</span>
+                    </Link>
+                    <Link href="/services/trademark-watch-monitoring" className="block p-2 hover:bg-slate-50 rounded-lg font-semibold text-[#073B5C]">
+                      TM Watch & Gazette Monitor
                     </Link>
                     <Link href="/services/trademark-renewal" className="block p-2 hover:bg-slate-50 rounded-lg">Trademark Renewal</Link>
                     <Link href="/services/trademark-objection" className="block p-2 hover:bg-slate-50 rounded-lg">Trademark Objection Reply</Link>
