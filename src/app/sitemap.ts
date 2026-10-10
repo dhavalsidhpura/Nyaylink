@@ -44,6 +44,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
+      url: `${baseUrl}/tools/agreement-generator`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.88,
+    },
+    {
+      url: `${baseUrl}/tools/track-status`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 0.88,
+    },
+    {
       url: `${baseUrl}/terms`,
       lastModified: currentDate,
       changeFrequency: 'monthly',

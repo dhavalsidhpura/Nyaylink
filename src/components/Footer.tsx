@@ -106,6 +106,8 @@ export default function Footer() {
             <li><Link href="/services/cheque-bounce-notice-138" className="hover:text-[#F4B942] transition-colors">Sec 138 Cheque Notice</Link></li>
             <li><Link href="/vakil" className="hover:text-[#F4B942] transition-colors font-bold text-emerald-400">👨‍⚖️ वकील Search</Link></li>
             <li><Link href="/packages" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">📦 Bundled Packages</Link></li>
+            <li><Link href="/tools/agreement-generator" className="hover:text-[#F4B942] transition-colors font-bold text-amber-300">📝 Agreement Generator</Link></li>
+            <li><Link href="/tools/track-status" className="hover:text-[#F4B942] transition-colors">🏛️ Track MCA/TM Status</Link></li>
             <li><Link href="/ca/dashboard" className="hover:text-[#F4B942] transition-colors font-bold text-cyan-300">📊 CA & Expert Portal</Link></li>
             <li><Link href="/dashboard" className="hover:text-[#F4B942] transition-colors">My Documents Vault</Link></li>
           </ul>

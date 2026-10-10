@@ -52,12 +52,76 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
   const done = requirements.filter((r) => latestFor(r.key)?.status === 'VERIFIED').length;
   const uploaded = requirements.filter((r) => latestFor(r.key)).length;
 
+  const [preValidationSuccess, setPreValidationSuccess] = useState<string | null>(null);
+
+  const validateFile = (key: string, file: File): Promise<string | null> => {
+    return new Promise((resolve) => {
+      // 1. File size checks
+      if (file.size < 5 * 1024) {
+        resolve('File appears empty or corrupted (smaller than 5 KB). Please upload a valid document.');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        resolve('File exceeds 10 MB limit. Please compress or optimize the file.');
+        return;
+      }
+
+      // 2. MIME & extension checks
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (!validTypes.includes(file.type) && !['pdf', 'jpg', 'jpeg', 'png'].includes(ext || '')) {
+        resolve('Unsupported format. MCA V3 and IP India registries strictly require PDF, JPG, or PNG files.');
+        return;
+      }
+
+      // 3. Keyword mismatch heuristic
+      const req = requirements.find((r) => r.key === key);
+      const reqLabel = (req?.label || '').toLowerCase();
+      const fileName = file.name.toLowerCase();
+      if (reqLabel.includes('pan') && (fileName.includes('bill') || fileName.includes('rent') || fileName.includes('noc'))) {
+        const proceed = window.confirm(
+          `Notice: You are uploading "${file.name}" for "${req?.label}". This filename suggests an address/utility proof rather than a PAN card. Do you wish to continue?`
+        );
+        if (!proceed) {
+          resolve('Upload cancelled. Please select the correct PAN card file.');
+          return;
+        }
+      }
+
+      // 4. Image resolution checks if an image file
+      if (file.type.startsWith('image/')) {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(img.src);
+          if (img.width < 250 || img.height < 250) {
+            resolve('Image resolution appears too low (< 250px). Ensure identity details are crisp and legible.');
+          } else {
+            resolve(null);
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(img.src);
+          resolve(null);
+        };
+        return;
+      }
+
+      resolve(null);
+    });
+  };
+
   const upload = async (key: string, file: File) => {
     setError('');
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Files must be 10 MB or smaller.');
+    setPreValidationSuccess(null);
+
+    const validationError = await validateFile(key, file);
+    if (validationError) {
+      setError(validationError);
+      if (inputs.current[key]) inputs.current[key]!.value = '';
       return;
     }
+
     setBusyKey(key);
     try {
       const form = new FormData();
@@ -66,8 +130,13 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
       if (key !== '__extra') form.append('requirementKey', key);
       const res = await fetch('/api/documents/upload', { method: 'POST', body: form });
       const data = await res.json();
-      if (!data.success) setError(data.error || 'Upload failed.');
-      else router.refresh();
+      if (!data.success) {
+        setError(data.error || 'Upload failed.');
+      } else {
+        setPreValidationSuccess(`✓ "${file.name}" verified and securely stored.`);
+        setTimeout(() => setPreValidationSuccess(null), 4000);
+        router.refresh();
+      }
     } catch {
       setError('Upload failed. Please check your connection and try again.');
     } finally {
@@ -208,6 +277,11 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         </p>
         {locked && lockedReason && <p className="text-[11px] font-bold text-amber-700">{lockedReason}</p>}
         {error && <p className="text-[11px] font-bold text-rose-700">{error}</p>}
+        {preValidationSuccess && (
+          <p className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+            {preValidationSuccess}
+          </p>
+        )}
       </div>
       <ul className="divide-y divide-slate-100">
         {requirements.map((r) => docRow(latestFor(r.key), r.label, r.key, r.required))}

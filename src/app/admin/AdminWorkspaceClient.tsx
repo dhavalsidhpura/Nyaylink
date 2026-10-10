@@ -338,7 +338,8 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                       <th className="p-4">Service</th>
                       <th className="p-4">Fee</th>
                       <th className="p-4">Assigned CA</th>
-                      <th className="p-4 text-right">Status</th>
+                      <th className="p-4 text-center">Status</th>
+                      <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -351,7 +352,17 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                         <td className="p-4">{o.service.title}</td>
                         <td className="p-4 font-extrabold text-emerald-700">₹{formatINR(o.totalAmount)}</td>
                         <td className="p-4 font-bold text-[#0E7490]">{o.assignedCA?.name || 'Unassigned'}</td>
-                        <td className="p-4 text-right font-bold uppercase text-amber-800">{o.status.replace(/_/g, ' ')}</td>
+                        <td className="p-4 text-center font-bold uppercase text-amber-800 text-[10px]">
+                          <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">{o.status.replace(/_/g, ' ')}</span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <Link
+                            href={`/admin/orders/${o.orderNumber}`}
+                            className="bg-slate-100 hover:bg-[#073B5C] hover:text-[#F4B942] text-[#073B5C] font-bold text-[10px] px-2.5 py-1 rounded-lg transition-colors inline-block whitespace-nowrap shadow-xs"
+                          >
+                            Manage / Refund ↗
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
