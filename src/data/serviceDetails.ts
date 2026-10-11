@@ -1276,6 +1276,279 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
       { q: 'Can I file a case after 30 days of cheque bounce?', a: 'If the statutory 30-day notice window is missed, the criminal remedy under Section 138 cannot be filed, though a civil recovery suit may still be pursued.' },
     ],
   },
+
+  // ==========================================
+  // 8. CORE LICENSES & SECRETARIAL ADDITIONS
+  // ==========================================
+  'msme-udyam-registration': {
+    slug: 'msme-udyam-registration',
+    title: 'MSME Udyam Registration',
+    category: 'licenses-permits',
+    badge: 'Govt Subsidies & Benefits',
+    whoShouldBuy: 'Micro, small, and medium enterprises, manufacturing units, service providers, and traders seeking government recognition and subsidies.',
+    whyShouldBuy: 'Unlocks a 50% discount on Trademark government fees (saves ₹4,500), collateral-free bank loans under CGTMSE, lower interest rates, and legal protection against delayed buyer payments under MSMED Act.',
+    timeframe: '24–48 hours for issuance of official green Udyam certificate.',
+    specificDocs: [
+      'Applicant Aadhaar Card (linked with active mobile number for OTP)',
+      'Entity PAN Card (Proprietor PAN for proprietorships, Company PAN for corporate entities)',
+      'Bank Account Number and IFSC code',
+      'Commercial address proof and primary business activity details',
+    ],
+    importantConsiderations: [
+      'Udyam registration is lifetime and does not require annual renewal fees.',
+      'Investment and turnover figures are verified automatically against Income Tax and GSTN databases.',
+    ],
+    deliverables: [
+      { title: 'Official MSME Udyam Registration Certificate', desc: 'Government certificate with permanent Udyam Registration Number and verifiable QR code.' },
+      { title: 'Enterprise Classification Docket', desc: 'Clear classification as Micro, Small, or Medium with eligible government scheme list.' },
+      { title: 'Trademark Fee Subsidy Voucher Guide', desc: 'Step-by-step guidance to claim ₹4,500 government fee waiver on Trademark filings.' },
+    ],
+    faqs: [
+      { q: 'Is Udyam Registration mandatory?', a: 'While not legally mandatory to operate, it is essential to access government subsidies, priority sector bank lending, tender preferences, and a 50% discount on Trademark statutory fees.' },
+      { q: 'Can traders register under MSME Udyam?', a: 'Yes. Wholesale and retail traders are fully eligible for Udyam registration, unlocking access to priority sector lending schemes and credit guarantees.' },
+      { q: 'How does Udyam protect against delayed customer payments?', a: 'Under the MSMED Act, buyers must settle dues within 45 days. Delayed payments incur compound interest at 3x the RBI bank rate, and disputes can be filed directly on the MSME Samadhaan portal.' },
+      { q: 'Does Udyam registration require annual renewal?', a: 'No. Udyam Registration is issued with lifetime validity and does not require periodic renewal fees. Investment and turnover figures update automatically from ITR and GSTN filings.' },
+    ],
+  },
+
+  'shop-and-establishment-license': {
+    slug: 'shop-and-establishment-license',
+    title: 'Shop & Establishment (Gumasta License)',
+    category: 'licenses-permits',
+    badge: 'State Labor Act Registration',
+    whoShouldBuy: 'Every commercial office, retail shop, restaurant, cafe, cloud kitchen, and service firm operating from physical or commercial premises.',
+    whyShouldBuy: 'Mandatory statutory proof of commercial business existence required by municipal corporations, banks for current account opening, and state labor inspectors.',
+    timeframe: '3–7 working days depending on state municipal labor department approval.',
+    specificDocs: [
+      'Electricity Bill / Utility Bill of the commercial premises (< 2 months old)',
+      'Rent Agreement & No-Objection Certificate (NOC) from landlord',
+      'Owner / Partner / Director PAN, Aadhaar, and passport photograph',
+      'Photo of the business storefront with signage display',
+    ],
+    importantConsiderations: [
+      'Must be applied for within 30 days of commencing commercial operations at the physical address.',
+      'Employee working hours, overtime, and mandatory weekly holidays are governed under this act.',
+    ],
+    deliverables: [
+      { title: 'Official Shop & Establishment Registration Certificate', desc: 'Municipal labor department certificate valid across state jurisdiction.' },
+      { title: 'Statutory Labor Compliance Guidelines', desc: 'Summary of mandatory employee registers, working hour limits, and holiday rules.' },
+    ],
+    faqs: [
+      { q: 'Is Shop Act mandatory for home-based businesses or freelancers?', a: 'Yes, if you operate commercially or require a corporate bank current account in states like Maharashtra, Gujarat, and Delhi, banks mandate a Shop Act license as address proof.' },
+      { q: 'Do I need separate Shop Act registrations for different branches?', a: 'Yes. Shop & Establishment licenses are premises-specific and governed by the local municipal corporation where each branch or store operates.' },
+      { q: 'What is the validity period of a Shop Act license?', a: 'Depending on the state, licenses are either issued with lifetime validity (e.g. Maharashtra Gumasta under the 2017 Act for entities with <10 employees) or require renewal every 1 to 5 years.' },
+    ],
+  },
+
+  'startup-india-dpiit-recognition': {
+    slug: 'startup-india-dpiit-recognition',
+    title: 'Startup India DPIIT Recognition',
+    category: 'company-reg',
+    badge: 'Section 80-IAC Tax Exemption',
+    whoShouldBuy: 'Private Limited Companies and LLPs incorporated within the last 10 years working towards innovation, development, or commercialization of new products or scalable tech.',
+    whyShouldBuy: 'Enables 100% income tax exemption for 3 consecutive financial years under Section 80-IAC, angel tax relief under Section 56(2)(viib), and up to 80% rebate on patent fees.',
+    timeframe: '5–10 working days for DPIIT evaluation and certificate allotment.',
+    specificDocs: [
+      'Certificate of Incorporation (CoI) and MoA / AoA',
+      'Detailed Pitch Deck or Business Plan outlining innovation and scalability',
+      'Proof of concept, prototype link, website URL, or patent application (if any)',
+      'Director KYC and declaration of employment/turnover potential',
+    ],
+    importantConsiderations: [
+      'The company must not be formed by splitting up or reconstruction of an existing business.',
+      'Annual turnover must not have exceeded ₹100 Crores in any previous financial year.',
+    ],
+    deliverables: [
+      { title: 'Official DPIIT Recognition Certificate', desc: 'Central Ministry of Commerce certificate with unique DIPP number.' },
+      { title: 'Section 80-IAC Tax Exemption Application Docket', desc: 'Detailed filing preparation for Inter-Ministerial Board (IMB) tax holiday review.' },
+      { title: 'Government Tender EMD Exemption Letter', desc: 'Statutory waiver certificate from prior turnover and experience requirements in public tenders.' },
+    ],
+    faqs: [
+      { q: 'Can an existing profitable company apply for Startup India?', a: 'Yes, as long as it was incorporated less than 10 years ago, turnover is below ₹100 Cr, and the business demonstrates innovative, scalable potential.' },
+      { q: 'How does Section 80-IAC 3-year tax exemption work?', a: 'After DPIIT recognition, a Private Limited company can apply to the Inter-Ministerial Board (IMB) to receive 100% tax exemption on profits for any 3 consecutive years out of its first 10 years.' },
+      { q: 'Does Startup India recognition exempt us from Angel Tax?', a: 'Yes. Eligible startups filing Form 2 under Section 56(2)(viib) are exempt from tax on share premiums received from investors exceeding fair market value.' },
+    ],
+  },
+
+  'mca-inc-20a-commencement-of-business': {
+    slug: 'mca-inc-20a-commencement-of-business',
+    title: 'MCA Form INC-20A (Commencement of Business)',
+    category: 'company-reg',
+    badge: '180-Day Mandatory Filing',
+    whoShouldBuy: 'Every Private Limited and Public Limited Company incorporated in India with share capital.',
+    whyShouldBuy: 'Mandatory statutory declaration verifying that subscribers to the Memorandum have deposited their agreed share capital into the corporate bank account. Failure to file incurs a ₹50,000 fine on the company and ₹1,000/day on directors, leading to automatic strike-off.',
+    timeframe: '2–4 working days for CA certification and MCA SRN generation.',
+    specificDocs: [
+      'Bank statement of the company showing deposit of subscription money by all directors/shareholders',
+      'Board Resolution approving Commencement of Business filing',
+      'Proof of registered office address with photograph of external name board',
+      'Class-3 Digital Signature Certificate (DSC) of active Director',
+    ],
+    importantConsiderations: [
+      'Must be filed within 180 days from the date of incorporation.',
+      'The company cannot borrow money or start commercial transactions legally until Form INC-20A is approved.',
+    ],
+    deliverables: [
+      { title: 'MCA Approved Form INC-20A e-Challan', desc: 'Official Ministry of Corporate Affairs filing receipt with unique SRN.' },
+      { title: 'Practicing CA / CS Certification Dossier', desc: 'Statutory scrutiny certification under Section 10A of the Companies Act 2013.' },
+    ],
+    faqs: [
+      { q: 'What happens if we do not file INC-20A within 180 days?', a: 'The Registrar of Companies (ROC) can initiate suo-motu strike-off of the company name, freeze corporate banking facilities, and disqualify directors with fines of ₹50,000 + ₹1,000 per day of default.' },
+      { q: 'Can we file INC-20A before opening our bank account?', a: 'No. The filing strictly mandates attaching bank statement proof demonstrating that each shareholder deposited their exact agreed subscription capital into the company account.' },
+      { q: 'Does an LLP require Form INC-20A?', a: 'No. Form INC-20A applies strictly to companies registered under the Companies Act 2013 having share capital (Private Limited, Public Limited, OPC). LLPs file Form 3 instead.' },
+    ],
+  },
+
+  'dir-3-kyc-director-filing': {
+    slug: 'dir-3-kyc-director-filing',
+    title: 'Director DIR-3 KYC Annual Filing',
+    category: 'company-reg',
+    badge: 'Annual Mandatory DIN KYC',
+    whoShouldBuy: 'Every individual holding an active Director Identification Number (DIN) or Designated Partner Identification Number (DPIN).',
+    whyShouldBuy: 'Mandatory annual requirement under Rule 12A of Companies Rules to keep DIN active. Non-filing results in immediate DIN deactivation and a mandatory government penalty of ₹5,000 per director to reactivate.',
+    timeframe: '24–48 hours for electronic verification and MCA acknowledgment.',
+    specificDocs: [
+      'Director PAN Card',
+      'Aadhaar Card with matching name and date of birth',
+      'Valid Passport / Voter ID for address verification',
+      'Personal Mobile Number and Personal Email ID (for live MCA dual-OTP verification)',
+      'Digital Signature Certificate (DSC) of Director (for Web-Form filing)',
+    ],
+    importantConsiderations: [
+      'Due date is on or before 30th September of every financial year.',
+      'Even disqualified directors or directors not currently appointed in any active company must file DIR-3 KYC to avoid penalties.',
+    ],
+    deliverables: [
+      { title: 'MCA DIR-3 KYC Filing Receipt', desc: 'Official SRN challan confirming active DIN status for the current financial year.' },
+      { title: 'DIN Status Compliance Report', desc: 'Registry verification report confirming active director standing across all appointed companies.' },
+    ],
+    faqs: [
+      { q: 'What is DIR-3 KYC Web vs e-Form?', a: 'Directors whose email and mobile remain unchanged from previous filings can file DIR-3 KYC Web via simple OTP authentication. If mobile/email details changed or filing for the first time, a full e-Form certified by DSC and practicing CA/CS is required.' },
+      { q: 'What is the government penalty for filing after September 30?', a: 'Filing after the annual September 30 deadline incurs a mandatory government late fee of ₹5,000 per DIN, and the DIN is marked as "Deactivated due to non-filing of DIR-3 KYC" until settled.' },
+      { q: 'Do directors who resigned during the year still need to file?', a: 'Yes. Any individual allocated an active DIN/DPIN must file DIR-3 KYC annually, regardless of whether they currently hold an active directorship.' },
+    ],
+  },
+
+  'trademark-hearing-representation': {
+    slug: 'trademark-hearing-representation',
+    title: 'Trademark Hearing & Registry Representation',
+    category: 'trademark-ipr',
+    badge: 'Senior TM Advocate',
+    whoShouldBuy: 'Brand owners and startups who received an official Notice of Hearing from the Trade Marks Registry following an unresolved Section 9 or Section 11 examination objection.',
+    whyShouldBuy: 'Oral representation before the Hearing Officer is the final opportunity to argue distinctive character and prior user rights before an application is formally abandoned or refused. Empanelled advocates ensure strong case law presentation.',
+    timeframe: '3–5 days preparation + appearance on scheduled date',
+    specificDocs: [
+      'Official Notice of Hearing from Trade Marks Registry',
+      'Original Examination Report and written objection reply',
+      'Evidence of prior use (invoices, marketing collaterals, website screenshots)',
+      'Signed Form TM-48 (Power of Attorney in favor of appearing advocate)',
+    ],
+    importantConsiderations: [
+      'Hearings in India are conducted virtually via video conference or in-person at regional registry branches.',
+      'Failure to attend a scheduled hearing leads to automatic abandonment under the Trade Marks Act.',
+    ],
+    deliverables: [
+      { title: 'Oral Hearing Case Law Submission Dossier', desc: 'Comprehensive legal argument binder citing Supreme Court and IPAB precedents.' },
+      { title: 'Advocate Appearance & Representation', desc: 'Live oral advocacy before the Deputy / Assistant Registrar of Trade Marks.' },
+      { title: 'Hearing Outcome Order & Publication Notice', desc: 'Official record of order (Accepted for Advertisement / Advertised as Accepted).' },
+    ],
+    faqs: [
+      { q: 'Can I attend the trademark hearing in person?', a: 'Under current IP India digital guidelines, hearings are predominantly conducted via video conference. Our empanelled advocates represent you directly; applicant attendance is optional.' },
+      { q: 'What happens if the hearing officer still objects?', a: 'If the mark is refused post-hearing, our advocates can file a Review Petition under Rule 119 within 30 days or file an appeal before the High Court.' },
+      { q: 'Do I need a new TM-48 Power of Attorney?', a: 'Yes, a fresh Form TM-48 authorizing the specific arguing counsel to represent your entity before the Registry bench is required.' },
+    ],
+  },
+
+  'trademark-watch-monitoring': {
+    slug: 'trademark-watch-monitoring',
+    title: 'Trademark Watch & Gazette Monitoring (Annual)',
+    category: 'trademark-ipr',
+    badge: '1-Year Brand Shield',
+    whoShouldBuy: 'Companies, D2C brands, tech startups, and intellectual property owners looking to protect their trademark against infringement, copycats, and confusingly similar filings.',
+    whyShouldBuy: 'The Trade Marks Registry publishes thousands of new applications every week. If a competitor files a similar brand name, you only have a strict 4-month window to file an Opposition (Form TM-O). Automated monitoring ensures you never miss a threat.',
+    timeframe: 'Continuous 52-week monitoring with weekly alert digest',
+    specificDocs: [
+      'Registered trademark registration certificate or pending application receipt',
+      'Brand logo vector and primary wordmark',
+      'Designated NICE classes of business operation',
+    ],
+    importantConsiderations: [
+      'Monitoring covers phonetic, visual, and transliterated similarities across all 45 classes in the official Trade Marks Journal.',
+      'Filing an Opposition (TM-O) requires separate legal fees if an infringing mark is detected and contested.',
+    ],
+    deliverables: [
+      { title: 'Weekly Trade Marks Journal Algorithmic Scan', desc: 'Automated AI audit of all newly advertised marks published by IP India.' },
+      { title: 'Instant Conflict Warning Dossier', desc: 'Immediate notification with risk score, similarity analysis, and opposition deadline.' },
+      { title: 'Quarterly IP Portfolio Health Report', desc: 'Executive summary of your brand footprint and active class protection coverage.' },
+    ],
+    faqs: [
+      { q: 'How often is the Trade Marks Journal published?', a: 'The official Trade Marks Journal is published on Mondays by the Controller General of Patents, Designs and Trade Marks. Our system scans every issue within 24 hours of release.' },
+      { q: 'What is the deadline to block a competitor trademark?', a: 'Section 21 of the Trade Marks Act mandates a strict 4-month opposition window from the date of advertisement in the Journal. No extensions are granted by law.' },
+      { q: 'Can this service monitor multiple classes?', a: 'Yes. The subscription protects your designated mark across all allied and related classes specified during enrollment.' },
+    ],
+  },
+
+  'virtual-cfo-services': {
+    slug: 'virtual-cfo-services',
+    title: 'Virtual CFO (vCFO) Strategic Advisory',
+    category: 'tax-accounting',
+    badge: 'Founder CFO',
+    whoShouldBuy: 'Early-stage funded startups, scaling D2C brands, and growth SMEs with monthly revenues of ₹10L–₹5Cr that require senior financial leadership without hiring an expensive full-time ₹40L/year CFO.',
+    whyShouldBuy: 'Get high-level financial strategy, unit economics analysis, cash burn runways, investor-ready MIS dashboards, and proactive tax optimization directly from senior Chartered Accountants.',
+    timeframe: 'Ongoing monthly strategic retainer',
+    specificDocs: [
+      'Audited financial statements for the past 2 financial years',
+      '12-month historical bank statements in Excel / CSV format',
+      'Access to existing accounting software (Zoho Books / Tally / QuickBooks)',
+      'Current Cap Table and shareholding structure',
+    ],
+    importantConsiderations: [
+      'Includes regular bi-weekly strategy calls with founders and management.',
+      'Statutory audit certification and tax audit signing remain independent under ICAI independence guidelines.',
+    ],
+    deliverables: [
+      { title: 'Monthly Executive Investor MIS', desc: 'P&L, Balance Sheet, Cash Flow, and KPI analysis presented in investor-grade formats.' },
+      { title: 'Rolling 12-Month Cash Burn & Runway Model', desc: 'Predictive financial modeling to manage working capital and plan future fundraising.' },
+      { title: 'Unit Economics & Pricing Optimization', desc: 'Gross margin, CAC, LTV, and contribution margin breakdown by product/service.' },
+      { title: 'Bi-Weekly Founder Strategy Consultation', desc: 'Dedicated 60-minute strategy session with your designated Senior CA / Financial Strategist.' },
+    ],
+    faqs: [
+      { q: 'How is a Virtual CFO different from a regular accountant?', a: 'An accountant records historical transactions. A Virtual CFO analyzes forward-looking data: cash runway, gross margins, fundraising strategy, tax exposure, and board reporting.' },
+      { q: 'Can the vCFO help communicate with our investors?', a: 'Yes. We prepare standardized quarterly investor update decks and can join board or investor review calls to present financial performance.' },
+      { q: 'Is there a minimum contract commitment?', a: 'We offer flexible month-to-month retainers with a 30-day notice period, as well as discounted annual retainers.' },
+    ],
+  },
+
+  'us-delaware-company-registration': {
+    slug: 'us-delaware-company-registration',
+    title: 'US Delaware C-Corp Incorporation (Global VC Ready)',
+    category: 'company-reg',
+    badge: 'YC & Global VC Ready',
+    whoShouldBuy: 'Indian founders building global SaaS, AI, or export businesses who plan to raise venture capital from US investors (Y Combinator, Techstars, Sequoia) or integrate Stripe, Mercury, and US banking.',
+    whyShouldBuy: 'Delaware is the world standard for venture-backed corporate law. Over 68% of Fortune 500 companies and nearly all VC-funded startups are incorporated in Delaware due to its Court of Chancery, business-friendly laws, and investor familiar equity structures.',
+    timeframe: '7–10 working days',
+    specificDocs: [
+      'Passports of all founders and directors',
+      'Proof of address (utility bill or bank statement under 2 months old)',
+      'Proposed Delaware company name and authorized stock breakdown (standard: 10,000,000 shares at $0.00001 par value)',
+      'Brief description of cross-border software or commercial activities',
+    ],
+    importantConsiderations: [
+      'Requires an annual Delaware Franchise Tax report and registered agent renewal.',
+      'Complies with RBI Overseas Direct Investment (ODI) regulations for Indian resident founders.',
+    ],
+    deliverables: [
+      { title: 'Delaware Certificate of Incorporation', desc: 'Official corporate charter filed and stamped by the Delaware Division of Corporations.' },
+      { title: 'Federal Employer Identification Number (EIN)', desc: 'Official US IRS tax identification number needed for US banking and Stripe.' },
+      { title: '1-Year US Registered Agent Service', desc: 'Statutory physical registered agent in Delaware for official legal service of process.' },
+      { title: 'Standard Post-Incorporation Startup Bylaws', desc: 'Stock Purchase Agreements, Action by Incorporator, and Board Resolutions.' },
+    ],
+    faqs: [
+      { q: 'Do Indian founders need a US visa or physical presence to incorporate?', a: 'No. 100% of the incorporation and EIN application is completed digitally without requiring a US visit or visa.' },
+      { q: 'Can we open a US bank account like Mercury or Brex?', a: 'Yes. With your stamped Delaware Certificate of Incorporation and IRS EIN, founders can apply online for US business accounts with Mercury Bank or Brex.' },
+      { q: 'What is the standard share capitalization for venture startups?', a: 'The standard venture structure is 10,000,000 common shares with a par value of $0.00001 per share, keeping initial franchise taxes at the minimum $400/year.' },
+    ],
+  },
 };
 
 export function getServiceStructure(slug: string): ServiceStructure {
@@ -1303,7 +1576,9 @@ export function getServiceStructure(slug: string): ServiceStructure {
       { title: 'Official Filing Acknowledgment', desc: 'Direct government receipt with tracking reference.' },
     ],
     faqs: [
-      { q: 'How do I track filing status?', a: 'Live updates are displayed in real-time inside your Vault Dashboard.' },
+      { q: 'How do I track my filing status?', a: 'Live milestone updates and government challans are displayed in real-time inside your secure Vault Dashboard.' },
+      { q: 'Are government statutory fees included?', a: 'NyayaLink professional retainers are fixed; variable statutory registry fees and stamp duties are passed through strictly at actual government challan receipts with zero markup.' },
+      { q: 'What happens after I submit my documents?', a: 'A certified Chartered Accountant or Legal Associate reviews them within 2 hours, identifies any defects, and submits the finalized dossier directly to the respective government portal.' },
     ],
   };
 }

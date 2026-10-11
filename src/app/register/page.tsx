@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -22,7 +24,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({ name, email, phone, password, consent }),
       });
 
       const data = await res.json();
@@ -33,8 +35,9 @@ export default function RegisterPage() {
         return;
       }
 
-      alert('Account registered successfully! Please sign in.');
-      router.push('/login');
+      const login = await signIn('credentials', { redirect: false, email, password });
+      router.push(login?.error ? '/login' : '/dashboard');
+      router.refresh();
     } catch (err) {
       setErrorMsg('Failed to connect to registration server.');
       setLoading(false);
@@ -67,7 +70,7 @@ export default function RegisterPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Dhaval Sidhpura"
+                placeholder="As on your PAN card"
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
               />
             </div>
@@ -85,13 +88,13 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block font-bold text-[#073B5C] mb-1">Mobile Number (+91)</label>
+              <label className="block font-bold text-[#073B5C] mb-1">Mobile Number (+91, optional)</label>
               <input
                 type="tel"
-                required
+                inputMode="numeric"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 9920054785"
+                placeholder="10-digit mobile (optional)"
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
               />
             </div>
@@ -101,6 +104,8 @@ export default function RegisterPage() {
               <input
                 type="password"
                 required
+                minLength={8}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 8 characters"
@@ -108,9 +113,24 @@ export default function RegisterPage() {
               />
             </div>
 
+            <label className="flex items-start gap-2 text-[11px] text-slate-600">
+              <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 accent-[#0E7490]" />
+              <span>
+                I agree to the{' '}
+                <Link href="/terms" target="_blank" className="text-[#0E7490] underline">
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" target="_blank" className="text-[#0E7490] underline">
+                  Privacy Policy
+                </Link>
+                , and consent to NyayaLink processing my data to provide the services I request.
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !consent}
               className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black py-3.5 rounded-xl uppercase tracking-wider transition-all shadow cursor-pointer text-xs"
             >
               {loading ? 'Creating Account...' : 'Register Account →'}

@@ -8,6 +8,7 @@ const MENU_COMPANY_REG = {
     title: 'Incorporation & Setup',
     items: [
       { name: 'Private Limited Company', slug: 'private-limited-company' },
+      { name: 'US Delaware C-Corp (YC Ready)', slug: 'us-delaware-company-registration' },
       { name: 'LLP Registration', slug: 'llp-registration' },
       { name: 'One Person Company (OPC)', slug: 'one-person-company' },
       { name: 'Public Limited Company', slug: 'public-limited-company' },
@@ -36,6 +37,8 @@ const MENU_TRADEMARK = {
     title: 'Trademark & Brand Protection',
     items: [
       { name: 'Trademark Registration', slug: 'trademark-registration' },
+      { name: 'Trademark Hearing Representation', slug: 'trademark-hearing-representation' },
+      { name: 'Trademark Watch & Gazette Monitoring', slug: 'trademark-watch-monitoring' },
       { name: 'Trademark Renewal', slug: 'trademark-renewal' },
       { name: 'Trademark Objection Reply', slug: 'trademark-objection-reply' },
       { name: 'Trademark Opposition', slug: 'trademark-opposition' },
@@ -66,6 +69,7 @@ const MENU_TAX_GST = {
   column2: {
     title: 'TDS & Direct Taxation',
     items: [
+      { name: 'Virtual CFO (vCFO) Advisory', slug: 'virtual-cfo-services' },
       { name: 'TDS Quarterly Return (26Q/24Q)', slug: 'tds-tcs-return' },
       { name: 'Income Tax Return (ITR-1 to 7)', slug: 'income-tax-return' },
       { name: 'Tax Planning & Advisory', slug: 'tax-planning' },
@@ -83,8 +87,8 @@ export default function Header() {
       <div className="bg-nyaya-navy text-slate-300 text-xs py-2 px-4 border-b border-slate-700/50 relative z-50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-6">
-            <a href="tel:+918068929400" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              📞 <strong className="text-white">+91 8068929400</strong> (Mon-Sat 9AM-7PM)
+            <a href="tel:+919920054785" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
+              📞 <strong className="text-white">+91 9920054785</strong> (Mon-Sat 9AM-7PM)
             </a>
             <a href="mailto:info@nyayalink.com" className="hidden sm:flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
               ✉️ info@nyayalink.com
@@ -99,10 +103,16 @@ export default function Header() {
               Client Login
             </Link>
             <Link
-              href="/admin/orders"
+              href="/lawyer/join"
               className="text-slate-400 hover:text-white underline font-medium text-xs"
             >
-              Operations Console
+              For Advocates
+            </Link>
+            <Link
+              href="/ca/dashboard"
+              className="text-slate-400 hover:text-[#F4B942] underline font-medium text-xs transition-colors"
+            >
+              For CAs / Experts
             </Link>
           </div>
         </div>
@@ -270,7 +280,13 @@ export default function Header() {
               href="/#catalog-section"
               className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
             >
-              All 55 Services
+              All Services
+            </Link>
+            <Link
+              href="/vakil"
+              className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
+            >
+              वकील Search
             </Link>
           </nav>
 

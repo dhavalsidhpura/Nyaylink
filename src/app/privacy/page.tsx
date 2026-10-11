@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Privacy & Data Protection Policy | NyayaLink',
+  description: 'Learn how NyayaLink protects your personal identity data, document vault records, and compliance information under DPDP and IT Act regulations.',
+};
 
 export default function PrivacyPage() {
   return (

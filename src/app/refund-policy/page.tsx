@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Cancellation & Refund Policy | NyayaLink',
+  description: 'Understand NyayaLink fee policies, pre-filing cancellation windows, statutory fee pass-through rules, and 5-7 day refund turnaround.',
+};
 
 export default function RefundPolicyPage() {
   return (

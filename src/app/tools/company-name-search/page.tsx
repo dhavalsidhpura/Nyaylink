@@ -18,6 +18,7 @@ export default function CompanyNameSearchTool() {
   const [state, setState] = useState('Maharashtra');
   const [isSearching, setIsSearching] = useState(false);
   const [result, setResult] = useState<SearchResult | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,6 +255,59 @@ export default function CompanyNameSearchTool() {
               Adding an &quot;s&quot; or changing case does not make a conflicting name unique.
             </li>
           </ul>
+        </div>
+
+        {/* Company Name Search FAQs */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">Frequently Asked Questions</h3>
+            <p className="text-xs text-slate-500">Expert guidance on MCA V3 name reservations, Rule 8 guidelines, and trademark clearances.</p>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            {[
+              {
+                q: 'How does this tool check company name availability?',
+                a: 'Our search engine cross-references both the Ministry of Corporate Affairs (MCA V3) database of incorporated companies / LLPs and the IP India trademark registry across Classes 1 through 45. It checks for exact word matches, phonetic similarities, and prohibited prefix/suffix structures under Rule 8 of the Companies (Incorporation) Rules, 2014.',
+              },
+              {
+                q: 'What are the essential elements of an acceptable company name?',
+                a: 'An approvable name requires three components: (1) A unique and distinctive coined prefix (e.g., "Acrobat"), (2) An activity descriptor reflecting your business objective (e.g., "Technologies", "Consulting", "Solutions"), and (3) The statutory entity suffix (e.g., "Private Limited" or "LLP").',
+              },
+              {
+                q: 'Why can a name be rejected even if no identical company exists?',
+                a: 'The Registrar of Companies (ROC) Central Registration Centre (CRC) rejects names that sound identical to existing entities (e.g., "Kwik" vs "Quick"), names that translate to the same word, or names that clash with a registered or pending trademark in related business classes.',
+              },
+              {
+                q: 'How long is an approved company name reserved once filed?',
+                a: 'For new company incorporation under SPICe+ Part A, an approved name is reserved for 20 calendar days from the date of approval. For existing companies applying for a name change via the RUN (Reserve Unique Name) form, the reservation is valid for 60 calendar days.',
+              },
+              {
+                q: 'Can I use a registered trademark as my company name?',
+                a: 'Yes. In fact, holding a registered trademark or applied mark gives you legal priority. If CRC raises an objection under Rule 8 clashing with your own trademark, providing your trademark registration certificate or applicant NOC clears the name approval immediately.',
+              },
+              {
+                q: 'What is the government fee for MCA name reservation?',
+                a: 'Filing a standalone RUN form on MCA V3 costs ₹1,000 for company reservation and ₹200 for LLP reservation (RUN-LLP). However, when incorporating directly via SPICe+ Part B, name reservation is bundled with the incorporation application at zero additional name fee for small companies.',
+              },
+            ].map((faq, idx) => (
+              <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <span className="pr-4">{faq.q}</span>
+                  <span className="text-sm text-[#0E7490] font-mono shrink-0">{openFaq === idx ? '−' : '+'}</span>
+                </button>
+                {openFaq === idx && (
+                  <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>

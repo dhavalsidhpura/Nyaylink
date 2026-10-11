@@ -5,15 +5,11 @@ import Link from 'next/link';
 
 interface GSTData {
   gstin: string;
-  legalName: string;
-  tradeName: string;
-  status: string;
-  taxpayerType: string;
-  stateCode: string;
   stateName: string;
-  registrationDate: string;
-  address: string;
-  filingStatus: { returnType: string; period: string; status: string }[];
+  stateGstCode: string;
+  pan: string;
+  holderType: string;
+  registrationNumber: number;
 }
 
 export default function GSTSearchTool() {
@@ -21,6 +17,7 @@ export default function GSTSearchTool() {
   const [isSearching, setIsSearching] = useState(false);
   const [data, setData] = useState<GSTData | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,19 +42,11 @@ export default function GSTSearchTool() {
 
       setData({
         gstin: json.gstin,
-        legalName: json.legalName,
-        tradeName: json.tradeName,
-        status: json.status,
-        taxpayerType: 'Regular Taxpayer',
-        stateCode: json.stateCode,
         stateName: json.stateName,
-        registrationDate: '14/06/2021',
-        address: json.principalAddress,
-        filingStatus: [
-          { returnType: 'GSTR-3B', period: 'July 2026', status: 'FILED' },
-          { returnType: 'GSTR-1', period: 'July 2026', status: 'FILED' },
-          { returnType: 'GSTR-3B', period: 'August 2026', status: 'PENDING' },
-        ],
+        stateGstCode: json.stateGstCode,
+        pan: json.pan,
+        holderType: json.holderType,
+        registrationNumber: json.registrationNumber,
       });
     } catch {
       setErrorMsg('GSTN portal lookup service temporarily unavailable.');
@@ -82,13 +71,13 @@ export default function GSTSearchTool() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full flex-grow space-y-8">
         <div className="text-center space-y-3">
           <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-            🧾 GSTN Public Portal Engine
+            🧾 GSTIN Decoder
           </span>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#073B5C]">
-            Live GSTIN Verification & Filing Status
+            GSTIN Format & Check-Digit Verification
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Verify official business trade names, active GST standing, and monthly return filing records.
+            Instantly check whether a GSTIN is well-formed and see the state, PAN and entity type encoded in it.
           </p>
         </div>
 
@@ -132,49 +121,37 @@ export default function GSTSearchTool() {
                     <h3 className="font-mono text-base font-extrabold text-[#0E7490]">{data.gstin}</h3>
                   </div>
                   <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full text-[10px] uppercase">
-                    Status: {data.status}
+                    ✓ Check digit valid
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Legal Entity Name</span>
-                    <strong className="text-slate-900">{data.legalName}</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Registered State</span>
+                    <strong>{data.stateName} (Code: {data.stateGstCode})</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Trade Name</span>
-                    <strong className="text-slate-900">{data.tradeName}</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Embedded PAN</span>
+                    <strong className="font-mono">{data.pan}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Jurisdiction State</span>
-                    <strong>{data.stateName} (Code: {data.stateCode})</strong>
+                    <span className="text-slate-400 block text-[10px] uppercase">Entity Type (from PAN)</span>
+                    <strong>{data.holderType}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Principal Address</span>
-                    <span className="text-[11px] leading-tight block">{data.address}</span>
+                    <span className="text-slate-400 block text-[10px] uppercase">Registration # under this PAN in state</span>
+                    <strong>{data.registrationNumber}</strong>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 space-y-2">
-                  <span className="font-bold text-[#073B5C] block">Recent Return Filing Records:</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {data.filingStatus.map((ret, i) => (
-                      <div key={i} className="p-2.5 bg-white rounded-xl border flex justify-between items-center text-[11px]">
-                        <div>
-                          <strong>{ret.returnType}</strong>
-                          <span className="text-slate-400 block text-[10px]">{ret.period}</span>
-                        </div>
-                        <span
-                          className={`text-[9px] font-extrabold px-2 py-0.5 rounded ${
-                            ret.status === 'FILED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {ret.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <p className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+                  A valid format does not confirm the registration is active. For the legal name, status and return filing
+                  history, search on the{' '}
+                  <a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" className="text-[#0E7490] font-bold underline">
+                    official GST portal
+                  </a>
+                  .
+                </p>
 
                 <div className="pt-2">
                   <Link
@@ -187,6 +164,59 @@ export default function GSTSearchTool() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* GST Verification FAQs */}
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">Frequently Asked Questions on GSTIN & Compliance</h3>
+            <p className="text-xs text-slate-500">Key insights on GSTIN syntax, status codes, vendor ITC verification, and return deadlines.</p>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            {[
+              {
+                q: 'How is a 15-digit GSTIN structured?',
+                a: 'A Goods and Services Tax Identification Number (GSTIN) follows a strict statutory structure: (1) Digits 1–2 represent the state code (e.g., 27 for Maharashtra, 07 for Delhi, 29 for Karnataka); (2) Digits 3–12 contain the 10-digit PAN of the entity; (3) Digit 13 represents the entity registration count under that PAN within that state (1 to 9, then A to Z); (4) Digit 14 is default "Z"; (5) Digit 15 is a calculated alphanumeric check-digit derived via the Luhn algorithm.',
+              },
+              {
+                q: 'What does an "Active" vs "Suspended" or "Cancelled" GST status mean?',
+                a: '"Active" status confirms that the taxpayer is in good standing and legally authorized to levy GST and pass on Input Tax Credit (ITC). "Suspended" indicates an ongoing departmental inquiry or non-reconciliation. "Cancelled" status indicates that the registration was terminated—either upon voluntary surrender or suo-motu by the tax officer due to continuous non-filing of returns (6 consecutive months for regular taxpayers).',
+              },
+              {
+                q: 'Why must businesses verify vendor GSTIN before paying invoices?',
+                a: 'Under Section 16(2)(aa) of the CGST Act, Input Tax Credit (ITC) can only be claimed if your supplier has actually filed their GSTR-1 and the invoice appears in your auto-generated GSTR-2B. If a vendor operates with an invalid or suspended GSTIN, your ITC claim will be rejected by the tax department with 18% interest penalties.',
+              },
+              {
+                q: 'What are the aggregate turnover limits requiring mandatory GST registration?',
+                a: 'For businesses supplying goods, registration is mandatory if annual turnover exceeds ₹40 Lakhs (₹20 Lakhs in Special Category States like Northeast states and Uttarakhand). For service providers, the turnover threshold is ₹20 Lakhs (₹10 Lakhs in Special Category States). Regardless of turnover, inter-state suppliers and e-commerce sellers must register mandatorily.',
+              },
+              {
+                q: 'How do I add branches or change my registered business address?',
+                a: 'You can update your business address or add an Additional Place of Business (APoB) by filing a Core Amendment on the GST portal within 15 days of relocation. Required documents include an updated electricity bill, registered rent agreement, and landlord consent NOC. Our CA desk completes amendment filings within 24 hours.',
+              },
+              {
+                q: 'What are the penalties for late filing of GST returns?',
+                a: 'The government levies a statutory late fee of ₹50 per day (₹20 per day for Nil returns) for delayed filing of GSTR-1 and GSTR-3B, subject to a statutory ceiling. Additionally, interest at 18% per annum is payable on net unpaid cash tax liability from the due date until the actual date of payment.',
+              },
+            ].map((faq, idx) => (
+              <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <span className="pr-4">{faq.q}</span>
+                  <span className="text-sm text-[#0E7490] font-mono shrink-0">{openFaq === idx ? '−' : '+'}</span>
+                </button>
+                {openFaq === idx && (
+                  <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     </div>
