@@ -4,9 +4,10 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  // Lower client JavaScript bundle sizes by tree-shaking & modular loading
+  // Server external packages and optimization in Next.js 14
   experimental: {
-    optimizePackageImports: ['@prisma/client', 'zod', 'bcryptjs'],
+    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
+    optimizePackageImports: ['zod'],
   },
 
   // Image optimization with modern WebP and AVIF formats
