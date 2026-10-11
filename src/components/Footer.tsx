@@ -161,11 +161,11 @@ export default function Footer() {
 
       </div>
 
-      {/* 3. LEGAL DISCLAIMER */}
+      {/* 3. LEGAL & REGULATORY COMPLIANCE DISCLAIMER */}
       <div className="max-w-7xl mx-auto px-4 py-6 border-b border-slate-700/60 text-slate-400 text-[11px] leading-relaxed space-y-2">
-        <strong className="text-[#F4B942] block uppercase tracking-wider">Website Disclaimer:</strong>
+        <strong className="text-[#F4B942] block uppercase tracking-wider">Statutory & Regulatory Notice:</strong>
         <p>
-          This website is privately operated by NyayaLink and is not directly affiliated with, endorsed by, or connected to any government body, ministry, or statutory authority. The intake forms on this portal are designed to collect client information for statutory business filings. Assistance is rendered based on customer requests, and fees charged represent platform advisory and document preparation charges. Filings are processed through certified Chartered Accountants, Company Secretaries, and Legal Advocates.
+          NyayaLink is an independent corporate compliance and legal-technology platform. NyayaLink is not a law firm and does not solicit legal work. Pursuant to the Bar Council of India Rules (Rule 36) and the Advocates Act, 1961, empanelled Advocates and Chartered Accountants listed on this platform practice independently and exercise independent professional discretion. All government fees, ROC stamp duties, and statutory filing challans are pass-through disbursements collected strictly as a pure agent (Rule 33 CGST Rules).
         </p>
       </div>
 

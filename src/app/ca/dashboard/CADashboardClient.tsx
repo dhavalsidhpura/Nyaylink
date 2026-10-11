@@ -48,6 +48,28 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
   // Document Reject Modal State
   const [rejectingDocId, setRejectingDocId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState<string>('');
+  const [escalateMessage, setEscalateMessage] = useState<string | null>(null);
+
+  // Trigger 4-Hour SLA Auto-Escalation
+  const handleEscalateOrphans = async () => {
+    setBusy(true);
+    setEscalateMessage(null);
+    try {
+      const res = await fetch('/api/admin/orders/escalate', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setEscalateMessage(data.message || `Escalated ${data.escalatedCount} docket(s).`);
+        setTimeout(() => setEscalateMessage(null), 6000);
+        router.refresh();
+      } else {
+        alert(data.error || 'Escalation failed.');
+      }
+    } catch {
+      alert('An error occurred during docket escalation.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // Claim Order Action
   const handleClaimOrder = async (orderId: string) => {
@@ -422,12 +444,28 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
           {/* TAB 2: UNCLAIMED DOCKET POOL */}
           {activeTab === 'pool' && (
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-black text-[#073B5C]">Claim Open Dockets</h2>
-                <p className="text-xs text-slate-500">
-                  Real-time pool of verified, pre-paid client applications waiting for an empanelled CA / CS assignment.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <h2 className="text-lg font-black text-[#073B5C]">Claim Open Dockets</h2>
+                  <p className="text-xs text-slate-500">
+                    Real-time pool of verified, pre-paid client applications waiting for an empanelled CA / CS assignment.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={handleEscalateOrphans}
+                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-xs"
+                >
+                  <span>⚡</span> Auto-Escalate Unclaimed (&gt;4h SLA)
+                </button>
               </div>
+
+              {escalateMessage && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-bold flex items-center gap-2">
+                  <span>✓</span> {escalateMessage}
+                </div>
+              )}
 
               {unclaimedOrders.length === 0 ? (
                 <div className="text-center py-12 space-y-3">

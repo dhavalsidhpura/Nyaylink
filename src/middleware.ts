@@ -7,8 +7,44 @@ import { getToken } from 'next-auth/jwt';
 const STAFF_ROLES = ['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'];
 const CA_ROLES = ['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC'];
 
+// Edge sliding-window rate limiting map
+const ipRateMap = new Map<string, { count: number; expiresAt: number }>();
+
+function checkRateLimit(ip: string, limit: number = 30, windowMs: number = 60_000): boolean {
+  const now = Date.now();
+  const entry = ipRateMap.get(ip);
+  if (!entry || entry.expiresAt < now) {
+    ipRateMap.set(ip, { count: 1, expiresAt: now + windowMs });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > limit;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Rate limiting defense for public search and verification APIs
+  if (
+    pathname.startsWith('/api/track-status') ||
+    pathname.startsWith('/api/verify/') ||
+    pathname.startsWith('/api/leads')
+  ) {
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      request.headers.get('x-real-ip') ||
+      'anonymous-ip';
+
+    if (checkRateLimit(ip, 30, 60_000)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please wait 60 seconds before trying again.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+
+    return NextResponse.next();
+  }
+
   const secret = process.env.NEXTAUTH_SECRET;
   if (!secret) {
     return new NextResponse('Server misconfigured: NEXTAUTH_SECRET is not set.', { status: 500 });
@@ -60,5 +96,8 @@ export const config = {
     '/api/admin/:path*',
     '/api/ca/:path*',
     '/api/lawyer/:path*',
+    '/api/track-status',
+    '/api/verify/:path*',
+    '/api/leads',
   ],
 };

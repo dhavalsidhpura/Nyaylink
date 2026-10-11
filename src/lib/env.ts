@@ -9,4 +9,6 @@ export function requireEnv(name: string): string {
 export const CONSENT_VERSIONS = {
   TERMS_PRIVACY: '2026-10',
   KYC_PROCESSING: '2026-10',
+  STATUTORY_PASS_THROUGH: '2026-10',
 } as const;
+

@@ -841,6 +841,23 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 </div>
               </div>
 
+              {/* Statutory Pure Agent Fee Disclosure */}
+              <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
+                <span className="font-extrabold flex items-center gap-1 text-amber-950">
+                  <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
+                </span>
+                <p>
+                  Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
+                </p>
+              </div>
+
+              {/* Advance Token Scope Note */}
+              {payAdvance && (
+                <div className="p-2.5 bg-cyan-50/80 border border-cyan-200/80 rounded-xl text-[10px] text-[#073B5C] leading-tight">
+                  <strong>ℹ️ Advance Token Scope:</strong> This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.
+                </div>
+              )}
+
               {/* Consent checkbox */}
               <label className="flex items-start gap-2 text-[10px] text-slate-500 leading-tight">
                 <input
@@ -851,8 +868,8 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   className="mt-0.5 accent-[#0E7490]"
                 />
                 <span>
-                  I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link> and{' '}
-                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>. Documents are securely verified by certified CAs.
+                  I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link>,{' '}
+                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
                 </span>
               </label>
 

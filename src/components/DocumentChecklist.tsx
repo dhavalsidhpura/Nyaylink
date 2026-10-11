@@ -124,19 +124,76 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
 
     setBusyKey(key);
     try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('orderId', orderId);
-      if (key !== '__extra') form.append('requirementKey', key);
-      const res = await fetch('/api/documents/upload', { method: 'POST', body: form });
-      const data = await res.json();
-      if (!data.success) {
-        setError(data.error || 'Upload failed.');
-      } else {
-        setPreValidationSuccess(`✓ "${file.name}" verified and securely stored.`);
-        setTimeout(() => setPreValidationSuccess(null), 4000);
-        router.refresh();
+      let uploadSucceeded = false;
+
+      // 1. Attempt high-speed direct S3 streaming to bypass Vercel 4.5MB request limit
+      try {
+        const presignRes = await fetch('/api/documents/presigned-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            requirementKey: key !== '__extra' ? key : null,
+            fileName: file.name,
+            mimeType: file.type || 'application/pdf',
+            sizeBytes: file.size,
+          }),
+        });
+
+        if (presignRes.ok) {
+          const presignData = await presignRes.json();
+          if (presignData.success && presignData.mode === 's3' && presignData.presignedUrl) {
+            // Direct streaming to AWS S3 (encrypted AES256)
+            const s3Res = await fetch(presignData.presignedUrl, {
+              method: 'PUT',
+              body: file,
+              headers: {
+                'Content-Type': file.type || 'application/pdf',
+              },
+            });
+
+            if (s3Res.ok) {
+              const completeRes = await fetch('/api/documents/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId,
+                  requirementKey: key !== '__extra' ? key : null,
+                  storageKey: presignData.storageKey,
+                  fileName: file.name,
+                  mimeType: file.type || 'application/pdf',
+                  sizeBytes: file.size,
+                }),
+              });
+
+              const completeData = await completeRes.json();
+              if (completeData.success) {
+                uploadSucceeded = true;
+              }
+            }
+          }
+        }
+      } catch (directErr) {
+        console.warn('Direct S3 upload attempt failed, falling back to server route:', directErr);
       }
+
+      // 2. Standard server route fallback (for local development or if S3 direct fails)
+      if (!uploadSucceeded) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('orderId', orderId);
+        if (key !== '__extra') form.append('requirementKey', key);
+        const res = await fetch('/api/documents/upload', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!data.success) {
+          setError(data.error || 'Upload failed.');
+          return;
+        }
+      }
+
+      setPreValidationSuccess(`✓ "${file.name}" verified and securely stored in encrypted vault.`);
+      setTimeout(() => setPreValidationSuccess(null), 4000);
+      router.refresh();
     } catch {
       setError('Upload failed. Please check your connection and try again.');
     } finally {

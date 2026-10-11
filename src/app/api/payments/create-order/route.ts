@@ -95,6 +95,9 @@ export const POST = apiHandler(async (request: Request) => {
       await tx.consent.create({
         data: { userId: user.id, purpose: 'KYC_PROCESSING', version: CONSENT_VERSIONS.KYC_PROCESSING, ip: clientIp(request) },
       });
+      await tx.consent.create({
+        data: { userId: user.id, purpose: 'STATUTORY_PASS_THROUGH', version: CONSENT_VERSIONS.STATUTORY_PASS_THROUGH, ip: clientIp(request) },
+      });
       await tx.user.updateMany({ where: { id: user.id, state: null }, data: { state: body.clientState } });
       return { order, payment };
     });

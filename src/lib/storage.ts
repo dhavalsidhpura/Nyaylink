@@ -50,6 +50,24 @@ export async function putObject(key: string, body: Buffer, mimeType: string) {
   await writeFile(full, body, { mode: 0o600 });
 }
 
+export function isCloudStorageConfigured(): boolean {
+  return Boolean(s3 && bucket);
+}
+
+export async function getUploadPresignedUrl(key: string, mimeType: string, expiresIn: number = 300) {
+  if (!s3 || !bucket) return null;
+  return getSignedUrl(
+    s3,
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ContentType: mimeType,
+      ServerSideEncryption: 'AES256',
+    }),
+    { expiresIn }
+  );
+}
+
 export type Download = { kind: 'redirect'; url: string } | { kind: 'inline'; body: Buffer };
 
 export async function getDownload(key: string, filename: string, mimeType: string): Promise<Download> {
@@ -62,7 +80,7 @@ export async function getDownload(key: string, filename: string, mimeType: strin
         ResponseContentType: mimeType,
         ResponseContentDisposition: `inline; filename="${filename.replace(/"/g, '')}"`,
       }),
-      { expiresIn: 60 }
+      { expiresIn: 300 } // 5 minutes ephemeral token for secure document viewing
     );
     return { kind: 'redirect', url };
   }
@@ -72,3 +90,4 @@ export async function getDownload(key: string, filename: string, mimeType: strin
 export function sha256(buffer: Buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
+
