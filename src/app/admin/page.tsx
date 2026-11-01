@@ -11,44 +11,57 @@ async function loadAdminData(role: Role) {
   const finance = ROLE_GROUPS.finance.includes(role);
   const caseworker = ROLE_GROUPS.caseworkers.includes(role);
 
-  const [team, leads, orders, pendingDocuments, invoices, ledger, totals] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: { in: STAFF_ROLES } },
-      select: { ...publicUserSelect, assignedOrders: { select: { id: true, status: true } } },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.lead.findMany({
-      include: { assignedTo: { select: publicUserSelect } },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    }),
-    prisma.order.findMany({
-      include: {
-        client: { select: publicUserSelect },
-        service: { select: { title: true } },
-        assignedCA: { select: publicUserSelect },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    }),
-    caseworker
-      ? prisma.vaultDocument.findMany({
-          where: { status: 'PENDING_REVIEW' },
-          include: {
-            owner: { select: publicUserSelect },
-            order: { select: { orderNumber: true, service: { select: { title: true } } } },
-          },
-          orderBy: { uploadedAt: 'asc' },
-          take: 100,
-        })
-      : Promise.resolve([]),
-    finance ? prisma.invoice.findMany({ orderBy: { createdAt: 'desc' }, take: 500 }) : Promise.resolve([]),
-    finance ? prisma.ledgerEntry.findMany({ orderBy: { createdAt: 'desc' }, take: 50 }) : Promise.resolve([]),
-    finance ? prisma.ledgerEntry.aggregate({ _sum: { credit: true, debit: true } }) : Promise.resolve(null),
-  ]);
+  try {
+    const [team, leads, orders, pendingDocuments, invoices, ledger, totals] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: { in: STAFF_ROLES } },
+        select: { ...publicUserSelect, assignedOrders: { select: { id: true, status: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.lead.findMany({
+        include: { assignedTo: { select: publicUserSelect } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      prisma.order.findMany({
+        include: {
+          client: { select: publicUserSelect },
+          service: { select: { title: true } },
+          assignedCA: { select: publicUserSelect },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      caseworker
+        ? prisma.vaultDocument.findMany({
+            where: { status: 'PENDING_REVIEW' },
+            include: {
+              owner: { select: publicUserSelect },
+              order: { select: { orderNumber: true, service: { select: { title: true } } } },
+            },
+            orderBy: { uploadedAt: 'asc' },
+            take: 100,
+          })
+        : Promise.resolve([]),
+      finance ? prisma.invoice.findMany({ orderBy: { createdAt: 'desc' }, take: 500 }) : Promise.resolve([]),
+      finance ? prisma.ledgerEntry.findMany({ orderBy: { createdAt: 'desc' }, take: 50 }) : Promise.resolve([]),
+      finance ? prisma.ledgerEntry.aggregate({ _sum: { credit: true, debit: true } }) : Promise.resolve(null),
+    ]);
 
-  const balance = totals ? num(totals._sum.credit) - num(totals._sum.debit) : 0;
-  return { team, leads, orders, pendingDocuments, invoices, ledger, balance };
+    const balance = totals ? num(totals._sum.credit) - num(totals._sum.debit) : 0;
+    return { team, leads, orders, pendingDocuments, invoices, ledger, balance };
+  } catch (err: any) {
+    console.warn('[admin] Failed to load admin overview from DB:', err?.message);
+    return {
+      team: [],
+      leads: [],
+      orders: [],
+      pendingDocuments: [],
+      invoices: [],
+      ledger: [],
+      balance: 0,
+    };
+  }
 }
 
 export type AdminData = Plain<Awaited<ReturnType<typeof loadAdminData>>>;

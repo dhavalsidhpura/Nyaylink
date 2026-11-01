@@ -23,13 +23,19 @@ export default async function InvoicePage({ params }: { params: { invoiceNo: str
   const invoiceNo = decodeURIComponent(params.invoiceNo);
   if (!user) redirect(`/login?callbackUrl=/invoices/${encodeURIComponent(invoiceNo)}`);
 
-  const raw = await prisma.invoice.findUnique({
-    where: { invoiceNo },
-    include: {
-      order: { select: { clientId: true, orderNumber: true, service: { select: { title: true } } } },
-      payment: { select: { description: true, gatewayPaymentId: true, consultation: { select: { clientId: true } } } },
-    },
-  });
+  let raw = null;
+  try {
+    raw = await prisma.invoice.findUnique({
+      where: { invoiceNo },
+      include: {
+        order: { select: { clientId: true, orderNumber: true, service: { select: { title: true } } } },
+        payment: { select: { description: true, gatewayPaymentId: true, consultation: { select: { clientId: true } } } },
+      },
+    });
+  } catch (err: any) {
+    console.warn(`[invoices] Failed DB lookup for invoice ${invoiceNo}:`, err?.message);
+    notFound();
+  }
   const ownerId = raw?.order?.clientId ?? raw?.payment?.consultation?.clientId;
   if (!raw || (ownerId !== user.id && !isStaff(user.role))) notFound();
 

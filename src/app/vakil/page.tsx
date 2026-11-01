@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { searchLawyers } from '@/lib/lawyers';
-import { plain } from '@/lib/serialize';
+import { plain, type Plain } from '@/lib/serialize';
 import { formatINR } from '@/lib/pricing';
 import MiniHeader from '@/components/MiniHeader';
 
@@ -19,6 +19,9 @@ interface Props {
 
 const MODE_LABEL: Record<string, string> = { VIDEO: '🎥 Video', PHONE: '📞 Phone', IN_PERSON: '🏢 In person' };
 
+type LawyerSearchResult = Awaited<ReturnType<typeof searchLawyers>>;
+type PlainLawyer = Plain<LawyerSearchResult[number]>;
+
 export default async function VakilSearchPage({ searchParams }: Props) {
   const filters = {
     q: searchParams.q?.slice(0, 80) || undefined,
@@ -27,16 +30,38 @@ export default async function VakilSearchPage({ searchParams }: Props) {
     language: searchParams.language || undefined,
   };
 
-  const [areas, cities, lawyers] = await Promise.all([
-    prisma.practiceArea.findMany({ orderBy: { name: 'asc' } }),
-    prisma.lawyerProfile.findMany({
-      where: { verification: 'VERIFIED', isListed: true },
-      distinct: ['city'],
-      select: { city: true },
-      orderBy: { city: 'asc' },
-    }),
-    searchLawyers(filters).then(plain),
-  ]);
+  let areas: { slug: string; name: string }[] = [];
+  let cities: { city: string }[] = [];
+  let lawyers: PlainLawyer[] = [];
+  let isDbReconnecting = false;
+
+  try {
+    const res = await Promise.all([
+      prisma.practiceArea.findMany({ orderBy: { name: 'asc' } }),
+      prisma.lawyerProfile.findMany({
+        where: { verification: 'VERIFIED', isListed: true },
+        distinct: ['city'],
+        select: { city: true },
+        orderBy: { city: 'asc' },
+      }),
+      searchLawyers(filters).then(plain),
+    ]);
+    areas = res[0] || [];
+    cities = res[1] || [];
+    lawyers = res[2] || [];
+  } catch (err: any) {
+    console.warn('[vakil] Database query failed, using static directory fallback:', err?.message);
+    isDbReconnecting = true;
+    areas = [
+      { slug: 'corporate-commercial', name: 'Corporate & Commercial' },
+      { slug: 'intellectual-property', name: 'Intellectual Property (IPR)' },
+      { slug: 'taxation-gst', name: 'Taxation & GST' },
+      { slug: 'dispute-resolution', name: 'Dispute Resolution & Arbitration' },
+      { slug: 'contracts-agreements', name: 'Contracts & Agreements' },
+      { slug: 'startup-advisory', name: 'Startup Advisory & Structuring' },
+    ];
+    cities = [{ city: 'Mumbai' }, { city: 'Bengaluru' }, { city: 'Delhi NCR' }, { city: 'Hyderabad' }, { city: 'Pune' }];
+  }
 
   const select = 'w-full bg-white border border-slate-300 rounded-xl p-3 text-xs font-bold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490]';
 
@@ -57,6 +82,25 @@ export default async function VakilSearchPage({ searchParams }: Props) {
       </section>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {isDbReconnecting && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-900 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">⚡</span>
+              <div>
+                <strong className="block font-bold">Bar Council Directory Synchronizing</strong>
+                <span>Our advocate search index is currently waking up and synchronizing. For urgent advocate consultation or court representation, contact our direct Mumbai desk.</span>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/919920054785?text=Hello%20NyayaLink%20I%20need%20to%20consult%20an%20advocate"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black px-4 py-2 rounded-xl whitespace-nowrap transition"
+            >
+              💬 WhatsApp Desk →
+            </a>
+          </div>
+        )}
         <form method="get" className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <label className="lg:col-span-2">
             <span className="sr-only">Search</span>
@@ -114,7 +158,7 @@ export default async function VakilSearchPage({ searchParams }: Props) {
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full shrink-0">✓ Verified</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {l.practiceAreas.map((a) => (
+                  {l.practiceAreas?.map((a: any) => (
                     <span key={a.slug} className="text-[10px] bg-cyan-50 text-[#0E7490] border border-cyan-200 font-bold px-2 py-0.5 rounded-full">
                       {a.name}
                     </span>
@@ -122,8 +166,8 @@ export default async function VakilSearchPage({ searchParams }: Props) {
                 </div>
                 <p className="text-xs text-slate-600 line-clamp-3">{l.bio}</p>
                 <div className="text-[11px] text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
-                  <span>🗣️ {l.languages.join(', ')}</span>
-                  <span>{l.modes.map((m) => MODE_LABEL[m]).join(' · ')}</span>
+                  <span>🗣️ {l.languages?.join(', ')}</span>
+                  <span>{l.modes?.map((m: any) => MODE_LABEL[m] || m).join(' · ')}</span>
                 </div>
                 <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
                   <span className="text-xs text-slate-600">

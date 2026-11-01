@@ -6,8 +6,8 @@ import CADashboardClient from './CADashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-async function loadCAData(userId: string) {
-  const [user, myOrders, unclaimedOrders, pendingDocs] = await Promise.all([
+async function fetchCAData(userId: string) {
+  return Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: { id: true, name: true, email: true, phone: true, role: true },
@@ -62,6 +62,26 @@ async function loadCAData(userId: string) {
       take: 100,
     }),
   ]);
+}
+
+type RawCAResult = Awaited<ReturnType<typeof fetchCAData>>;
+
+async function loadCAData(userId: string) {
+  let user: RawCAResult[0];
+  let myOrders: RawCAResult[1] = [];
+  let unclaimedOrders: RawCAResult[2] = [];
+  let pendingDocs: RawCAResult[3] = [];
+
+  try {
+    const res = await fetchCAData(userId);
+    user = res[0];
+    myOrders = res[1];
+    unclaimedOrders = res[2];
+    pendingDocs = res[3];
+  } catch (err: any) {
+    console.warn('[ca/dashboard] Failed to load CA data from DB:', err?.message);
+    user = { id: userId, name: 'CA Partner Desk', email: '', phone: null, role: 'CA_CS_LEAD' };
+  }
 
   // Partner Retainer Metrics (Standard 70% CA/CS fee payout per completed filing)
   const approvedOrders = myOrders.filter((o) => o.status === 'APPROVED');

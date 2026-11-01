@@ -28,17 +28,23 @@ export default async function OrderTrackingPage({ params }: Props) {
   const user = await getSessionUser();
   if (!user) redirect(`/login?callbackUrl=/orders/${encodeURIComponent(params.orderNumber)}`);
 
-  const raw = await prisma.order.findUnique({
-    where: { orderNumber: params.orderNumber },
-    include: {
-      service: { include: { requirements: { orderBy: { sortOrder: 'asc' } } } },
-      assignedCA: { select: { name: true } },
-      documents: { orderBy: { uploadedAt: 'desc' } },
-      statusLogs: { orderBy: { createdAt: 'desc' } },
-      payments: { orderBy: { createdAt: 'asc' } },
-      invoices: { select: { invoiceNo: true, totalAmount: true, createdAt: true } },
-    },
-  });
+  let raw = null;
+  try {
+    raw = await prisma.order.findUnique({
+      where: { orderNumber: params.orderNumber },
+      include: {
+        service: { include: { requirements: { orderBy: { sortOrder: 'asc' } } } },
+        assignedCA: { select: { name: true } },
+        documents: { orderBy: { uploadedAt: 'desc' } },
+        statusLogs: { orderBy: { createdAt: 'desc' } },
+        payments: { orderBy: { createdAt: 'asc' } },
+        invoices: { select: { invoiceNo: true, totalAmount: true, createdAt: true } },
+      },
+    });
+  } catch (err: any) {
+    console.warn(`[orders] Failed DB lookup for order ${params.orderNumber}:`, err?.message);
+    notFound();
+  }
 
   // Same 404 for "doesn't exist" and "not yours" so order numbers can't be probed.
   const access = raw ? orderAccess(user, raw) : null;

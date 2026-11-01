@@ -24,7 +24,12 @@ export default async function AdminOrdersPage() {
   const user = await getSessionUser();
   if (!user || !isStaff(user.role)) redirect('/login?callbackUrl=/admin/orders');
 
-  // Compliance executives work only on cases assigned to them.
-  const orders = await query(user.role === 'COMPLIANCE_EXEC' ? { assignedCAId: user.id } : {});
+  let orders: any[] = [];
+  try {
+    // Compliance executives work only on cases assigned to them.
+    orders = await query(user.role === 'COMPLIANCE_EXEC' ? { assignedCAId: user.id } : {});
+  } catch (err: any) {
+    console.warn('[admin/orders] Failed to load orders from DB:', err?.message);
+  }
   return <AdminOrdersClient orders={plain(orders)} canEdit={ROLE_GROUPS.caseworkers.includes(user.role)} />;
 }

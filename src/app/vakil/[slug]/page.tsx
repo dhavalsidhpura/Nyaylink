@@ -9,11 +9,16 @@ import BookingWidget from './BookingWidget';
 export const dynamic = 'force-dynamic';
 
 async function getLawyer(slug: string) {
-  const lawyer = await prisma.lawyerProfile.findUnique({
-    where: { slug },
-    include: { user: { select: { name: true } }, practiceAreas: { select: { slug: true, name: true } } },
-  });
-  return lawyer && lawyer.verification === 'VERIFIED' && lawyer.isListed ? plain(lawyer) : null;
+  try {
+    const lawyer = await prisma.lawyerProfile.findUnique({
+      where: { slug },
+      include: { user: { select: { name: true } }, practiceAreas: { select: { slug: true, name: true } } },
+    });
+    return lawyer && lawyer.verification === 'VERIFIED' && lawyer.isListed ? plain(lawyer) : null;
+  } catch (err: any) {
+    console.warn(`[vakil] DB lookup failed for lawyer ${slug}:`, err?.message);
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {

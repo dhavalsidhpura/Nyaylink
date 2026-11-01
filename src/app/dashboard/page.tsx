@@ -6,8 +6,8 @@ import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-async function loadDashboard(userId: string) {
-  const [user, orders, documents, invoices, consultations] = await Promise.all([
+async function fetchDashboard(userId: string) {
+  return Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { id: true, name: true, email: true, phone: true, role: true } }),
     prisma.order.findMany({
       where: { clientId: userId },
@@ -37,7 +37,31 @@ async function loadDashboard(userId: string) {
       orderBy: { startsAt: 'desc' },
     }),
   ]);
-  return { user, orders, documents, invoices, consultations };
+}
+
+type RawDashboardResult = Awaited<ReturnType<typeof fetchDashboard>>;
+
+async function loadDashboard(userId: string) {
+  try {
+    const [user, orders, documents, invoices, consultations] = await fetchDashboard(userId);
+    return { user, orders, documents, invoices, consultations };
+  } catch (err: any) {
+    console.warn('[dashboard] Failed to load dashboard data from DB:', err?.message);
+    const emptyResult: RawDashboardResult = [
+      { id: userId, name: 'Client Account', email: '', phone: null, role: 'CLIENT' },
+      [],
+      [],
+      [],
+      [],
+    ];
+    return {
+      user: emptyResult[0],
+      orders: emptyResult[1],
+      documents: emptyResult[2],
+      invoices: emptyResult[3],
+      consultations: emptyResult[4],
+    };
+  }
 }
 
 export type DashboardData = Plain<Awaited<ReturnType<typeof loadDashboard>>>;

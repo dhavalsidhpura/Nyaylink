@@ -15,19 +15,30 @@ export default async function AdminLawyersPage() {
   const canPay = ROLE_GROUPS.finance.includes(user.role);
   if (!canVerify && !canPay) redirect('/admin');
 
-  const [lawyers, payable, pendingPayouts] = await Promise.all([
-    prisma.lawyerProfile.findMany({
-      include: { user: { select: { name: true, email: true, phone: true } }, practiceAreas: { select: { name: true } } },
-      orderBy: [{ verification: 'asc' }, { createdAt: 'asc' }],
-    }),
-    prisma.consultation.groupBy({
-      by: ['lawyerId'],
-      where: { status: 'COMPLETED', payoutId: null, payments: { some: { status: 'CAPTURED' } } },
-      _sum: { fee: true },
-      _count: true,
-    }),
-    prisma.payout.findMany({ where: { status: 'PENDING' }, include: { lawyer: { include: { user: { select: { name: true } } } } } }),
-  ]);
+  let lawyers: any[] = [];
+  let payable: any[] = [];
+  let pendingPayouts: any[] = [];
+
+  try {
+    const res = await Promise.all([
+      prisma.lawyerProfile.findMany({
+        include: { user: { select: { name: true, email: true, phone: true } }, practiceAreas: { select: { name: true } } },
+        orderBy: [{ verification: 'asc' }, { createdAt: 'asc' }],
+      }),
+      prisma.consultation.groupBy({
+        by: ['lawyerId'],
+        where: { status: 'COMPLETED', payoutId: null, payments: { some: { status: 'CAPTURED' } } },
+        _sum: { fee: true },
+        _count: true,
+      }),
+      prisma.payout.findMany({ where: { status: 'PENDING' }, include: { lawyer: { include: { user: { select: { name: true } } } } } }),
+    ]);
+    lawyers = res[0] || [];
+    payable = res[1] || [];
+    pendingPayouts = res[2] || [];
+  } catch (err: any) {
+    console.warn('[admin/lawyers] Failed DB lookup for lawyers:', err?.message);
+  }
 
   const rows = plain(lawyers);
   const nameOf = (id: string) => rows.find((l) => l.id === id)?.user.name || id;
@@ -64,7 +75,7 @@ export default async function AdminLawyersPage() {
                       <span className="font-mono font-bold">{l.enrollmentNo}</span> · {l.barCouncil} · enrolled {l.enrollmentYear}
                     </p>
                     <p className="text-slate-500">
-                      {l.city} · {l.practiceAreas.map((a) => a.name).join(', ')} · {formatINR(l.consultationFee)}/{l.consultationMinutes}m
+                      {l.city} · {l.practiceAreas?.map((a: any) => a.name).join(', ')} · {formatINR(l.consultationFee)}/{l.consultationMinutes}m
                     </p>
                     <p className="text-slate-500">
                       {l.user.email}

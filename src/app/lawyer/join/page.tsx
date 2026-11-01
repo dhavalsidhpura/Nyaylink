@@ -11,7 +11,20 @@ export default async function LawyerJoinPage() {
   if (!user) redirect('/login?callbackUrl=/lawyer/join');
   if (user.role === 'LAWYER') redirect('/lawyer/dashboard');
 
-  const areas = await prisma.practiceArea.findMany({ orderBy: { name: 'asc' }, select: { slug: true, name: true } });
+  let areas: { slug: string; name: string }[] = [];
+  try {
+    areas = await prisma.practiceArea.findMany({ orderBy: { name: 'asc' }, select: { slug: true, name: true } });
+  } catch (err: any) {
+    console.warn('[lawyer/join] Failed to load practice areas from DB:', err?.message);
+    areas = [
+      { slug: 'corporate-commercial', name: 'Corporate & Commercial' },
+      { slug: 'intellectual-property', name: 'Intellectual Property (IPR)' },
+      { slug: 'taxation-gst', name: 'Taxation & GST' },
+      { slug: 'dispute-resolution', name: 'Dispute Resolution & Arbitration' },
+      { slug: 'contracts-agreements', name: 'Contracts & Agreements' },
+      { slug: 'startup-advisory', name: 'Startup Advisory & Structuring' },
+    ];
+  }
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800">
