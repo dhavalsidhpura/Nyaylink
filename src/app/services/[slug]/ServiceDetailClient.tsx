@@ -13,6 +13,7 @@ import {
   getStateStampDuty,
 } from '@/lib/pricing';
 import { openRazorpayCheckout } from '@/lib/checkout-client';
+import StampDutyCalculator from '@/components/StampDutyCalculator';
 
 export interface ServicePricing {
   professionalFee: number;
@@ -489,6 +490,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 </p>
               </div>
             </div>
+
+            {/* SECTION 4.1: DYNAMIC STATE STAMP DUTY ESTIMATOR (FOR INCORPORATION & LLPS) */}
+            {isStateSpecificService && (
+              <div className="pt-1">
+                <StampDutyCalculator baseProfFee={baseProfFee} initialState={selectedState} />
+              </div>
+            )}
 
             {/* SECTION 5: REGULATORY CONSIDERATIONS */}
             {details.importantConsiderations && details.importantConsiderations.length > 0 && (

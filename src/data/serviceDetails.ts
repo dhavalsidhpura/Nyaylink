@@ -1247,8 +1247,119 @@ export const STRUCTURED_SERVICES: Record<string, ServiceStructure> = {
   },
 
   // ==========================================
-  // 7. LEGAL DISPUTES (ODR)
+  // 7. LEGAL DISPUTES (ODR) & FORMAL NOTICES
   // ==========================================
+  'consumer-complaint-notice': {
+    slug: 'consumer-complaint-notice',
+    title: 'Consumer Grievance & Statutory Legal Notice',
+    category: 'legal-dispute',
+    badge: 'Advocate Vetted Notice',
+    whoShouldBuy: 'Consumers facing e-commerce cheating, undelivered products, refusal of refunds, defective electronics, deficient hospital/travel services, delayed builder possession, or rejected insurance claims.',
+    whyShouldBuy: 'A formal statutory legal notice on an advocate letterhead establishes a strict 15–30 day ultimatum. Over 70% of consumer grievances settle pre-litigation once an advocate notice with speed post tracking is served.',
+    timeframe: '24–48 hours for drafting, client approval, and speed post dispatch.',
+    specificDocs: [
+      'Invoices / purchase bills / order confirmation emails',
+      'Proof of payment (UPI transaction ID, bank statement, or receipt)',
+      'Written correspondence (email threads, WhatsApp chats, support ticket screenshots)',
+      'Registered office or correspondence address of the seller / service provider',
+    ],
+    importantConsiderations: [
+      'Notice is served under the Consumer Protection Act, 2019.',
+      'Includes Speed Post consignment tracking and Proof of Delivery (POD) dossier admissible before the Consumer Commission.',
+      'If the company fails to remedy the defect within 15 days, you have ironclad standing to file on e-Daakhil for full refund plus damages.',
+    ],
+    deliverables: [
+      { title: 'Statutory Legal Notice on Advocate Letterhead', desc: 'Custom legal demand drafted and signed by an empanelled High Court advocate.' },
+      { title: 'Speed Post Consignment Tracking Receipt', desc: 'Official postal tracking number proving legal dispatch to corporate headquarters.' },
+      { title: 'Digital PDF Dossier for e-Daakhil', desc: 'Court-ready compilation of notice and delivery proofs in case formal filing is required.' },
+    ],
+    faqs: [
+      { q: 'How is this different from Online Legal India?', a: 'Online Legal India charges ₹2,999 to ₹19,999 via a telemarketing call and disclaims offering legal representation. NyayLink provides fixed-fee advocate-vetted drafting with direct access to Bar Council advocates if court filing is needed.' },
+      { q: 'What happens if the company does not reply to the notice?', a: 'The notice with its official postal delivery proof serves as the foundation for filing a case on e-Daakhil (edaakhil.nic.in). You can file directly or book an empanelled advocate through our Vakil directory.' },
+    ],
+  },
+
+  'legal-demand-notice': {
+    slug: 'legal-demand-notice',
+    title: 'Formal Legal Demand Notice (Recovery & Breach)',
+    category: 'legal-dispute',
+    badge: 'Legal Recovery Desk',
+    whoShouldBuy: 'Businesses, freelancers, landlords, vendors, and individuals seeking recovery of unpaid dues, addressing breach of contract, property vacation, or employment disputes.',
+    whyShouldBuy: 'Signals immediate litigation intent under the Civil Procedure Code and Indian Contract Act, giving the defaulting party a final statutory window to pay without protracted court battles.',
+    timeframe: '24–48 hours for drafting and registered speed post dispatch.',
+    specificDocs: [
+      'Underlying contract, MoU, work order, or tenancy agreement',
+      'Ledger account statement / unpaid invoices',
+      'Prior written payment reminders and WhatsApp/email communication',
+      'Legal name and verified address of the defaulting person or entity',
+    ],
+    importantConsiderations: [
+      'Strict legal timeline given to the recipient (typically 15 or 21 days).',
+      'Drafted strictly by Bar Council enrolled advocates on official legal letterhead.',
+    ],
+    deliverables: [
+      { title: 'Advocate Vetted Demand Notice', desc: 'Comprehensive legal demand citing relevant statutory clauses and interest liabilities.' },
+      { title: 'Speed Post Dispatch & Tracking', desc: 'Registered post dispatch with tracking number and delivery acknowledgement.' },
+    ],
+    faqs: [
+      { q: 'Can this notice claim interest on delayed payments?', a: 'Yes, statutory or contractual interest (e.g. 18% p.a. or MSMED statutory compound interest) is explicitly calculated and demanded.' },
+    ],
+  },
+
+  'consumer-court-petition': {
+    slug: 'consumer-court-petition',
+    title: 'District Consumer Forum Representation (e-Daakhil)',
+    category: 'legal-dispute',
+    badge: 'Bar Council Advocate Filing',
+    whoShouldBuy: 'Complainants who have already served a legal notice and need formal legal representation before District, State, or National Consumer Disputes Redressal Commissions.',
+    whyShouldBuy: 'Direct filing on the government e-Daakhil portal with a verified advocate vakalatnama, petition drafting, index compilation, and hearing preparation.',
+    timeframe: '5–10 working days for complete filing and diary number generation.',
+    specificDocs: [
+      'Original legal notice served and postal delivery proof (POD)',
+      'Detailed chronological statement of facts and loss calculations',
+      'Affidavit of the complainant (notarized)',
+      'Evidence documents (bills, chat history, bank statements)',
+    ],
+    importantConsiderations: [
+      'Filing fee on e-Daakhil is nominal (₹0 for claims up to ₹5 Lakhs, ₹200–₹500 for higher claims).',
+      'Representation is conducted by an empanelled advocate licensed in your jurisdiction.',
+    ],
+    deliverables: [
+      { title: 'Formal Consumer Complaint Petition', desc: 'Complete petition with grounds, statement of facts, prayers for refund and mental harassment damages.' },
+      { title: 'Official e-Daakhil Filing Confirmation', desc: 'Government portal filing acknowledgement with Case Diary Number.' },
+      { title: 'Hearing Guidance & Vakalatnama Execution', desc: 'Professional representation and scheduling for court appearances.' },
+    ],
+    faqs: [
+      { q: 'What is the court fee for consumer cases?', a: 'Under the Consumer Protection Act 2019, claims up to ₹5 Lakhs have ZERO court fee. Claims between ₹5L and ₹10L have a nominal fee of ₹200.' },
+    ],
+  },
+
+  'trademark-objection-reply': {
+    slug: 'trademark-objection-reply',
+    title: 'Trademark Examination Objection Reply',
+    category: 'trademark-ipr',
+    badge: 'TM Attorney Vetted',
+    whoShouldBuy: 'Trademark applicants whose application status shows "Objected" in the IP India trademark journal due to Section 9 (lack of distinctiveness) or Section 11 (similarity with prior mark).',
+    whyShouldBuy: 'Mandatory statutory reply within 30 days of the Examination Report; failure to reply results in the trademark being deemed "Abandoned".',
+    timeframe: '24–72 hours for attorney drafting and online filing on IP India portal.',
+    specificDocs: [
+      'Trademark Application Number and Class',
+      'Examination Report issued by the Trademark Examiner',
+      'User Affidavit and documentary proof of prior commercial use (invoices, domain registration, social media presence)',
+    ],
+    importantConsiderations: [
+      'Must cite landmark IPAB and High Court precedents distinguishing phonetics, visual appearance, and business class.',
+      'Filing must be completed strictly within 30 days of examination report dispatch.',
+    ],
+    deliverables: [
+      { title: 'Legal Reply Written by TM Attorney', desc: 'Comprehensive legal rebuttal with judicial citations and user evidence attachments.' },
+      { title: 'Official IP India Filing Receipt', desc: 'e-Filing acknowledgement from the Controller General of Patents, Designs & Trademarks.' },
+    ],
+    faqs: [
+      { q: 'What happens after the objection reply is filed?', a: 'The examiner reviews the reply. If satisfied, the mark moves to "Accepted & Advertised" in the Trade Marks Journal. If clarification is needed, a show-cause hearing is scheduled.' },
+    ],
+  },
+
   'cheque-bounce-notice-138': {
     slug: 'cheque-bounce-notice-138',
     title: 'Section 138 Cheque Bounce Demand Notice',

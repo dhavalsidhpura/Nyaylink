@@ -665,8 +665,36 @@ export const MASTER_SERVICES: ServiceItem[] = [
   },
 
   // ==========================================
-  // 7. LEGAL DISPUTES (ODR)
+  // 7. LEGAL DISPUTES (ODR) & FORMAL NOTICES
   // ==========================================
+  {
+    id: 'srv-consumer-notice',
+    slug: 'consumer-complaint-notice',
+    category: 'legal-dispute',
+    title: 'Consumer Grievance & Statutory Legal Notice',
+    price: 1999,
+    govtFee: 'Includes Speed Post with A/D & Tracking',
+    sla: '24 - 48 Hours Drafting',
+    badge: 'Advocate Vetted',
+    sacCode: '998221',
+    icon: '⚖️',
+    desc: 'Formal statutory legal notice drafted by empanelled High Court advocate for e-commerce fraud, defective products, deficient services, builder delays, and rejected insurance claims.',
+    docs: 'Tax Invoices / Bills, Payment Transaction Receipts, Written Communications / Grievance Emails, Opposite Party Full Address',
+  },
+  {
+    id: 'srv-legal-demand',
+    slug: 'legal-demand-notice',
+    category: 'legal-dispute',
+    title: 'Formal Legal Demand Notice (Recovery & Breach)',
+    price: 2499,
+    govtFee: 'Includes Registered Speed Post Dispatch',
+    sla: '24 - 48 Hours Drafting',
+    badge: 'Legal Recovery',
+    sacCode: '998221',
+    icon: '📜',
+    desc: 'High-impact advocate legal demand notice for outstanding debt recovery, commercial contract breach, property eviction, employee disputes, and partnership violations.',
+    docs: 'Contract / Purchase Orders, Ledger Statement of Accounts, Defaulting Party Details, Prior Reminder Messages',
+  },
   {
     id: 'srv-cheque-bounce',
     slug: 'cheque-bounce-notice-138',
@@ -680,6 +708,34 @@ export const MASTER_SERVICES: ServiceItem[] = [
     icon: '⚖️',
     desc: 'Draft and serve an authoritative statutory demand notice within the mandatory 30-day window under the Negotiable Instruments Act.',
     docs: 'Cheque Copy, Bank Return Memo with Dishonour Reason, Invoices, Defaulting Party Address',
+  },
+  {
+    id: 'srv-consumer-court',
+    slug: 'consumer-court-petition',
+    category: 'legal-dispute',
+    title: 'District Consumer Forum Representation (e-Daakhil)',
+    price: 9999,
+    govtFee: 'Govt Court Fee at Actuals (₹100 - ₹500)',
+    sla: '5 - 10 Working Days',
+    badge: 'Bar Council Advocate',
+    sacCode: '998221',
+    icon: '🏛️',
+    desc: 'Full litigation drafting and electronic filing before the District Consumer Commission via e-Daakhil with verified Bar Council advocate representation and case tracking.',
+    docs: 'Prior Statutory Legal Notice & Proof of Delivery, Affidavit, Evidence Dossier, Statement of Claim & Compensation Sought',
+  },
+  {
+    id: 'srv-tm-objection',
+    slug: 'trademark-objection-reply',
+    category: 'trademark-ipr',
+    title: 'Trademark Examination Objection Reply',
+    price: 2499,
+    govtFee: '₹0 (Official Examination Response Window)',
+    sla: '24 - 72 Hours Drafting',
+    badge: 'TM Attorney Vetted',
+    sacCode: '998221',
+    icon: '™️',
+    desc: 'Comprehensive legal response to Examination Report objections raised under Section 9 (distinctiveness) or Section 11 (similarity) drafted by specialized Trademark Attorneys.',
+    docs: 'Trademark Application Number, Examination Report Copy, User Affidavit & Date of First Use Invoices/Proofs',
   },
 
   // ==========================================

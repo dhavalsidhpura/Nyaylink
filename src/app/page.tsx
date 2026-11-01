@@ -1284,6 +1284,103 @@ export default function HomePage() {
       </section>
 
       {/* ======================================================== */}
+      {/* 4.1 THE NYAYALINK INTEGRITY GUARANTEE & ANTI-TELEMARKETING */}
+      {/* ======================================================== */}
+      <section className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#073B5C] text-white py-6 px-4 sm:px-8 border-b border-cyan-900/50 shadow-md">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="flex items-start gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-2xl p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">🛡️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-sm text-white">Zero Pushy Sales Calls</h4>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  We never trigger automated call centers when you browse or calculate fees. 100% transparent, self-service digital tracking in your personal S3 Vault.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-2xl p-2 rounded-xl bg-[#F4B942]/20 text-[#F4B942] shrink-0">⚖️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-sm text-white">Rule 33 Pure Agent Transparency</h4>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Government stamp duties and MCA/IP India fees are passed through to the rupee with zero hidden markup. Professional fees are clearly itemized on GST invoices.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-2xl p-2 rounded-xl bg-cyan-500/20 text-cyan-300 shrink-0">🏛️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-sm text-white">Direct CA & Bar Council Supervision</h4>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Corporate filings are supervised directly by practicing Chartered Accountants; disputes & legal notices are vetted by verified High Court advocates.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 4.2 DUAL-TRACK DISPUTE RESOLUTION (HONEST ALTERNATIVE)    */}
+      {/* ======================================================== */}
+      <section className="bg-white border-b border-slate-200 py-8 px-4 sm:px-8">
+        <div className="max-w-[1600px] mx-auto bg-gradient-to-br from-slate-50 via-cyan-50/30 to-amber-50/30 rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-[#073B5C] text-[#F4B942] text-[10px] font-black uppercase px-3 py-1 rounded-full">
+                <span>⚖️</span> Honest Dispute Resolution (ODR)
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">
+                Consumer Dispute, Fraud, or Unpaid Dues? Choose the Honest Dual-Track
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Unlike competitors who promise court resolution but only mail a templated letter and demand tens of thousands later, NyayLink provides an upfront 2-stage choice:
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <Link
+                href="/services/consumer-complaint-notice"
+                className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2"
+              >
+                <span>📜 Send Legal Notice (₹1,999) →</span>
+              </Link>
+              <Link
+                href="/vakil"
+                className="bg-white hover:bg-slate-50 text-[#073B5C] border-2 border-[#073B5C] font-black text-xs px-5 py-3.5 rounded-xl transition shadow-xs flex items-center justify-center gap-2"
+              >
+                <span>👨‍⚖️ Book Verified Court Advocate →</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-slate-200 text-xs">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-[#073B5C] text-sm">Track 1: Statutory Advocate Demand Notice</span>
+                <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">₹1,999 - ₹2,499</span>
+              </div>
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                High-impact notice on advocate letterhead served via Registered Speed Post with Proof of Delivery (POD). Solves 70%+ of e-commerce, refund, and contract disputes pre-litigation.
+              </p>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-[#073B5C] text-sm">Track 2: e-Daakhil / Consumer Court Filing</span>
+                <span className="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded text-[10px]">Direct Advocate Representation</span>
+              </div>
+              <p className="text-slate-500 text-[11px] leading-relaxed">
+                If the opposite party defaults, hire a verified Bar Council advocate from our Vakil directory to draft your petition and represent you before the District Commission.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
       {/* 5. MAIN SERVICES DIRECTORY (MICRO-COMMITMENT CATALOG)   */}
       {/* ======================================================== */}
       <main id="catalog-section" className="max-w-[1600px] mx-auto px-4 sm:px-8 py-12 w-full flex-grow space-y-8">
