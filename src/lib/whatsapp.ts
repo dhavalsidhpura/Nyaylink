@@ -33,7 +33,7 @@ export async function sendWhatsAppMessage({ to, bodyText }: WhatsAppMessagePaylo
   // Simulation fallback if Meta credentials are not provided
   if (!PHONE_NUMBER_ID || !ACCESS_TOKEN) {
     console.log(`\n📱 [WHATSAPP SIMULATION] -> +${formattedPhone}`);
-    console.log(`Message: ${bodyText}`);
+    console.log(`Message:\n${bodyText}`);
     console.log(`----------------------------------------`);
     return { success: true, simulated: true };
   }
@@ -67,6 +67,60 @@ export async function sendWhatsAppMessage({ to, bodyText }: WhatsAppMessagePaylo
   }
 }
 
+export type OrderMilestoneType =
+  | 'BOOKING_CONFIRMED'
+  | 'NAME_APPROVED'
+  | 'FORMS_SUBMITTED'
+  | 'QUERY_RAISED'
+  | 'APPROVED_COMPLETED'
+  | 'TEST_ALERT';
+
+/** Dispatches a structured milestone alert to client's WhatsApp */
+export async function dispatchMilestoneWhatsApp(params: {
+  phone: string;
+  clientName: string;
+  orderNumber: string;
+  serviceTitle: string;
+  milestone: OrderMilestoneType;
+  srn?: string;
+  cin?: string;
+  remarks?: string;
+  amountPaid?: number;
+}) {
+  const { phone, clientName, orderNumber, serviceTitle, milestone, srn, cin, remarks, amountPaid } = params;
+
+  let bodyText = '';
+
+  switch (milestone) {
+    case 'BOOKING_CONFIRMED':
+      bodyText = `🎉 *Payment & Booking Confirmed!*\n\nHello *${clientName}*,\nThank you for choosing NyayaLink! Your booking for *${serviceTitle}* (${orderNumber}) is confirmed${amountPaid ? ` (Advance Token: ₹${amountPaid.toLocaleString('en-IN')})` : ''}.\n\n👨‍💼 *Dedicated Desk:* A Senior Chartered Accountant has been assigned to your filing.\n\n👉 *Next Step:* Please upload your KYC documents or share them on WhatsApp:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+      break;
+
+    case 'NAME_APPROVED':
+      bodyText = `🎊 *Good News: Name Approved by ROC!*\n\nHello *${clientName}*,\nYour proposed entity name for *${serviceTitle}* (${orderNumber}) has been officially reserved by the Ministry of Corporate Affairs under Rule 8.\n\n📑 Our CA desk is now preparing your electronic Memorandum (e-MOA) and Articles of Association (e-AOA).\n\nReview draft documents live:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+      break;
+
+    case 'FORMS_SUBMITTED':
+      bodyText = `🏛️ *Forms Submitted to Government Registry!*\n\nHello *${clientName}*,\nYour statutory application for *${serviceTitle}* (${orderNumber}) has been uploaded to the official portal.\n\n📋 *Government SRN / Challan #:* ${srn || 'SRN Generated'}\n\nOur compliance team is monitoring the government verification queue. Track real-time progress:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+      break;
+
+    case 'QUERY_RAISED':
+      bodyText = `⚠️ *Action Required: Clarification Needed*\n\nHello *${clientName}*,\nThe government registry has requested a clarification regarding your filing for *${serviceTitle}* (${orderNumber}):\n\n📝 *Note:* "${remarks || 'Document re-verification requested'}"\n\nPlease submit the required detail so we can resubmit immediately:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+      break;
+
+    case 'APPROVED_COMPLETED':
+      bodyText = `🚀 *Congratulations! Entity Officially Registered!* 🇮🇳\n\nHello *${clientName}*,\nYour filing for *${serviceTitle}* (${orderNumber}) has been *OFFICIALLY APPROVED* by the Registrar!\n\n${cin ? `📜 *Official CIN / Reg #:* ${cin}\n` : ''}${srn ? `🏛️ *Final SRN:* ${srn}\n` : ''}\nAll statutory deliverables (Certificate of Incorporation, e-PAN, e-MOA & e-AOA) are ready for download in your encrypted vault:\n${APP_URL}/orders/${orderNumber}\n\nWelcome to India's founder community!\n— Team NyayaLink`;
+      break;
+
+    case 'TEST_ALERT':
+    default:
+      bodyText = `🔔 *NyayaLink WhatsApp Milestone Alerts Active*\n\nHello *${clientName}*,\nThis is a test notification confirming that live status alerts for *${serviceTitle}* (${orderNumber}) are connected to this WhatsApp number (+${formatE164Phone(phone)}).\n\nYou will automatically receive updates when your name is reserved, government SRNs are generated, and certificates are issued.\n\nTrack your order anytime:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+      break;
+  }
+
+  return sendWhatsAppMessage({ to: phone, bodyText });
+}
+
 /** Dispatched when an application status or government SRN changes */
 export async function notifyStatusUpdateWhatsApp(params: {
   phone: string;
@@ -78,9 +132,46 @@ export async function notifyStatusUpdateWhatsApp(params: {
   remarks?: string;
 }) {
   const { phone, clientName, orderNumber, serviceTitle, status, srn, remarks } = params;
-  const statusDisplay = status.replace(/_/g, ' ');
 
-  let message = `⚖️ *NyayaLink Docket Update*\n\nHello ${clientName},\nYour application for *${serviceTitle}* (${orderNumber}) is now:\n👉 *${statusDisplay}*\n`;
+  if (status === 'APPROVED') {
+    return dispatchMilestoneWhatsApp({
+      phone,
+      clientName,
+      orderNumber,
+      serviceTitle,
+      milestone: 'APPROVED_COMPLETED',
+      srn,
+      cin: remarks?.match(/CIN:\s*([A-Z0-9]+)/i)?.[1],
+      remarks,
+    });
+  }
+
+  if (status === 'QUERY_RAISED') {
+    return dispatchMilestoneWhatsApp({
+      phone,
+      clientName,
+      orderNumber,
+      serviceTitle,
+      milestone: 'QUERY_RAISED',
+      srn,
+      remarks,
+    });
+  }
+
+  if (status === 'IN_PROGRESS' && srn) {
+    return dispatchMilestoneWhatsApp({
+      phone,
+      clientName,
+      orderNumber,
+      serviceTitle,
+      milestone: 'FORMS_SUBMITTED',
+      srn,
+      remarks,
+    });
+  }
+
+  const statusDisplay = status.replace(/_/g, ' ');
+  let message = `⚖️ *NyayaLink Docket Update*\n\nHello *${clientName}*,\nYour application for *${serviceTitle}* (${orderNumber}) is now:\n👉 *${statusDisplay}*\n`;
 
   if (srn) {
     message += `\n🏛️ *Official Government SRN/ARN:* ${srn}`;
@@ -105,7 +196,7 @@ export async function notifyDocQueryWhatsApp(params: {
 }) {
   const { phone, clientName, orderNumber, docName, rejectNote } = params;
 
-  const message = `⚠️ *Action Required: Document Re-Upload*\n\nHello ${clientName},\nOur CA desk reviewed your document *${docName}* for filing *${orderNumber}* and noticed an issue:\n\n💬 *Reason:* "${rejectNote}"\n\nPlease upload a revised copy to avoid government registry delays:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
+  const message = `⚠️ *Action Required: Document Re-Upload*\n\nHello *${clientName}*,\nOur CA desk reviewed your document *${docName}* for filing *${orderNumber}* and noticed an issue:\n\n💬 *Reason:* "${rejectNote}"\n\nPlease upload a revised copy to avoid government registry delays:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
 
   return sendWhatsAppMessage({ to: phone, bodyText: message });
 }
@@ -120,7 +211,12 @@ export async function notifyOrderCreatedWhatsApp(params: {
 }) {
   const { phone, clientName, orderNumber, serviceTitle, amountPaid } = params;
 
-  const message = `🎉 *Payment Received: ${orderNumber}*\n\nHello ${clientName},\nThank you for choosing NyayaLink! Your payment of ₹${amountPaid.toLocaleString('en-IN')} for *${serviceTitle}* has been verified.\n\nNext step: Please upload your required KYC & entity documents to initiate filing:\n${APP_URL}/orders/${orderNumber}\n\n— Team NyayaLink`;
-
-  return sendWhatsAppMessage({ to: phone, bodyText: message });
+  return dispatchMilestoneWhatsApp({
+    phone,
+    clientName,
+    orderNumber,
+    serviceTitle,
+    milestone: 'BOOKING_CONFIRMED',
+    amountPaid,
+  });
 }

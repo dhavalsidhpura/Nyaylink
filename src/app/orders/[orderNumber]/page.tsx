@@ -8,6 +8,7 @@ import DocumentChecklist from '@/components/DocumentChecklist';
 import OrderMessages from '@/components/OrderMessages';
 import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
+import WhatsAppNotificationCard from '@/components/WhatsAppNotificationCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +66,7 @@ export default async function OrderTrackingPage({ params }: Props) {
     raw = await prisma.order.findUnique({
       where: { orderNumber: params.orderNumber },
       include: {
+        client: { select: { name: true, phone: true, email: true } },
         service: { include: { requirements: { orderBy: { sortOrder: 'asc' } } } },
         assignedCA: { select: { name: true } },
         documents: { orderBy: { uploadedAt: 'desc' } },
@@ -153,6 +155,16 @@ export default async function OrderTrackingPage({ params }: Props) {
           </div>
           <OrderProgress status={order.status} />
         </section>
+
+        {/* WhatsApp Automated Milestone Alert Engine */}
+        <WhatsAppNotificationCard
+          orderNumber={order.orderNumber}
+          clientPhone={raw.client?.phone}
+          clientName={raw.client?.name || 'Valued Client'}
+          serviceTitle={order.service.title}
+          currentStatus={order.status}
+          srn={order.srn}
+        />
 
                 {order.intakeData && typeof order.intakeData === 'object' && (order.intakeData as any).isPackageBooking === 'true' && (
           <section className="bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-3xl p-5 sm:p-6 shadow-md space-y-3">

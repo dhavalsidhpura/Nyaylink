@@ -16,6 +16,7 @@ import {
 } from '@/lib/pricing';
 import { openRazorpayCheckout } from '@/lib/checkout-client';
 import StampDutyCalculator from '@/components/StampDutyCalculator';
+import DeliverablesUnboxingCard from '@/components/DeliverablesUnboxingCard';
 
 export interface ServicePricing {
   professionalFee: number;
@@ -609,6 +610,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 </div>
               </div>
             </div>
+
+            
+            {/* OFFICIAL DELIVERABLES UNBOXING KIT (INTERACTIVE VISUAL PREVIEW) */}
+            <DeliverablesUnboxingCard serviceSlug={slug} serviceTitle={displayTitle} />
 
             {/* SECTION 2: OFFICIAL DELIVERABLES INCLUDED (2×2 GRID ON MOBILE) */}
             <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-sm space-y-4 sm:space-y-5">
