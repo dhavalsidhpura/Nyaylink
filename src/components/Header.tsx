@@ -78,6 +78,28 @@ const MENU_TAX_GST = {
   },
 };
 
+
+const MENU_TOOLS = {
+  column1: {
+    title: 'Statutory Calculators & Checks',
+    items: [
+      { name: '🏛️ All-India Incorporation Cost Calculator', href: '/tools/incorporation-calculator' },
+      { name: '🇮🇳 Startup India & 80-IAC Diagnostic', href: '/tools/startup-india-checker' },
+      { name: '🔍 MCA Company Name Search (Rule 8)', href: '/tools/company-name-search' },
+      { name: '™️ Trademark Class & Conflict Search', href: '/tools/trademark-search' },
+    ],
+  },
+  column2: {
+    title: 'Verification & Legal Engines',
+    items: [
+      { name: '📊 GSTIN Verification & Returns', href: '/tools/gst-search' },
+      { name: '📡 Track MCA SRN / TM / GST Status', href: '/tools/track-status' },
+      { name: '📝 Automated Legal Agreement Generator', href: '/tools/agreement-generator' },
+      { name: '⚡ All Founder Tools Hub', href: '/tools' },
+    ],
+  },
+};
+
 export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -266,6 +288,52 @@ export default function Header() {
                       {MENU_TAX_GST.column2.items.map((item, idx) => (
                         <li key={idx}>
                           <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            
+            {/* Tools Dropdown */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => setActiveDropdown('tools')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all flex items-center gap-1 cursor-pointer">
+                Founder Tools ▾
+              </button>
+
+              {activeDropdown === 'tools' && (
+                <div className="absolute top-full -left-20 w-[600px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 grid grid-cols-2 gap-6 z-50 animate-fadeIn">
+                  <div>
+                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
+                      <span>⚙️</span> {MENU_TOOLS.column1.title}
+                    </div>
+                    <ul className="space-y-2 text-xs font-medium text-slate-700">
+                      {MENU_TOOLS.column1.items.map((item, idx) => (
+                        <li key={idx}>
+                          <Link href={item.href} className="hover:text-nyaya-teal block transition-colors">
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
+                      <span>🛠️</span> {MENU_TOOLS.column2.title}
+                    </div>
+                    <ul className="space-y-2 text-xs font-medium text-slate-700">
+                      {MENU_TOOLS.column2.items.map((item, idx) => (
+                        <li key={idx}>
+                          <Link href={item.href} className="hover:text-nyaya-teal block transition-colors">
                             {item.name}
                           </Link>
                         </li>

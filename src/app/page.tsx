@@ -821,7 +821,21 @@ export default function HomePage() {
               <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider block">
                 Free Verification Desks:
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                <Link
+                  href="/tools/incorporation-calculator"
+                  className="p-2 sm:px-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 rounded-xl font-bold text-emerald-300 flex items-center gap-1.5 transition truncate"
+                >
+                  <span>🏛️</span>
+                  <span className="truncate">Cost Calculator ↗</span>
+                </Link>
+                <Link
+                  href="/tools/startup-india-checker"
+                  className="p-2 sm:px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 rounded-xl font-bold text-[#F4B942] flex items-center gap-1.5 transition truncate"
+                >
+                  <span>🇮🇳</span>
+                  <span className="truncate">80-IAC Checker ↗</span>
+                </Link>
                 <Link
                   href="/tools/company-name-search"
                   className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
@@ -844,11 +858,11 @@ export default function HomePage() {
                   <span className="truncate">Verify GSTIN ↗</span>
                 </Link>
                 <Link
-                  href="/vakil"
-                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-[#F4B942] flex items-center gap-1.5 transition truncate"
+                  href="/tools"
+                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-cyan-300 flex items-center gap-1.5 transition truncate"
                 >
-                  <span>👨‍⚖️</span>
-                  <span className="truncate">Lawyer Desk ↗</span>
+                  <span>⚡</span>
+                  <span className="truncate">All Tools Hub ↗</span>
                 </Link>
               </div>
             </div>
