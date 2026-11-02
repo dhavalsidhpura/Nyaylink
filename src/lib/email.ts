@@ -15,10 +15,12 @@ interface SendEmailParams {
 export async function sendNotificationEmail({ to, subject, html }: SendEmailParams) {
   try {
     if (!resend) {
-      console.log(`\n📧 [EMAIL SIMULATION]`);
-      console.log(`To: ${to}`);
-      console.log(`Subject: ${subject}`);
-      console.log(`----------------------------------------`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n📧 [EMAIL SIMULATION]`);
+        console.log(`To: ${to}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`----------------------------------------`);
+      }
       return { success: true, simulated: true };
     }
 

@@ -24,22 +24,28 @@ function checkRateLimit(ip: string, limit: number = 30, windowMs: number = 60_00
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rate limiting defense for public search and verification APIs
+  // Rate limiting defense for public search, verification, and OTP request APIs
   if (
     pathname.startsWith('/api/track-status') ||
     pathname.startsWith('/api/verify/') ||
-    pathname.startsWith('/api/leads')
+    pathname.startsWith('/api/leads') ||
+    pathname.startsWith('/api/auth/otp/request')
   ) {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
       request.headers.get('x-real-ip') ||
       'anonymous-ip';
 
-    if (checkRateLimit(ip, 30, 60_000)) {
+    const limit = pathname.startsWith('/api/auth/otp/request') ? 10 : 30;
+    if (checkRateLimit(ip, limit, 60_000)) {
       return NextResponse.json(
         { success: false, error: 'Too many requests. Please wait 60 seconds before trying again.' },
         { status: 429, headers: { 'Retry-After': '60' } }
       );
+    }
+
+    if (pathname.startsWith('/api/auth/otp/request')) {
+      return NextResponse.next();
     }
 
     return NextResponse.next();
@@ -99,5 +105,8 @@ export const config = {
     '/api/track-status',
     '/api/verify/:path*',
     '/api/leads',
+    '/api/documents/:path*',
+    '/api/orders/:path*',
+    '/api/auth/otp/request',
   ],
 };

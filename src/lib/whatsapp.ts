@@ -32,9 +32,11 @@ export async function sendWhatsAppMessage({ to, bodyText }: WhatsAppMessagePaylo
 
   // Simulation fallback if Meta credentials are not provided
   if (!PHONE_NUMBER_ID || !ACCESS_TOKEN) {
-    console.log(`\n📱 [WHATSAPP SIMULATION] -> +${formattedPhone}`);
-    console.log(`Message:\n${bodyText}`);
-    console.log(`----------------------------------------`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`\n📱 [WHATSAPP SIMULATION] -> +${formattedPhone}`);
+      console.log(`Message:\n${bodyText}`);
+      console.log(`----------------------------------------`);
+    }
     return { success: true, simulated: true };
   }
 
