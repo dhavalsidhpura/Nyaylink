@@ -27,6 +27,11 @@ export default function HomePage() {
   const packagesSliderRef = useRef<HTMLDivElement>(null);
   const [activePackageIndex, setActivePackageIndex] = useState(0);
   const [comparisonCompetitor, setComparisonCompetitor] = useState<'portals' | 'offline'>('portals');
+  // Entity Matchmaker Decision Wizard State
+  const [wizardFounders, setWizardFounders] = useState<'solo' | 'multi'>('multi');
+  const [wizardFunding, setWizardFunding] = useState<'bootstrap' | 'vc'>('vc');
+  const [wizardLiability, setWizardLiability] = useState<'shield' | 'fast'>('shield');
+  const [isWizardOpen, setIsWizardOpen] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Hero 3-Tab Command Center (Hero Right)
@@ -211,6 +216,71 @@ export default function HomePage() {
     }
   };
 
+    // Computed Business Entity Recommendation
+  const entityRecommendation = useMemo(() => {
+    if (wizardFounders === 'solo') {
+      if (wizardLiability === 'shield') {
+        return {
+          title: 'One Person Company (OPC)',
+          tagline: 'Best for Solo Founders Wanting 100% Limited Liability Protection',
+          slug: 'one-person-company',
+          price: '₹6,999',
+          advanceToken: '₹999',
+          features: [
+            'Separate legal corporate entity with 100% personal asset protection',
+            'Full corporate status with 1 single director & shareholder',
+            'Seamless conversion to Private Limited as business revenue scales',
+          ],
+          packageUrl: '/services/one-person-company',
+        };
+      } else {
+        return {
+          title: 'Sole Proprietorship (GST + MSME Udyam)',
+          tagline: 'Fastest & Most Affordable Setup for Solo Freelancers, Traders & Local Outlets',
+          slug: 'gst-registration',
+          price: '₹1,499',
+          advanceToken: '₹999',
+          features: [
+            'Zero MCA statutory audit headaches & minimal recurring compliance burden',
+            'Ready in 3–5 working days with 15-Digit GSTIN & Green MSME Udyam Certificate',
+            'Instant Current Bank Account opening with partner banks',
+          ],
+          packageUrl: '/services/gst-registration',
+        };
+      }
+    } else {
+      if (wizardFunding === 'vc') {
+        return {
+          title: 'Private Limited Company (Pvt Ltd)',
+          tagline: 'The Gold Standard for High-Growth Startups, Co-Founders & VC Investment',
+          slug: 'private-limited-company',
+          price: '₹8,999',
+          advanceToken: '₹999',
+          features: [
+            'Mandatory vehicle to raise angel/VC capital, issue equity shares, and grant ESOPs',
+            'Limited liability shields founders from company debt and corporate liabilities',
+            'Eligible for Startup India 3-Year 100% Tax Exemption (Section 80-IAC)',
+          ],
+          packageUrl: '/services/private-limited-company?package=startup-launchpad-bundle',
+        };
+      } else {
+        return {
+          title: 'Limited Liability Partnership (LLP)',
+          tagline: 'Ideal for 2+ Partners, Agencies, Consultancies & Family Businesses',
+          slug: 'llp-incorporation',
+          price: '₹6,499',
+          advanceToken: '₹999',
+          features: [
+            'Limited liability shield without heavy corporate secretarial compliances',
+            'No mandatory statutory audit unless turnover exceeds ₹40 Lakhs or capital exceeds ₹25 Lakhs',
+            'Partners enjoy lower tax on profit withdrawals compared to corporate dividend tax',
+          ],
+          packageUrl: '/services/llp-incorporation',
+        };
+      }
+    }
+  }, [wizardFounders, wizardFunding, wizardLiability]);
+
   // Callback form handler
   const handleCallbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,22 +354,40 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-20 lg:pb-0">
 
       {/* ======================================================== */}
-      {/* 1. TOP UTILITY RIBBON (GOVT PORTAL INTEGRATIONS & DESK)   */}
+      {/* 1. TOP GLOBAL TRUST & ADVISORY RIBBON (ALL DEVICES)      */}
       {/* ======================================================== */}
-      <div className="bg-[#041E30] text-slate-300 text-[11px] py-2 px-4 sm:px-8 border-b border-cyan-950/60 hidden sm:block">
-        <div className="max-w-[1600px] mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <span>📍 Mumbai HQ: Charkop, Kandivali West</span>
-            <span>📞 Direct Desk: <strong className="text-white">+91 9920054785</strong></span>
-            <span className="hidden md:inline">✉️ info@nyayalink.com</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Mumbai CA Desk: Online
+      <div className="bg-gradient-to-r from-[#031522] via-[#073B5C] to-[#031522] text-white text-[11px] py-2 px-3 sm:px-8 border-b border-cyan-800/40">
+        <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-1.5 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-center sm:justify-start">
+            <span className="bg-[#F4B942] text-[#073B5C] font-black px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider">
+              ⚡ Flat ₹999 Token
             </span>
-            <span className="text-slate-500 hidden md:inline">|</span>
-            <span className="text-[#F4B942] hidden md:inline">⚡ MCA V3, GSTN & IP India Integrated</span>
+            <span className="text-slate-200 font-medium text-center sm:text-left">
+              Pure Agent Rule 33 Zero-Markup Stamp Duty Guarantee
+            </span>
+            <span className="hidden lg:inline text-cyan-400">•</span>
+            <span className="hidden lg:inline text-slate-300">
+              MCA V3, GSTN & IP India Empanelled Desk
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px]">
+            <a
+              href="tel:+919920054785"
+              className="text-[#F4B942] hover:underline font-extrabold flex items-center gap-1"
+            >
+              <span>📞</span>
+              <span>Direct Desk: +91 9920054785</span>
+            </a>
+            <span className="text-cyan-600 hidden sm:inline">|</span>
+            <a
+              href="https://wa.me/919920054785?text=Hi%20NyayaLink%2C%20I%20need%20help%20choosing%20the%20right%20business%20registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1 shadow-xs transition"
+            >
+              <span>💬</span> WhatsApp CA
+            </a>
           </div>
         </div>
       </div>
@@ -1742,6 +1830,214 @@ export default function HomePage() {
       {/* ======================================================== */}
       <main id="catalog-section" className="max-w-[1600px] mx-auto px-4 sm:px-8 py-12 w-full flex-grow space-y-8">
         
+        {/* ======================================================== */}
+        {/* INTERACTIVE 3-QUESTION BUSINESS ENTITY MATCHMAKER WIZARD */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-3xl border-2 border-[#0E7490]/40 shadow-sm p-5 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 bg-[#0E7490]/10 border border-[#0E7490]/30 px-3 py-1 rounded-full text-[11px] font-black text-[#0E7490]">
+                <span>🤖</span> 30-Second Business Structure Advisor
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">
+                Not Sure Which Legal Entity to Register?
+              </h3>
+              <p className="text-xs text-slate-500">
+                Answer 3 quick questions to discover whether you need a Pvt Ltd, LLP, OPC, or Sole Proprietorship.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsWizardOpen(!isWizardOpen)}
+              className="text-xs font-bold text-[#0E7490] hover:text-[#073B5C] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl transition cursor-pointer"
+            >
+              {isWizardOpen ? 'Minimize Helper ▲' : 'Open Entity Advisor ▼'}
+            </button>
+          </div>
+
+          {isWizardOpen && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              {/* Left Column: The 3 Questions */}
+              <div className="lg:col-span-7 space-y-4">
+                {/* Question 1 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">1</span>
+                    <span>How many founders / partners are starting?</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setWizardFounders('solo')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardFounders === 'solo'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">👤</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">Just Me Alone</div>
+                        <div className="text-[10px] text-slate-500">Solo Entrepreneur</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWizardFounders('multi')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardFounders === 'multi'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">👥</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">2 or More People</div>
+                        <div className="text-[10px] text-slate-500">Co-Founders / Partners</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Question 2 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">2</span>
+                    <span>What is your funding and capital strategy?</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setWizardFunding('vc')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardFunding === 'vc'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">🚀</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">Raise External Capital</div>
+                        <div className="text-[10px] text-slate-500">VC, Angel or Investor Equity</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWizardFunding('bootstrap')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardFunding === 'bootstrap'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">💡</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">Bootstrapped / Local</div>
+                        <div className="text-[10px] text-slate-500">Self-Funded, Low Compliance</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Question 3 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">3</span>
+                    <span>Do you need complete limited liability protection?</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setWizardLiability('shield')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardLiability === 'shield'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">🛡️</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">100% Limited Liability</div>
+                        <div className="text-[10px] text-slate-500">Shield Personal Home & Assets</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWizardLiability('fast')}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                        wizardLiability === 'fast'
+                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
+                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-xl">⚡</span>
+                      <div>
+                        <div className="text-xs font-black text-[#073B5C]">Fastest & Lowest Cost</div>
+                        <div className="text-[10px] text-slate-500">Minimal Filings & Lowest Fees</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Live Recommendation Card */}
+              <div className="lg:col-span-5 bg-gradient-to-br from-[#073B5C] via-[#052A42] to-[#041E30] text-white p-5 sm:p-6 rounded-3xl flex flex-col justify-between space-y-4 shadow-lg border border-cyan-800 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0E7490]/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div className="space-y-3 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                      ⚡ 100% Recommended Fit
+                    </span>
+                    <span className="text-emerald-400 text-xs font-bold font-mono">
+                      Verified Match
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xl font-black text-white leading-tight">
+                      {entityRecommendation.title}
+                    </h4>
+                    <p className="text-xs text-cyan-200 mt-1 leading-relaxed">
+                      {entityRecommendation.tagline}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-2 text-xs">
+                    <strong className="text-[#F4B942] block text-[10px] uppercase tracking-wider font-extrabold">
+                      Why This Entity Fits You Best:
+                    </strong>
+                    <ul className="text-slate-200 space-y-1.5 text-[11px]">
+                      {entityRecommendation.features.map((feat, fIdx) => (
+                        <li key={fIdx} className="flex items-start gap-1.5">
+                          <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3 relative z-10">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Full Package Fee</span>
+                    <span className="text-lg font-black text-[#F4B942]">{entityRecommendation.price}</span>
+                    <span className="text-[10px] text-emerald-400 block font-bold">Start with {entityRecommendation.advanceToken} Token</span>
+                  </div>
+
+                  <Link
+                    href={entityRecommendation.packageUrl}
+                    className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl transition shadow text-center uppercase tracking-wider shrink-0 cursor-pointer"
+                  >
+                    Start for ₹999 Token →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Header & Search */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
