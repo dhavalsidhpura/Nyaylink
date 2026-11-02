@@ -9,6 +9,7 @@ import DocumentChecklist from '@/components/DocumentChecklist';
 import OrderMessages from '@/components/OrderMessages';
 import OrderProgress from '@/components/OrderProgress';
 import { AssignSelector, PaymentRequestForm, RefundButton } from './AdminOrderActions';
+import GovernmentCredentialLocker from '@/components/GovernmentCredentialLocker';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,17 @@ export default async function AdminOrderReviewPage({ params }: AdminOrderPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {caseAccess && (
+              <GovernmentCredentialLocker
+                orderId={order.id}
+                orderNumber={order.orderNumber}
+                serviceTitle={order.service.title}
+                clientName={order.client.name}
+                clientPhone={order.client.phone}
+                credentials={(order.intakeData as any)?.governmentCredentials || null}
+                mode="staff"
+              />
+            )}
             {caseAccess && (
               <DocumentChecklist
                 orderId={order.id}

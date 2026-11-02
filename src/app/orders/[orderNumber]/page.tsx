@@ -9,6 +9,7 @@ import OrderMessages from '@/components/OrderMessages';
 import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
 import WhatsAppNotificationCard from '@/components/WhatsAppNotificationCard';
+import GovernmentCredentialLocker from '@/components/GovernmentCredentialLocker';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,6 +156,17 @@ export default async function OrderTrackingPage({ params }: Props) {
           </div>
           <OrderProgress status={order.status} />
         </section>
+
+        {/* Official Government Portal Credential Locker */}
+        <GovernmentCredentialLocker
+          orderId={order.id}
+          orderNumber={order.orderNumber}
+          serviceTitle={order.service.title}
+          clientName={raw.client?.name || 'Valued Client'}
+          clientPhone={raw.client?.phone}
+          credentials={(order.intakeData as any)?.governmentCredentials || null}
+          mode="client"
+        />
 
         {/* WhatsApp Automated Milestone Alert Engine */}
         <WhatsAppNotificationCard

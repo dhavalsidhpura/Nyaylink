@@ -129,7 +129,9 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   // Quick Checkout Form in Modal
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [aadhaarPhone, setAadhaarPhone] = useState('');
   const [entityName, setEntityName] = useState(prefilledName);
+  const [entityNameChoice2, setEntityNameChoice2] = useState('');
   const [consent, setConsent] = useState(true);
   const [email, setEmail] = useState('');
 
@@ -321,8 +323,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
           intake: {
             applicantName: fullName,
             mobile: phone,
+            aadhaarPhone: aadhaarPhone || phone,
             email: email || session?.user?.email || '',
             entityName: entityName || (matchedPackage ? matchedPackage.title : details.title),
+            entityNameChoice2: entityNameChoice2 || '',
             selectedState,
             bookingPlan: payAdvance ? 'ADVANCE_999' : 'FULL_PAYMENT',
             ...(isFssaiService ? { fssaiTier, fssaiTierLabel: effectivePricing.tierLabel, fssaiGovtFee: String(dynamicGovtFee) } : {}),
@@ -1314,31 +1318,65 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 {/* Email Address for official deliverables */}
                 <div>
                   <label className="block font-bold text-[#073B5C] mb-1">
-                    Official Email Address *
+                    Official Business Email Address *
                   </label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. rahul@mycompany.com"
+                    placeholder="e.g. rahul@mycompany.com or rahul@gmail.com"
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                   />
-                  <span className="text-[9px] text-slate-400 block mt-0.5">Government registration certificates & invoices will be emailed here.</span>
+                  <span className="text-[10px] text-cyan-800 bg-cyan-50 border border-cyan-200 p-2 rounded-lg block mt-1 leading-relaxed">
+                    🛡️ <strong>Statutory Ownership Guarantee:</strong> Your Certificate of Incorporation, e-PAN, GSTIN, and all government portal credentials will be officially tied to this email. You own this account 100%.
+                  </span>
+                </div>
+
+                {/* Aadhaar-Linked Phone (Optional, defaults to WhatsApp phone) */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold text-[#073B5C]">
+                      Director's UIDAI Aadhaar-Linked Mobile
+                    </label>
+                    <span className="text-[10px] text-slate-400">If different from above</span>
+                  </div>
+                  <input
+                    type="tel"
+                    value={aadhaarPhone}
+                    onChange={(e) => setAadhaarPhone(e.target.value)}
+                    placeholder="Same as WhatsApp mobile above (or enter 10 digits)"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                  />
+                  <span className="text-[9px] text-slate-400 block mt-0.5">UIDAI sends mandatory authentication OTPs for GST Aadhaar auth & DSC verification here.</span>
                 </div>
 
                 {/* Proposed Name / Brand */}
-                <div>
-                  <label className="block font-bold text-[#073B5C] mb-1">
-                    Proposed Company / Brand / Entity Name
-                  </label>
-                  <input
-                    type="text"
-                    value={entityName}
-                    onChange={(e) => setEntityName(e.target.value)}
-                    placeholder="e.g. Acme Innovations (can finalize later with CA)"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-[#073B5C] mb-1">
+                      Proposed Name (1st Choice)
+                    </label>
+                    <input
+                      type="text"
+                      value={entityName}
+                      onChange={(e) => setEntityName(e.target.value)}
+                      placeholder="e.g. Acme Innovations"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-[#073B5C] mb-1">
+                      2nd Choice (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={entityNameChoice2}
+                      onChange={(e) => setEntityNameChoice2(e.target.value)}
+                      placeholder="e.g. Acme Technologies"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                    />
+                  </div>
                 </div>
 
                 {/* Selected State & Amount Summary */}
