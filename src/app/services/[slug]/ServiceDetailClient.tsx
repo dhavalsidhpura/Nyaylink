@@ -12,6 +12,7 @@ import {
   formatINR,
   INDIAN_STATES,
   getStateStampDuty,
+  getPricingModelBadge,
 } from '@/lib/pricing';
 import { openRazorpayCheckout } from '@/lib/checkout-client';
 import StampDutyCalculator from '@/components/StampDutyCalculator';
@@ -110,6 +111,16 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const [selectedState, setSelectedState] = useState('MH');
   const [payAdvance, setPayAdvance] = useState(true); // true = ₹999 impulse advance, false = full amount
 
+  // Service Type & Pricing Model Flags
+  const isFssaiService = slug.includes('fssai');
+  const isShopActService = slug.includes('shop-and-establishment') || slug.includes('gumasta');
+
+  // Interactive Tier States
+  const [fssaiTier, setFssaiTier] = useState<'basic' | 'state' | 'central'>('basic');
+  const [staffSlab, setStaffSlab] = useState<'0_9' | '10_20' | '20_plus'>('0_9');
+
+  const pricingModel = useMemo(() => getPricingModelBadge(slug, serviceCategory), [slug, serviceCategory]);
+
   // Modals
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
@@ -176,23 +187,71 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
     }
   }, [signedIn, session, fullName, email]);
 
-  // Pricing calculations
-  const baseProfFee = serviceData ? serviceData.professionalFee : (pricing ? pricing.professionalFee : masterService.price);
+  // Pricing calculations with interactive tier calculations
+  const rawProfFee = serviceData ? serviceData.professionalFee : (pricing ? pricing.professionalFee : masterService.price);
+  const rawGovtFee = (serviceData?.govtFee ?? pricing?.govtFee) || 0;
   const gstRate = serviceData?.gstRate || pricing?.gstRate || 18;
   const stateStamp = useMemo(() => getStateStampDuty(selectedState), [selectedState]);
 
-  // Compute GST on professional fee
+  // Dynamic Tier Pricing computation
+  const effectivePricing = useMemo(() => {
+    let prof = rawProfFee;
+    let govt = isStateSpecificService ? stateStamp.amount : rawGovtFee;
+    let sla = displaySla;
+    let tierLabel = '';
+
+    if (isFssaiService) {
+      if (fssaiTier === 'basic') {
+        prof = 1999;
+        govt = 100;
+        sla = '3 - 5 Working Days';
+        tierLabel = 'Basic FoSCoS Registration (< ₹12L Turnover)';
+      } else if (fssaiTier === 'state') {
+        prof = 3499;
+        govt = 2000;
+        sla = '7 - 10 Working Days';
+        tierLabel = 'State FoSCoS Food License (₹12L - ₹20 Cr)';
+      } else {
+        prof = 6999;
+        govt = 7500;
+        sla = '10 - 15 Working Days';
+        tierLabel = 'Central FoSCoS License (> ₹20 Cr / Importer)';
+      }
+    } else if (isShopActService) {
+      if (staffSlab === '0_9') {
+        prof = 1999;
+        govt = 0;
+        sla = '1 - 3 Working Days';
+        tierLabel = 'Micro / Self-Operated (0 to 9 Staff)';
+      } else if (staffSlab === '10_20') {
+        prof = 2499;
+        govt = 1000;
+        sla = '3 - 5 Working Days';
+        tierLabel = 'Commercial Establishment (10 to 20 Staff)';
+      } else {
+        prof = 3999;
+        govt = 1500;
+        sla = '5 - 7 Working Days';
+        tierLabel = 'Large Enterprise (20+ Staff + EPFO/ESIC)';
+      }
+    }
+
+    return { prof, govt, sla, tierLabel };
+  }, [rawProfFee, rawGovtFee, isStateSpecificService, stateStamp.amount, displaySla, isFssaiService, fssaiTier, isShopActService, staffSlab]);
+
+  const baseProfFee = effectivePricing.prof;
+  const dynamicGovtFee = effectivePricing.govt;
+
   const baseQuote = useMemo(
     () =>
       computeQuote(
-        { professionalFee: baseProfFee, govtFee: isStateSpecificService ? stateStamp.amount : ((serviceData?.govtFee ?? pricing?.govtFee) || 0), gstRate },
+        { professionalFee: baseProfFee, govtFee: dynamicGovtFee, gstRate },
         selectedState
       ),
-    [baseProfFee, isStateSpecificService, stateStamp.amount, serviceData?.govtFee, pricing?.govtFee, gstRate, selectedState]
+    [baseProfFee, dynamicGovtFee, gstRate, selectedState]
   );
 
-  const dynamicGovtFee = isStateSpecificService ? stateStamp.amount : ((serviceData?.govtFee ?? pricing?.govtFee) || 0);
-  const totalEstimatedCost = baseQuote.total;
+  const totalEstimatedCost = matchedPackage ? matchedPackage.packagePrice : baseQuote.total;
   const advanceAmount = Math.min(999, totalEstimatedCost);
   const activePayAmount = payAdvance ? advanceAmount : totalEstimatedCost;
 
@@ -265,6 +324,8 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             entityName: entityName || (matchedPackage ? matchedPackage.title : details.title),
             selectedState,
             bookingPlan: payAdvance ? 'ADVANCE_999' : 'FULL_PAYMENT',
+            ...(isFssaiService ? { fssaiTier, fssaiTierLabel: effectivePricing.tierLabel, fssaiGovtFee: String(dynamicGovtFee) } : {}),
+            ...(isShopActService ? { staffSlab, staffSlabLabel: effectivePricing.tierLabel, shopActGovtFee: String(dynamicGovtFee) } : {}),
             ...(matchedPackage
               ? {
                   isPackageBooking: 'true',
@@ -701,6 +762,190 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </div>
             )}
 
+            {/* SECTION 4.2: INTERACTIVE FSSAI TURNOVER & SCALE SELECTOR */}
+            {isFssaiService && (
+              <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-md space-y-4">
+                <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🍲</span>
+                      <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
+                        FoSCoS Food Safety License Scale Selector
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Statutory FoSCoS portal fees vary based on annual food business turnover and operations.
+                    </p>
+                  </div>
+                  <span className="bg-amber-50 text-amber-900 border border-amber-200 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                    Rule 33 Pure Agent
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: 'basic',
+                      title: 'Basic Registration',
+                      turnover: 'Turnover < ₹12 Lakhs',
+                      desc: 'Cloud kitchens, home bakers, food stalls, petty manufacturers.',
+                      govtFee: '₹100/yr',
+                      profFee: '₹1,999',
+                      badge: 'Micro FBO',
+                    },
+                    {
+                      id: 'state',
+                      title: 'State Food License',
+                      turnover: 'Turnover ₹12L - ₹20 Cr',
+                      desc: 'Full-service dine-in restaurants, caterers, commercial Swiggy/Zomato kitchens.',
+                      govtFee: '₹2,000/yr',
+                      profFee: '₹3,499',
+                      badge: 'Most Popular',
+                    },
+                    {
+                      id: 'central',
+                      title: 'Central License',
+                      turnover: 'Turnover > ₹20 Cr',
+                      desc: 'Multi-state food chains, 100% export oriented units, importers, food e-commerce.',
+                      govtFee: '₹7,500/yr',
+                      profFee: '₹6,999',
+                      badge: 'Venture & Scale',
+                    },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setFssaiTier(t.id as any)}
+                      className={`p-4 rounded-2xl border-2 text-left transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                        fssaiTier === t.id
+                          ? 'border-[#0E7490] bg-cyan-50/50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                            fssaiTier === t.id ? 'bg-[#0E7490] text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {t.badge}
+                          </span>
+                          <span className="text-xs font-bold font-mono text-slate-500">
+                            {fssaiTier === t.id ? '✓ Selected' : 'Select'}
+                          </span>
+                        </div>
+                        <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug">{t.title}</h4>
+                        <div className="text-[11px] font-bold text-amber-900">{t.turnover}</div>
+                        <p className="text-[10px] text-slate-500 leading-tight">{t.desc}</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/70 text-[10px] space-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Govt Fee:</span>
+                          <strong className="text-slate-700">{t.govtFee}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Prof. Fee:</span>
+                          <strong className="text-[#073B5C]">{t.profFee}</strong>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SECTION 4.3: INTERACTIVE SHOP ACT EMPLOYEE SLAB SELECTOR */}
+            {isShopActService && (
+              <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-md space-y-4">
+                <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🏬</span>
+                      <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
+                        Shop & Establishment Staff Headcount Slab
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      State labor department registration requirements and portal fees scale with active employee headcount.
+                    </p>
+                  </div>
+                  <span className="bg-purple-50 text-purple-900 border border-purple-200 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                    Labor Act Compliant
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: '0_9',
+                      title: 'Micro / Self-Operated',
+                      staff: '0 to 9 Employees',
+                      desc: 'Online Intimation (Form F in MH / Free in Delhi). Instant delivery.',
+                      govtFee: '₹0 (Nominal)',
+                      profFee: '₹1,999',
+                      badge: 'Zero Labor Fee',
+                    },
+                    {
+                      id: '10_20',
+                      title: 'Commercial Establishment',
+                      staff: '10 to 20 Employees',
+                      desc: 'Formal Registration Certificate issued by State Labor Commissioner.',
+                      govtFee: '~₹1,000 (At Actuals)',
+                      profFee: '₹2,499',
+                      badge: 'Commercial',
+                    },
+                    {
+                      id: '20_plus',
+                      title: 'Large Enterprise',
+                      staff: '20+ Employees',
+                      desc: 'Labor registration + mandatory EPFO and ESIC employer compliance code.',
+                      govtFee: '~₹1,500 (At Actuals)',
+                      profFee: '₹3,999',
+                      badge: 'ESIC + EPFO',
+                    },
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setStaffSlab(s.id as any)}
+                      className={`p-4 rounded-2xl border-2 text-left transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                        staffSlab === s.id
+                          ? 'border-[#0E7490] bg-cyan-50/50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                            staffSlab === s.id ? 'bg-[#0E7490] text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {s.badge}
+                          </span>
+                          <span className="text-xs font-bold font-mono text-slate-500">
+                            {staffSlab === s.id ? '✓ Selected' : 'Select'}
+                          </span>
+                        </div>
+                        <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug">{s.title}</h4>
+                        <div className="text-[11px] font-bold text-purple-900">{s.staff}</div>
+                        <p className="text-[10px] text-slate-500 leading-tight">{s.desc}</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/70 text-[10px] space-y-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Labor Fee:</span>
+                          <strong className="text-slate-700">{s.govtFee}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Prof. Fee:</span>
+                          <strong className="text-[#073B5C]">{s.profFee}</strong>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* SECTION 5: REGULATORY CONSIDERATIONS */}
             {details.importantConsiderations && details.importantConsiderations.length > 0 && (
               <div className="bg-amber-50/50 rounded-3xl p-6 border border-amber-200 shadow-xs space-y-3">
@@ -764,6 +1009,14 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 <h3 className="font-black text-[#073B5C] text-lg sm:text-xl">
                   {displayTitle}
                 </h3>
+                <div className="pt-1">
+                  <span
+                    className={`inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border ${pricingModel.badgeClass}`}
+                    title={pricingModel.tooltip}
+                  >
+                    {pricingModel.label}
+                  </span>
+                </div>
               </div>
 
               {/* STATE SELECTION DROPDOWN */}
@@ -906,6 +1159,16 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                     Never visit government offices or courts. Certified CAs sign electronically on your behalf.
                   </span>
                 </div>
+
+              {/* PURE AGENT ZERO-MARKUP GUARANTEE */}
+              <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
+                <div className="flex items-center gap-1.5 font-black text-emerald-900">
+                  <span>🛡️</span> Zero Markup on Statutory Fees
+                </div>
+                <p className="text-[10px] text-emerald-800 leading-snug">
+                  Statutory portal fees (MCA, FoSCoS, Labor, GSTN) pass through strictly at actuals under Rule 33 of CGST. Official government treasury e-Challan receipts are uploaded directly to your Vault.
+                </p>
+              </div>
 
               {/* TRUST SIGNALS */}
               <div className="pt-1 space-y-1.5 text-[11px] text-slate-500 text-center font-medium">

@@ -147,3 +147,64 @@ export function getStateStampDuty(stateCode: string): { amount: number; breakdow
     baseStamp: rule.baseStamp,
   };
 }
+
+
+export interface PricingModelBadge {
+  type: 'PAN_INDIA' | 'STATE_VARIABLE' | 'SLAB_TIERED';
+  label: string;
+  shortBadge: string;
+  tooltip: string;
+  badgeClass: string;
+  pillClass: string;
+}
+
+export function getPricingModelBadge(slug: string, category: string): PricingModelBadge {
+  const lowerSlug = slug.toLowerCase();
+  
+  if (lowerSlug.includes('fssai')) {
+    return {
+      type: 'SLAB_TIERED',
+      label: 'Turnover-Tiered Statutory Fee',
+      shortBadge: 'Turnover-Tiered',
+      tooltip: 'FoSCoS statutory portal fee: ₹100/yr (Basic < ₹12L) or ₹2,000/yr (State ₹12L–₹20Cr). Passed through at actuals.',
+      badgeClass: 'bg-amber-50 text-amber-900 border-amber-200',
+      pillClass: 'bg-amber-100/80 text-amber-900',
+    };
+  }
+
+  if (lowerSlug.includes('shop-and-establishment') || lowerSlug.includes('gumasta')) {
+    return {
+      type: 'SLAB_TIERED',
+      label: 'State & Employee-Tiered Fee',
+      shortBadge: 'Staff-Tiered',
+      tooltip: 'State Labor Department fee: 0–9 staff is free/nominal online; 10+ staff scales by employee slab.',
+      badgeClass: 'bg-purple-50 text-purple-900 border-purple-200',
+      pillClass: 'bg-purple-100/80 text-purple-900',
+    };
+  }
+
+  if (
+    category === 'company-reg' ||
+    lowerSlug.includes('company') ||
+    lowerSlug.includes('incorporation') ||
+    lowerSlug.includes('llp')
+  ) {
+    return {
+      type: 'STATE_VARIABLE',
+      label: 'State Stamp Duty at Actuals',
+      shortBadge: 'State Stamp Duty',
+      tooltip: 'MCA ROC fee is ₹0 (capital ≤ ₹15L). State stamp duty on MoA/AoA passes through at actuals per state Stamp Act.',
+      badgeClass: 'bg-cyan-50 text-[#073B5C] border-cyan-200',
+      pillClass: 'bg-cyan-100/80 text-[#073B5C]',
+    };
+  }
+
+  return {
+    type: 'PAN_INDIA',
+    label: 'Pan-India Uniform Pricing',
+    shortBadge: 'Pan-India Fixed',
+    tooltip: 'Standardized national statutory fee with zero state variations across all 28 states & 8 UTs.',
+    badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    pillClass: 'bg-emerald-100/80 text-emerald-800',
+  };
+}

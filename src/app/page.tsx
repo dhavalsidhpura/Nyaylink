@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
-import { INDIAN_STATES, getStateStampDuty, formatINR } from '@/lib/pricing';
+import { INDIAN_STATES, getStateStampDuty, formatINR, getPricingModelBadge } from '@/lib/pricing';
 
 export default function HomePage() {
   const router = useRouter();
@@ -1746,10 +1746,13 @@ export default function HomePage() {
                       <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug truncate">
                         {srv.title}
                       </h4>
-                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500 font-medium">
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-500 font-medium flex-wrap">
                         <span className="truncate">⏱️ {srv.sla}</span>
                         <span>•</span>
                         <span className="text-emerald-700 font-bold shrink-0">₹999 Token</span>
+                        <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full border ${getPricingModelBadge(srv.slug, srv.category).badgeClass}`}>
+                          {getPricingModelBadge(srv.slug, srv.category).shortBadge}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1800,6 +1803,17 @@ export default function HomePage() {
                       <h3 className="font-extrabold text-[#073B5C] text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
                         {srv.title}
                       </h3>
+                      
+                      {/* Statutory Pricing Transparency Pill */}
+                      <div className="pt-1.5 pb-0.5">
+                        <span
+                          className={`inline-block text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${getPricingModelBadge(srv.slug, srv.category).badgeClass}`}
+                          title={getPricingModelBadge(srv.slug, srv.category).tooltip}
+                        >
+                          {getPricingModelBadge(srv.slug, srv.category).label}
+                        </span>
+                      </div>
+
                       <p className="text-slate-500 text-xs mt-1 leading-relaxed line-clamp-2 min-h-[2rem] hidden sm:block">
                         {srv.desc}
                       </p>
