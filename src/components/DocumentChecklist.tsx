@@ -36,6 +36,39 @@ const STATUS_UI: Record<string, { label: string; style: string }> = {
   REJECTED: { label: 'Re-upload needed', style: 'bg-rose-100 text-rose-800' },
 };
 
+
+const TEMPLATES: Record<string, { title: string; filename: string; content: string }> = {
+  noc: {
+    title: 'Landlord No-Objection Certificate (NOC)',
+    filename: 'Landlord_NOC_Template_NyayaLink.txt',
+    content: `TO WHOMSOEVER IT MAY CONCERN\n\nI/We, ___________________________________ [Name of Property Owner], residing at ____________________________________________________, do hereby solemnly declare and state as follows:\n\n1. That I am the legal and absolute owner of the premises situated at:\n   ____________________________________________________________________\n   ____________________________________________________________________ [Complete Registered Office Address].\n\n2. That I have no objection whatsoever if M/s _________________________________________________ [Proposed Company Name] uses the aforesaid premises as its Registered Office for all corporate, statutory, and legal purposes under the Companies Act, 2013 and rules framed thereunder.\n\n3. That I have not granted any exclusive possession contrary to this arrangement and permit the display of the Company's name board at the said premises as required by law.\n\nDate: ____________________\nPlace: ____________________\n\n___________________________________________\nSignature of Property Owner / Landlord\nName: ____________________________________\nContact No: _____________________________\n`,
+  },
+  dir2: {
+    title: 'Form DIR-2 (Consent to Act as Director)',
+    filename: 'DIR_2_Consent_Director_Template.txt',
+    content: `FORM DIR-2\nConsent to act as a Director of a Company\n[Pursuant to Section 152(5) of the Companies Act, 2013 and Rule 8 of Companies (Appointment and Qualification of Directors) Rules, 2014]\n\nTo,\nThe Board of Directors,\n_____________________________________________________ [Proposed Company Name]\n\nSubject: Consent to act as Director\n\nI, __________________________________________, hereby give my consent to act as Director of _________________________________________________ [Proposed Company Name], pursuant to sub-section (5) of Section 152 of the Companies Act, 2013.\n\n1. Director Identification Number (DIN) (if allotted): ________________________\n2. Full Name: ____________________________________________________________\n3. Father's Name: ________________________________________________________\n4. Permanent Residential Address: ___________________________________________\n5. Present Residential Address: _____________________________________________\n6. Email ID: _____________________________________________________________\n7. Mobile Number: _________________________________________________________\n8. Date of Birth: ____________________\n9. Nationality: _____________________\n10. Occupation: _____________________\n\nDECLARATION:\nI declare that I have not been disqualified to act as a director under the provisions of the Companies Act, 2013.\n\nDate: ____________________\nPlace: ____________________\n\n___________________________________________\nSignature of Director\nName: ____________________________________\n`,
+  },
+  board_res: {
+    title: 'Board Resolution for Corporate Authorization',
+    filename: 'Board_Resolution_Authorization_Template.txt',
+    content: `CERTIFIED TRUE COPY OF THE RESOLUTION PASSED AT THE MEETING OF THE BOARD OF DIRECTORS OF _____________________________________________________ HELD ON __________________ AT THE REGISTERED OFFICE OF THE COMPANY.\n\n"RESOLVED THAT consent of the Board of Directors be and is hereby accorded to authorize Mr./Ms. ____________________________________, Director, to sign, execute, and submit all necessary statutory e-forms (including SPICe+ Part A and Part B, AGILE-PRO-S, e-MOA, and e-AOA) with the Ministry of Corporate Affairs, Registrar of Companies, and other regulatory portals for and on behalf of the Company.\n\nRESOLVED FURTHER THAT Mr./Ms. ____________________________________ be and is hereby authorized to appoint professionals, digital signature service providers, and compliance counsel to represent the Company before the Registrar of Companies."\n\nFor and on behalf of the Board of Directors,\n\n___________________________________________\nDirector / Authorized Signatory\nDIN: ____________________\n`,
+  },
+};
+
+function downloadTemplate(key: keyof typeof TEMPLATES) {
+  const t = TEMPLATES[key];
+  if (!t) return;
+  const blob = new Blob([t.content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = t.filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export default function DocumentChecklist({ orderId, requirements, documents, mode, locked, lockedReason }: Props) {
   const router = useRouter();
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -265,20 +298,47 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
             <p className="text-[11px] text-rose-700 font-semibold">Reason: {doc.rejectNote}</p>
           )}
           {rejecting === doc?.id && (
-            <div className="flex flex-col sm:flex-row gap-2 pt-1">
-              <input
-                value={rejectNote}
-                onChange={(e) => setRejectNote(e.target.value)}
-                placeholder="Reason (sent to client)"
-                className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs"
-              />
-              <button
-                onClick={() => review(doc!.id, 'REJECTED')}
-                disabled={rejectNote.trim().length < 5 || busyKey !== null}
-                className="bg-rose-600 disabled:bg-slate-300 text-white font-bold text-[11px] px-3 py-2 rounded-xl"
-              >
-                Send rejection
-              </button>
+            <div className="space-y-2 pt-2">
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Utility bill is older than 60 days (must be < 2 months old)',
+                  'Aadhaar must have first 8 digits masked (UIDAI compliance)',
+                  'Premises address does not match owner NOC',
+                  'Image/document is blurry or unreadable',
+                  'PAN card signature is missing or clipped',
+                ].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setRejectNote(preset)}
+                    className="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-lg transition text-left cursor-pointer"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  value={rejectNote}
+                  onChange={(e) => setRejectNote(e.target.value)}
+                  placeholder="Reason (emailed & sent via WhatsApp to client)"
+                  className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs"
+                />
+                <button
+                  onClick={() => review(doc!.id, 'REJECTED')}
+                  disabled={rejectNote.trim().length < 5 || busyKey !== null}
+                  className="bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white font-bold text-[11px] px-3.5 py-2 rounded-xl transition cursor-pointer"
+                >
+                  Send Rejection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRejecting(null); setRejectNote(''); }}
+                  className="bg-slate-200 text-slate-700 font-semibold text-[11px] px-3 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -328,6 +388,38 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden" aria-hidden>
           <div className="h-full bg-emerald-500 transition-all" style={{ width: `${requirements.length ? (done / requirements.length) * 100 : 0}%` }} />
         </div>
+        
+        {mode === 'client' && (
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
+            <span className="text-[10px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
+              📄 Official Drafting Templates (Downloadable Formats)
+            </span>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => downloadTemplate('noc')}
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <span>🏢</span> Landlord NOC Template ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => downloadTemplate('dir2')}
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <span>✍️</span> Form DIR-2 (Consent) ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => downloadTemplate('board_res')}
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <span>📜</span> Board Resolution Format ↓
+              </button>
+            </div>
+          </div>
+        )}
+
         <p className="text-[11px] text-slate-500">
           PDF, JPG or PNG up to 10 MB. On mobile you can photograph the document directly. Files are stored encrypted and only your
           assigned compliance team can open them.

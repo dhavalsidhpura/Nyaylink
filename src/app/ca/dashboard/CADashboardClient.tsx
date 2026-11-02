@@ -815,7 +815,27 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Audit Remarks (Sent to Client in Email Update)</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-700">Audit Remarks (Sent to Client in Email Update)</label>
+                  <span className="text-[10px] text-slate-400">Click preset to auto-fill:</span>
+                </div>
+                <div className="flex flex-wrap gap-1 pb-1">
+                  {[
+                    'SPICe+ Part B submitted to MCA. SRN generated. Awaiting ROC approval.',
+                    'Name reservation approved by CRC. Drafting MOA & AOA now.',
+                    'ROC issued resubmission query on utility bill. Please re-upload within 15 days.',
+                    'Certificate of Incorporation issued! All statutory numbers allotted.',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setRemarksInput(preset)}
+                      className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
+                    >
+                      + {preset.slice(0, 35)}…
+                    </button>
+                  ))}
+                </div>
                 <textarea
                   value={remarksInput}
                   onChange={(e) => setRemarksInput(e.target.value)}
@@ -858,6 +878,27 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
             </div>
 
             <form onSubmit={handleDocReject} className="space-y-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 block">Click quick defect reason:</span>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    'Utility bill is older than 60 days. Please upload a bill dated within the last 2 months.',
+                    'Aadhaar card must have the first 8 digits masked (UIDAI compliance).',
+                    'Premises address on the utility bill does not match the property owner NOC.',
+                    'Document scan is blurry, dark, or unreadable. Please upload a clear photo.',
+                    'Landlord NOC must be signed by the property owner with their contact number.',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setRejectReason(preset)}
+                      className="text-[9px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
+                    >
+                      + {preset.slice(0, 38)}…
+                    </button>
+                  ))}
+                </div>
+              </div>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}

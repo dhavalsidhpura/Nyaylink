@@ -93,6 +93,48 @@ export default async function OrderTrackingPage({ params }: Props) {
           <OrderProgress status={order.status} />
         </section>
 
+                {order.status === 'APPROVED' && (
+          <section className="bg-gradient-to-r from-emerald-600 via-teal-700 to-[#073B5C] text-white rounded-3xl p-6 shadow-md space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Filing Approved &amp; Allotted
+                  </span>
+                  {order.srn && <span className="text-xs font-mono text-cyan-200">SRN: {order.srn}</span>}
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-white">Your Legal Entity is Officially Registered! 🎉</h2>
+                <p className="text-xs text-emerald-100 max-w-xl">
+                  All official statutory deliverables (Certificate of Incorporation, DINs, PAN, TAN, e-MOA &amp; e-AOA) have been issued by the Ministry of Corporate Affairs / Registry and archived in your encrypted vault.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 text-xs">
+              <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/20 space-y-1">
+                <span className="text-xl">📜</span>
+                <strong className="block text-white font-extrabold text-xs">Certificate of Incorporation</strong>
+                <span className="text-[10px] text-cyan-200 block">Official MCA COI with CIN</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/20 space-y-1">
+                <span className="text-xl">💳</span>
+                <strong className="block text-white font-extrabold text-xs">Company PAN &amp; TAN Letters</strong>
+                <span className="text-[10px] text-cyan-200 block">Direct Tax Allotments</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/20 space-y-1">
+                <span className="text-xl">📑</span>
+                <strong className="block text-white font-extrabold text-xs">Approved e-MOA &amp; e-AOA</strong>
+                <span className="text-[10px] text-cyan-200 block">Constitution of Company</span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/20 space-y-1">
+                <span className="text-xl">🏢</span>
+                <strong className="block text-white font-extrabold text-xs">Statutory Labor Numbers</strong>
+                <span className="text-[10px] text-cyan-200 block">EPFO &amp; ESIC Registrations</span>
+              </div>
+            </div>
+          </section>
+        )}
+
         {order.paymentStatus === 'PARTIALLY_PAID' && order.status === 'DOCS_PENDING' && (
           <section className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 rounded-3xl p-5 sm:p-6 space-y-2 shadow-xs animate-in fade-in">
             <div className="flex items-center gap-2">
@@ -110,7 +152,15 @@ export default async function OrderTrackingPage({ params }: Props) {
 
         {duePayments.length > 0 && (
           <section className="bg-amber-50 border border-amber-300 rounded-3xl p-5 space-y-3">
-            <h2 className="text-sm font-extrabold text-amber-900">Payment due</h2>
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl">💳</span>
+              <div>
+                <h2 className="text-sm font-extrabold text-amber-900">Payment Due · Milestone Billing</h2>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  <strong>Fair Billing Guarantee:</strong> If you initialized this filing with a ₹999 token, your remaining balance covers statutory stamp duty, government disbursements, and certified CA filing fees. This balance is billed only after our compliance desk verifies your documents.
+                </p>
+              </div>
+            </div>
             {duePayments.map((p) => (
               <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-2xl p-4 border border-amber-200">
                 <div className="text-xs">
