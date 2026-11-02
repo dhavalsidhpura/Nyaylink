@@ -309,6 +309,141 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 </div>
               )}
 
+              {/* Post-Incorporation Day 1 Founder Activation Checklist */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-5">
+                <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                      Statutory Post-Incorporation Compliance
+                    </span>
+                    <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C]">
+                      Day 1 Founder Activation &amp; Compliance Checklist
+                    </h3>
+                  </div>
+                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-lg font-extrabold self-start sm:self-auto">
+                    Section 10A Companies Act &bull; 180-Day Rule
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  {/* Step 1: Bank Account */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 hover:border-slate-300 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+                        Step 1 &bull; Immediate
+                      </span>
+                      <span className="text-base">🏦</span>
+                    </div>
+                    <strong className="text-slate-900 font-bold block text-xs">Open Corporate Bank Current Account</strong>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Deposit paid-up capital from initial subscribers. Fast-tracked with our banking partners (ICICI Bank, HDFC, Axis).
+                    </p>
+                    <div className="pt-1 flex gap-2">
+                      <a
+                        href="https://www.icicibank.com/business-banking/current-account"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[10px] px-3 py-1.5 rounded-lg transition"
+                      >
+                        Fast-Track Account &rarr;
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Step 2: INC-20A */}
+                  <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-2xl space-y-2 hover:border-amber-300 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-black bg-amber-600 text-white px-2 py-0.5 rounded">
+                        Step 2 &bull; 180 Days
+                      </span>
+                      <span className="text-base">⏰</span>
+                    </div>
+                    <strong className="text-amber-950 font-bold block text-xs">MCA Form INC-20A (Commencement of Business)</strong>
+                    <p className="text-[11px] text-amber-900 leading-relaxed">
+                      Must be filed within 180 days of incorporation. Failure attracts <strong>₹50,000 corporate penalty + ₹1,000/day on directors</strong> and risks ROC strike-off.
+                    </p>
+                    <div className="pt-1">
+                      <Link
+                        href="/#catalog-section"
+                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition inline-block"
+                      >
+                        File INC-20A with CA Desk &rarr;
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Step 3: ADT-1 */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 hover:border-slate-300 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+                        Step 3 &bull; 30 Days
+                      </span>
+                      <span className="text-base">📑</span>
+                    </div>
+                    <strong className="text-slate-900 font-bold block text-xs">Appoint Statutory Auditor (Form ADT-1)</strong>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Board must appoint the first auditor within 30 days of incorporation under Section 139(6) of Companies Act, 2013.
+                    </p>
+                  </div>
+
+                  {/* Step 4: Startup India */}
+                  <div className="p-4 bg-cyan-50/60 border border-cyan-200 rounded-2xl space-y-2 hover:border-cyan-300 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-black bg-[#0E7490] text-white px-2 py-0.5 rounded">
+                        Step 4 &bull; Tax Benefits
+                      </span>
+                      <span className="text-base">🚀</span>
+                    </div>
+                    <strong className="text-[#073B5C] font-bold block text-xs">Startup India DPIIT &amp; 80-IAC 3-Year Tax Holiday</strong>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Verify your eligibility for 100% income tax exemption under Section 80-IAC and fast-tracked patent rebates.
+                    </p>
+                    <div className="pt-1">
+                      <Link
+                        href="/tools/startup-india-checker"
+                        className="bg-[#0E7490] hover:bg-cyan-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition inline-block"
+                      >
+                        Check 80-IAC Eligibility (Free) &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dedicated Assigned Chartered Accountant Desk Card */}
+              <div className="bg-gradient-to-br from-[#073B5C] to-[#0A4E78] text-white rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-cyan-800 pb-3">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+                      Dedicated Professional Desk
+                    </span>
+                    <h3 className="text-base font-black">Assigned Chartered Accountant &amp; Secretarial Lead</h3>
+                  </div>
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase">
+                    ICAI / ICSI Verified
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-xs">
+                  <div className="space-y-1">
+                    <strong className="text-sm font-extrabold text-white block">NyayaLink Senior Legal &amp; CA Desk</strong>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      Your business docket is overseen by our empanelled Chartered Accountants and Company Secretaries. All filings adhere strictly to MCA CRC guidelines and Section 31 GST invoicing standards.
+                    </p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-2">
+                    <a
+                      href="https://wa.me/919820012345?text=Namaste%20NyayaLink%2C%20I%20have%20a%20question%20regarding%20my%20company%20filing."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2.5 rounded-xl transition shadow flex items-center gap-1.5"
+                    >
+                      <span>💬</span> WhatsApp Compliance Desk
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               <FilingLifecycleGuide />
             </div>
           )}

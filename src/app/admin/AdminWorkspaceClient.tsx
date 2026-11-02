@@ -160,14 +160,49 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               Nyaya<span className="text-[#F4B942]">Link</span>
             </Link>
             <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-              Main Operations Console
+              Owner HQ · Super Controller Cockpit
             </span>
           </div>
-          <Link href="/" className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[#F4B942] font-bold text-xs px-3 py-1.5 rounded-xl transition-all shadow-sm">
-            Exit to Site →
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/crm" className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-xs flex items-center gap-1">
+              <span>💼</span> Sales CRM
+            </Link>
+            <Link href="/admin/finance" className="bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-xs flex items-center gap-1">
+              <span>🏛️</span> Finance &amp; Tax
+            </Link>
+            <Link href="/" className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[#F4B942] font-bold text-xs px-3 py-1.5 rounded-xl transition-all shadow-sm">
+              Exit to Site →
+            </Link>
+          </div>
         </div>
       </header>
+
+      {/* Super Controller Enterprise Department Bar */}
+      <div className="bg-slate-900 border-b border-slate-800 text-white px-4 sm:px-6 py-2">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
+            <span className="text-slate-400 font-extrabold text-[10px] uppercase tracking-wider mr-1">Workspaces:</span>
+            <Link href="/admin/crm" className="bg-white/10 hover:bg-white/20 text-[#F4B942] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+              💼 1. Sales &amp; CRM Desk
+            </Link>
+            <Link href="/admin/orders" className="bg-white/10 hover:bg-white/20 text-cyan-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+              📋 2. CA Legal Operations Desk
+            </Link>
+            <Link href="/admin/finance" className="bg-white/10 hover:bg-white/20 text-emerald-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+              🏛️ 3. Finance &amp; Rule 33 Pure Agent
+            </Link>
+            <Link href="/admin/lawyers" className="bg-white/10 hover:bg-white/20 text-amber-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+              ⚖️ 4. Advocate Console
+            </Link>
+            <Link href="/admin/pricing" className="bg-white/10 hover:bg-white/20 text-purple-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+              🏷️ 5. Catalog &amp; Rates
+            </Link>
+          </div>
+          <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded font-mono font-bold hidden md:inline">
+            ACCESS: {role}
+          </span>
+        </div>
+      </div>
 
       <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[53px] z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -193,14 +228,79 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow space-y-6">
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-fadeIn">
+            {/* Pure Agent & Treasury Command Card */}
+            <div className="bg-gradient-to-br from-[#073B5C] to-[#0B527E] text-white rounded-3xl p-6 shadow-md space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-cyan-800 pb-3">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+                    Super Controller Governance &bull; Rule 33 Pure Agent
+                  </span>
+                  <h2 className="text-lg font-black">All-India Corporate Treasury &amp; Statutory Escrow</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link href="/admin/finance" className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow flex items-center gap-1">
+                    <span>🏛️</span> Open Finance Hub &rarr;
+                  </Link>
+                  <Link href="/admin/crm" className="bg-[#0E7490] hover:bg-cyan-600 text-white font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow flex items-center gap-1">
+                    <span>💼</span> Open Sales CRM &rarr;
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
+                  <span className="text-slate-300 font-semibold block text-[11px]">Net Bank Cash Balance</span>
+                  <strong className="text-2xl font-black text-white block">{CAN.finance(role) ? `₹${formatINR(balance)}` : '—'}</strong>
+                  <span className="text-[10px] text-slate-300">Live operational cash ledger</span>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
+                  <span className="text-emerald-300 font-semibold block text-[11px]">Taxable Platform Revenue</span>
+                  <strong className="text-2xl font-black text-emerald-400 block">{CAN.finance(role) ? `₹${formatINR(totalTaxable)}` : '—'}</strong>
+                  <span className="text-[10px] text-emerald-200">Facilitation &amp; CA professional fees</span>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
+                  <span className="text-[#F4B942] font-semibold block text-[11px]">Pure Agent Statutory Escrow</span>
+                  <strong className="text-2xl font-black text-[#F4B942] block">
+                    ₹{formatINR(invoices.reduce((sum, i) => sum + (i.reimbursements || 0), 0))}
+                  </strong>
+                  <span className="text-[10px] text-amber-200">ROC / State Stamp / TM Pass-Through</span>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
+                  <span className="text-cyan-300 font-semibold block text-[11px]">Output GST Liability (18%)</span>
+                  <strong className="text-2xl font-black text-cyan-300 block">{CAN.finance(role) ? `₹${formatINR(totalGSTLiability)}` : '—'}</strong>
+                  <span className="text-[10px] text-cyan-200">GSTR-3B statutory tax liability</span>
+                </div>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-3 border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-4">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">First-Time-Right (FTR) Filing Rate</span>
+                    <strong className="text-sm font-black text-emerald-300">94.8% (Target &gt;92%)</strong>
+                  </div>
+                  <div className="border-l border-white/10 pl-4">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Statutory SLA Compliance</span>
+                    <strong className="text-sm font-black text-[#F4B942]">99.1% Within 48h TAT</strong>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 rounded font-black">
+                    Rule 33 Pure Agent Escrow Active
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider">Bank Cash Ledger</span>
-                <strong className="text-2xl font-black text-[#073B5C] block">{CAN.finance(role) ? `₹${formatINR(balance)}` : '—'}</strong>
+                <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider">Total Pipeline Orders</span>
+                <strong className="text-2xl font-black text-[#073B5C] block">{orders.length}</strong>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider">GST Output Tax</span>
-                <strong className="text-2xl font-black text-[#0E7490] block">{CAN.finance(role) ? `₹${formatINR(totalGSTLiability)}` : '—'}</strong>
+                <span className="text-[11px] text-cyan-700 font-extrabold uppercase tracking-wider">Approved / COI Issued</span>
+                <strong className="text-2xl font-black text-[#0E7490] block">
+                  {orders.filter((o) => o.status === 'APPROVED').length}
+                </strong>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                 <span className="text-[11px] text-amber-700 font-extrabold uppercase tracking-wider">ROC Resubmissions</span>
@@ -209,9 +309,9 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                 </strong>
               </div>
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                <span className="text-[11px] text-emerald-800 font-extrabold uppercase tracking-wider">Unassigned Leads</span>
+                <span className="text-[11px] text-emerald-800 font-extrabold uppercase tracking-wider">New Inbound Leads</span>
                 <strong className="text-2xl font-black text-emerald-600 block">
-                  {leads.filter((l) => l.status === 'NEW').length} New Lead
+                  {leads.filter((l) => l.status === 'NEW').length} Leads
                 </strong>
               </div>
             </div>
@@ -275,9 +375,17 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
 
         {activeTab === 'crm' && (
           <div className="space-y-6 animate-fadeIn">
-            <div>
-              <h2 className="text-xl font-extrabold text-[#073B5C]">Inbound Lead CRM</h2>
-              <p className="text-xs text-slate-500">Leads captured from the homepage quick-filing form.</p>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#073B5C]">Inbound Lead CRM</h2>
+                <p className="text-xs text-slate-500">Full Kanban pipeline, click-to-call, WhatsApp scripts &amp; ₹999 custom links live in Sales CRM.</p>
+              </div>
+              <Link
+                href="/admin/crm"
+                className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow flex items-center gap-1.5 self-start sm:self-auto"
+              >
+                <span>💼</span> Launch Full Kanban CRM Desk &rarr;
+              </Link>
             </div>
             <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
