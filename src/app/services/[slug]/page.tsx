@@ -3,13 +3,20 @@ import { getServiceBySlug } from '@/lib/catalog';
 import { num } from '@/lib/serialize';
 import { formatINR } from '@/lib/pricing';
 import { getServiceStructure } from '@/data/serviceDetails';
+import { MASTER_SERVICES } from '@/data/services';
 import ServiceDetailClient from './ServiceDetailClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  return MASTER_SERVICES.map((s) => ({
+    slug: s.slug,
+  }));
+}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const service = await getServiceBySlug(params.slug);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';
   const canonicalUrl = `${baseUrl}/services/${params.slug}`;
 
   if (!service) {
@@ -47,7 +54,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 // so changes made in the Admin Console reflect instantly.
 export default async function ServicePage({ params }: { params: { slug: string } }) {
   const service = await getServiceBySlug(params.slug);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';
   const structure = getServiceStructure(params.slug);
 
   const serviceData = service

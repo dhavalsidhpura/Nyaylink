@@ -1,13 +1,7 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-[#F0F4F8] flex flex-col items-center justify-center font-sans antialiased">
-      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl flex flex-col items-center space-y-4 max-w-xs w-full text-center">
-        <div className="w-12 h-12 border-4 border-[#073B5C]/20 border-t-[#073B5C] rounded-full animate-spin"></div>
-        <div className="space-y-1">
-          <strong className="block text-sm font-black text-[#073B5C]">Loading NyayaLink...</strong>
-          <span className="text-xs text-slate-400">Verifying statutory registries</span>
-        </div>
-      </div>
+    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none">
+      <div className="h-1 bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#F4B942] animate-pulse w-full shadow-xs" />
     </div>
   );
 }
