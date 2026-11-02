@@ -23,6 +23,10 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [directorySearch, setDirectorySearch] = useState('');
   const [mobileCatalogLayout, setMobileCatalogLayout] = useState<'grid' | 'horizontal'>('grid');
+  const [isAllServicesExpanded, setIsAllServicesExpanded] = useState(false);
+  const packagesSliderRef = useRef<HTMLDivElement>(null);
+  const [activePackageIndex, setActivePackageIndex] = useState(0);
+  const [comparisonCompetitor, setComparisonCompetitor] = useState<'portals' | 'offline'>('portals');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Hero 3-Tab Command Center (Hero Right)
@@ -174,6 +178,38 @@ export default function HomePage() {
       return matchesCategory && matchesSearch;
     });
   }, [servicesList, activeCategory, directorySearch]);
+
+  // Progressive catalog limiter to avoid endless 58-service scroll on homepage
+  const INITIAL_VISIBLE_SERVICES = 8;
+  const displayedServices = useMemo(() => {
+    if (directorySearch.trim() || activeCategory !== 'all') {
+      return filteredServices;
+    }
+    if (isAllServicesExpanded) {
+      return filteredServices;
+    }
+    return filteredServices.slice(0, INITIAL_VISIBLE_SERVICES);
+  }, [filteredServices, activeCategory, directorySearch, isAllServicesExpanded]);
+
+  // Packages mobile horizontal slider scroll handlers
+  const scrollPackages = (direction: 'left' | 'right') => {
+    if (packagesSliderRef.current) {
+      const scrollAmount = packagesSliderRef.current.clientWidth * 0.85;
+      packagesSliderRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const handlePackagesScroll = () => {
+    if (packagesSliderRef.current) {
+      const scrollLeft = packagesSliderRef.current.scrollLeft;
+      const cardWidth = packagesSliderRef.current.clientWidth * 0.85;
+      const index = Math.round(scrollLeft / (cardWidth || 1));
+      setActivePackageIndex(Math.min(Math.max(0, index), 3));
+    }
+  };
 
   // Callback form handler
   const handleCallbackSubmit = async (e: React.FormEvent) => {
@@ -1431,10 +1467,43 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Mobile Horizontal Slider Swipe Navigator & Dots */}
+          <div className="flex md:hidden items-center justify-between pb-1 pt-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#073B5C]">
+              <span className="text-amber-500 animate-pulse text-sm">👉</span>
+              <span>Swipe Starter Kits</span>
+              <span className="text-[10px] text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded-full">
+                {activePackageIndex + 1} of 4
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => scrollPackages('left')}
+                className="w-7 h-7 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-black text-[#073B5C] active:bg-slate-100"
+                aria-label="Previous package"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollPackages('right')}
+                className="w-7 h-7 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-black text-[#073B5C] active:bg-slate-100"
+                aria-label="Next package"
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={packagesSliderRef}
+            onScroll={handlePackagesScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-5 md:overflow-visible md:mx-0 md:px-0"
+          >
             
             {/* PLAYBOOK 1: SELLING ON AMAZON / FLIPKART */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl p-2.5 bg-amber-50 rounded-2xl border border-amber-100">🛒</span>
@@ -1483,7 +1552,7 @@ export default function HomePage() {
             </div>
 
             {/* PLAYBOOK 2: RESTAURANT / CAFE / CLOUD KITCHEN */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl p-2.5 bg-orange-50 rounded-2xl border border-orange-100">🍲</span>
@@ -1532,7 +1601,7 @@ export default function HomePage() {
             </div>
 
             {/* PLAYBOOK 3: TECH STARTUP & PVT LTD */}
-            <div className="bg-white rounded-3xl p-5 border-2 border-[#0E7490] transition shadow-md hover:shadow-xl flex flex-col justify-between space-y-4 relative">
+            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-5 border-2 border-[#0E7490] transition shadow-md hover:shadow-xl flex flex-col justify-between space-y-4 relative">
               <div className="absolute -top-3 right-4 bg-[#073B5C] text-[#F4B942] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
                 Most Popular
               </div>
@@ -1585,7 +1654,7 @@ export default function HomePage() {
             </div>
 
             {/* PLAYBOOK 4: RETAIL STORE / LOCAL SHOP */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl p-2.5 bg-emerald-50 rounded-2xl border border-emerald-100">🏬</span>
@@ -1635,6 +1704,27 @@ export default function HomePage() {
 
           </div>
 
+          {/* Mobile Swipe Dot Indicators */}
+          <div className="flex md:hidden justify-center items-center gap-1.5 pt-1">
+            {[0, 1, 2, 3].map((dotIdx) => (
+              <button
+                key={dotIdx}
+                type="button"
+                onClick={() => {
+                  if (packagesSliderRef.current) {
+                    const cardWidth = packagesSliderRef.current.clientWidth * 0.85;
+                    packagesSliderRef.current.scrollTo({ left: cardWidth * dotIdx, behavior: 'smooth' });
+                    setActivePackageIndex(dotIdx);
+                  }
+                }}
+                className={`h-2 rounded-full transition-all ${
+                  activePackageIndex === dotIdx ? 'w-6 bg-[#0E7490]' : 'w-2 bg-slate-300'
+                }`}
+                aria-label={`Go to starter kit ${dotIdx + 1}`}
+              />
+            ))}
+          </div>
+
           <div className="pt-2 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 border-t border-slate-100">
             <span className="flex items-center gap-1.5">
               <span>💳</span> <strong>₹999 Booking Token:</strong> Locks in parallel CA execution. Remaining balance billed only after documentation verification.
@@ -1681,7 +1771,10 @@ export default function HomePage() {
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button
             type="button"
-            onClick={() => setActiveCategory('all')}
+            onClick={() => {
+              setActiveCategory('all');
+              setIsAllServicesExpanded(false);
+            }}
             className={`px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition cursor-pointer ${
               activeCategory === 'all'
                 ? 'bg-[#073B5C] text-[#F4B942] shadow-sm'
@@ -1694,7 +1787,10 @@ export default function HomePage() {
             <button
               key={cat.id}
               type="button"
-              onClick={() => setActiveCategory(cat.id)}
+              onClick={() => {
+                setActiveCategory(cat.id);
+                setIsAllServicesExpanded(false);
+              }}
               className={`px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeCategory === cat.id
                   ? 'bg-[#073B5C] text-[#F4B942] shadow-sm'
@@ -1746,7 +1842,7 @@ export default function HomePage() {
                 No services match your search query. Try typing another term.
               </div>
             ) : (
-              filteredServices.map((srv) => (
+              displayedServices.map((srv) => (
                 <Link
                   key={srv.id}
                   href={`/services/${srv.slug}`}
@@ -1796,7 +1892,7 @@ export default function HomePage() {
               No services match your search query. Try typing another term.
             </div>
           ) : (
-            filteredServices.map((srv) => {
+            displayedServices.map((srv) => {
               const isAdvanceEligible = srv.price > 1000;
               return (
                 <div
@@ -1870,6 +1966,35 @@ export default function HomePage() {
             })
           )}
         </div>
+        {/* Progressive Disclosure Banner for "All Verticals" (Curated 8 vs Full 58) */}
+        {activeCategory === 'all' && !directorySearch.trim() && filteredServices.length > INITIAL_VISIBLE_SERVICES && (
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-gradient-to-r from-white via-cyan-50/40 to-white rounded-3xl border border-slate-200/90 shadow-xs">
+            <div className="space-y-0.5 text-center sm:text-left">
+              <div className="text-xs font-bold text-[#073B5C]">
+                Showing <span className="font-black text-[#0E7490]">{displayedServices.length}</span> of <span className="font-black">{filteredServices.length}</span> Services
+              </div>
+              <p className="text-[11px] text-slate-500">
+                {isAllServicesExpanded
+                  ? 'Showing the entire catalog across Company Registration, Tax & GST, Trademark, and Legal Services.'
+                  : `Showing top ${INITIAL_VISIBLE_SERVICES} popular services. Choose a category above or view all 58 offerings.`}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAllServicesExpanded(!isAllServicesExpanded)}
+                className="px-5 py-2.5 bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-2 active:scale-95"
+              >
+                <span>
+                  {isAllServicesExpanded
+                    ? '▲ Show Top 8 Services'
+                    : `▼ Show All ${filteredServices.length} Services (${filteredServices.length - INITIAL_VISIBLE_SERVICES} More)`}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ======================================================== */}
@@ -1890,144 +2015,446 @@ export default function HomePage() {
           </div>
 
           {/* Desktop Full 3-Way Comparison Table (hidden on mobile) */}
-          <div className="overflow-x-auto hidden md:block rounded-2xl border border-slate-200 shadow-sm">
+          <div className="overflow-x-auto hidden md:block rounded-3xl border-2 border-slate-200/90 shadow-md bg-white">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-[#073B5C] bg-slate-50">
-                  <th className="py-4 px-4 font-bold w-1/4">Execution Metric</th>
-                  <th className="py-4 px-4 font-black bg-cyan-100/70 text-[#073B5C] border-x-2 border-[#0E7490] w-1/3 relative">
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2 py-0.5 rounded-full absolute -top-2.5 right-4 shadow-xs">
-                      ⚡ Best Choice
-                    </span>
-                    NyayaLink Portal
+                <tr className="border-b-2 border-slate-200 text-[#073B5C] bg-slate-50/80">
+                  <th className="py-4 px-5 font-black text-xs uppercase tracking-wider text-slate-500 w-1/4">
+                    Execution Dimension
                   </th>
-                  <th className="py-4 px-4 font-semibold text-slate-600 w-1/4">Big Portals (Vakilsearch / IndiaFilings)</th>
-                  <th className="py-4 px-4 font-semibold text-slate-500 w-1/4">Traditional Offline CA / Lawyer</th>
+                  <th className="py-4 px-5 font-black bg-gradient-to-b from-cyan-100/90 to-cyan-50/60 text-[#073B5C] border-x-2 border-[#0E7490] w-1/3 relative shadow-xs">
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full absolute -top-3 right-4 shadow-sm border border-amber-300">
+                      ⚡ Best Choice For Founders
+                    </span>
+                    <div className="flex items-center gap-1.5 text-sm font-black text-[#073B5C]">
+                      <span>🛡️</span> NyayaLink Portal
+                    </div>
+                  </th>
+                  <th className="py-4 px-5 font-bold text-slate-600 w-1/4">
+                    <div className="text-xs font-bold text-slate-700">Big Portals</div>
+                    <div className="text-[10px] text-slate-400 font-normal">Vakilsearch / IndiaFilings</div>
+                  </th>
+                  <th className="py-4 px-5 font-bold text-slate-600 w-1/4">
+                    <div className="text-xs font-bold text-slate-700">Offline CA / Lawyer</div>
+                    <div className="text-[10px] text-slate-400 font-normal">Traditional Practice</div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Advance Booking Model</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ ₹999 Split-Ticket Token (Pay balance only after drafting & name approval)
+                {/* Row 1: Advance Booking Model */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">💳</span>
+                      <span>Advance Booking Model</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-rose-700/80 font-medium">✕ 100% Upfront (₹7,000–₹12,000 locked before work starts)</td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Unclear cash advances or open-ended hourly retainers</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>₹999 Split-Ticket Token</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          Pay balance only after drafting verification & official name clearance.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-rose-700">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">100% Locked Upfront</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                          ₹7,000–₹12,000 paid before drafting begins.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Unclear Cash Advances</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Open-ended hourly retainers or lump-sum advances.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Statutory Stamp Duty</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ Pure Agent ₹0 Markup (State duty passed-through at exact govt receipt)
+
+                {/* Row 2: Statutory Stamp Duty */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🏛️</span>
+                      <span>Statutory Stamp Duty</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-rose-700/80 font-medium">✕ Hidden portal markups & surprise state duty add-ons later</td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Unitemized expense claims with uncertain state stamp duty</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>Pure Agent ₹0 Markup</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          State duty passed-through at exact govt receipt (Rule 33 statutory pass-through).
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-rose-700">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Hidden Markups</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                          Inflated state stamp fees and surprise checkout additions.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Unitemized Out-of-Pocket</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Opaque reimbursement claims with uncertain state stamp duty.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Legal Supervision</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ Direct Empanelled CA & High Court Advocate Desk
+
+                {/* Row 3: Legal Supervision */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">⚖️</span>
+                      <span>Legal Supervision</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-rose-700/80 font-medium">✕ Call-center sales agents & junior relationship managers</td>
-                  <td className="py-3.5 px-4 text-slate-600">✓ Experienced, but hard to reach during corporate tax seasons</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>Empanelled CA & Advocate Desk</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          Every dossier signed and filed by licensed corporate practitioners.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-rose-700">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Call-Center Sales Reps</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                          Junior relationship coordinators reading scripted FAQs.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-600">
+                      <span className="font-bold text-emerald-600">✓</span>
+                      <div>
+                        <div className="font-bold text-slate-700">Experienced Practitioner</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                          Competent, but hard to reach during peak corporate tax seasons.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Live Status Tracking</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ Real-time MCA V3, GSTN & IP India SRN tracking room
+
+                {/* Row 4: Live Status Tracking */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📡</span>
+                      <span>Live Status Tracking</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Delayed manual ticket replies & opaque queue status</td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Manual phone calls with uncertain timelines</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>Real-Time SRN Tracking Room</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          Live MCA V3, GSTN & IP India status sync directly in your vault.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Delayed Email Queues</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Manual ticket replies with opaque queue status.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Manual Follow-ups</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Frequent phone calls required with uncertain timelines.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Document Security</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ 256-Bit SSL Lifetime Cloud Vault
+
+                {/* Row 5: Document Security */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🔐</span>
+                      <span>Document Security</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Temporary email download links expiring after 30 to 60 days</td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ Physical paper files prone to misplacement or wear</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>256-Bit SSL Lifetime Vault</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          Permanent cloud storage for COI, PAN, TAN & annual filings.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Expiring Download Links</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Temporary email download links expiring after 30 to 60 days.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">Physical Paper Files</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Physical files prone to misplacement, tears, or wear.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-                <tr>
-                  <td className="py-3.5 px-4 font-bold text-slate-700">Turnaround SLA Guarantee</td>
-                  <td className="py-3.5 px-4 bg-cyan-50/50 font-bold text-[#073B5C] border-x-2 border-[#0E7490]">
-                    ✓ 3–7 Working Days with automated 4-hour SLA orphan escalation
+
+                {/* Row 6: Turnaround SLA Guarantee */}
+                <tr className="hover:bg-slate-50/60 transition">
+                  <td className="py-4 px-5 font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">⏱️</span>
+                      <span>Turnaround SLA Guarantee</span>
+                    </div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ 10–20 days average due to mass call-center backlogs</td>
-                  <td className="py-3.5 px-4 text-slate-500">✕ 2–4 weeks depending on practitioner's offline workload</td>
+                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
+                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
+                      <span className="text-emerald-700 font-black">✓</span>
+                      <div>
+                        <div>3–7 Working Days Guaranteed</div>
+                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                          Automated 4-hour SLA orphan escalation to senior CS desk.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">10–20 Days Average</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Severe delays due to mass call-center backlogs.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600">
+                    <div className="flex items-start gap-1.5 text-slate-500">
+                      <span className="font-bold">✕</span>
+                      <div>
+                        <div className="font-bold">2–4 Weeks Turnaround</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                          Subject to practitioner's offline litigation workload.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Mobile Responsive 3-Way Comparison Cards (md:hidden) */}
-          <div className="md:hidden space-y-3">
-            {[
-              {
-                capability: 'Advance Booking Model',
-                nyayalink: '₹999 Split-Ticket Token (Pay balance after drafting)',
-                portals: '100% Upfront (₹7k–₹12k locked upfront)',
-                traditional: 'Unclear cash advance or lump-sum',
-              },
-              {
-                capability: 'Statutory Stamp Duty',
-                nyayalink: 'Pure Agent ₹0 Markup (Exact govt challan)',
-                portals: 'Hidden portal markups & surprise add-ons',
-                traditional: 'Unitemized expenses & receipts',
-              },
-              {
-                capability: 'Legal Supervision',
-                nyayalink: 'Direct Empanelled CA & High Court Advocate Desk',
-                portals: 'Call-center sales reps & junior coordinators',
-                traditional: 'Busy offline CA hard to reach',
-              },
-              {
-                capability: 'Live Status Tracking',
-                nyayalink: 'Real-time MCA V3 & GSTN SRN Tracking Room',
-                portals: 'Delayed email tickets with opaque queues',
-                traditional: 'Manual calls with uncertain timelines',
-              },
-              {
-                capability: 'Document Security',
-                nyayalink: '256-Bit SSL Lifetime Cloud Vault',
-                portals: 'Expiring download links (30-60 days)',
-                traditional: 'Physical paper files prone to loss',
-              },
-              {
-                capability: 'Turnaround SLA',
-                nyayalink: '3–7 Days with 4-Hour SLA Auto-Escalation',
-                portals: '10–20 days due to backlogs',
-                traditional: '2–4 weeks depending on workload',
-              },
-            ].map((row, idx) => (
-              <div key={idx} className="bg-slate-50 rounded-2xl border border-slate-200 p-3.5 space-y-2 text-xs">
-                <span className="font-extrabold text-[#073B5C] text-xs block">
-                  {row.capability}
-                </span>
-                
-                {/* NyayaLink Winner Card */}
-                <div className="p-2.5 bg-cyan-50 border-2 border-[#0E7490] rounded-xl space-y-0.5">
-                  <div className="flex justify-between items-center">
-                    <span className="font-black text-[#073B5C] text-[10px] uppercase tracking-wider">NyayaLink Portal</span>
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase">Best</span>
-                  </div>
-                  <p className="text-[#073B5C] font-extrabold text-[11px] leading-tight">✓ {row.nyayalink}</p>
-                </div>
+          {/* Desktop Trust Strip */}
+          <div className="hidden md:flex bg-gradient-to-r from-[#073B5C] via-[#052A42] to-[#073B5C] text-white p-5 rounded-3xl items-center justify-between gap-4 shadow-sm border border-cyan-800/40">
+            <div className="space-y-0.5">
+              <span className="text-[#F4B942] font-black text-xs uppercase tracking-wider block">
+                Rule 33 Pure Agent Transparency Guarantee
+              </span>
+              <p className="text-xs text-slate-200">
+                You never pay marked-up government stamp duties or surprise filing charges. Original MCA and GSTN challans are delivered directly to your vault.
+              </p>
+            </div>
+            <Link
+              href="/#catalog-section"
+              className="px-5 py-2.5 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs rounded-xl shadow transition shrink-0 uppercase tracking-wider"
+            >
+              Start Any Filing for ₹999 →
+            </Link>
+          </div>
 
-                {/* Competitors Strip */}
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <div className="p-2 bg-white border border-slate-200 rounded-xl space-y-0.5">
-                    <span className="font-bold text-slate-400 block uppercase text-[9px]">Big Portals</span>
-                    <p className="text-slate-600 leading-tight">✕ {row.portals}</p>
+          {/* Mobile Head-to-Head Comparison Experience (md:hidden) */}
+          <div className="md:hidden space-y-4">
+            {/* Segmented Competitor Switcher */}
+            <div className="bg-slate-100 p-1.5 rounded-2xl flex items-center justify-between text-xs font-bold">
+              <span className="text-[11px] text-slate-500 pl-2 font-semibold">Compare vs:</span>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setComparisonCompetitor('portals')}
+                  className={`px-3 py-1.5 rounded-xl font-black text-[11px] transition cursor-pointer ${
+                    comparisonCompetitor === 'portals'
+                      ? 'bg-[#073B5C] text-[#F4B942] shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Big Portals
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setComparisonCompetitor('offline')}
+                  className={`px-3 py-1.5 rounded-xl font-black text-[11px] transition cursor-pointer ${
+                    comparisonCompetitor === 'offline'
+                      ? 'bg-[#073B5C] text-[#F4B942] shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Offline CA / Lawyer
+                </button>
+              </div>
+            </div>
+
+            {/* Focused 2-Column Side-by-Side Comparison Cards */}
+            <div className="space-y-2.5">
+              {[
+                {
+                  icon: '💳',
+                  title: 'Advance Booking Model',
+                  nyayalinkTitle: '₹999 Token',
+                  nyayalinkDesc: 'Pay balance only after draft approval',
+                  competitorTitle: comparisonCompetitor === 'portals' ? '100% Upfront' : 'Unclear Advances',
+                  competitorDesc: comparisonCompetitor === 'portals' ? '₹7k–₹12k locked before start' : 'Hourly retainers or cash',
+                },
+                {
+                  icon: '🏛️',
+                  title: 'Statutory Stamp Duty',
+                  nyayalinkTitle: 'Pure Agent ₹0 Markup',
+                  nyayalinkDesc: 'Exact state govt receipt pass-through',
+                  competitorTitle: comparisonCompetitor === 'portals' ? 'Hidden Markups' : 'Unitemized Out-of-Pocket',
+                  competitorDesc: comparisonCompetitor === 'portals' ? 'Surprise fees added later' : 'Opaque expense claims',
+                },
+                {
+                  icon: '⚖️',
+                  title: 'Legal Supervision',
+                  nyayalinkTitle: 'Empanelled CA Desk',
+                  nyayalinkDesc: 'Direct licensed practitioner filing',
+                  competitorTitle: comparisonCompetitor === 'portals' ? 'Call-Center Reps' : 'Hard to Reach',
+                  competitorDesc: comparisonCompetitor === 'portals' ? 'Junior sales support agents' : 'Busy during peak tax season',
+                },
+                {
+                  icon: '📡',
+                  title: 'Live Status Tracking',
+                  nyayalinkTitle: 'Real-Time SRN Room',
+                  nyayalinkDesc: 'Live MCA V3 & GSTN sync in vault',
+                  competitorTitle: comparisonCompetitor === 'portals' ? 'Opaque Queue' : 'Manual Phone Calls',
+                  competitorDesc: comparisonCompetitor === 'portals' ? 'Delayed email ticket answers' : 'Unpredictable follow-up cycles',
+                },
+                {
+                  icon: '🔐',
+                  title: 'Document Security',
+                  nyayalinkTitle: 'Lifetime Cloud Vault',
+                  nyayalinkDesc: '256-Bit SSL permanent repository',
+                  competitorTitle: comparisonCompetitor === 'portals' ? 'Expiring Links' : 'Paper Files',
+                  competitorDesc: comparisonCompetitor === 'portals' ? 'Downloads vanish after 30d' : 'Vulnerable to loss or wear',
+                },
+                {
+                  icon: '⏱️',
+                  title: 'Turnaround SLA',
+                  nyayalinkTitle: '3–7 Days SLA',
+                  nyayalinkDesc: '4h automated orphan escalation',
+                  competitorTitle: comparisonCompetitor === 'portals' ? '10–20 Days' : '2–4 Weeks',
+                  competitorDesc: comparisonCompetitor === 'portals' ? 'Call-center queue backlogs' : 'Depends on offline workload',
+                },
+              ].map((row, idx) => (
+                <div key={idx} className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-xs space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">{row.icon}</span>
+                    <span className="font-extrabold text-[#073B5C] text-xs">{row.title}</span>
                   </div>
-                  <div className="p-2 bg-white border border-slate-200 rounded-xl space-y-0.5">
-                    <span className="font-bold text-slate-400 block uppercase text-[9px]">Offline CA</span>
-                    <p className="text-slate-600 leading-tight">✕ {row.traditional}</p>
+
+                  <div className="grid grid-cols-2 gap-2 text-left">
+                    {/* NyayaLink Winner */}
+                    <div className="p-2.5 bg-cyan-50/80 border-2 border-[#0E7490] rounded-xl space-y-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-[#073B5C] text-[9px] uppercase tracking-wider">NyayaLink</span>
+                        <span className="bg-[#F4B942] text-[#073B5C] text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase">Best</span>
+                      </div>
+                      <div className="font-black text-[#073B5C] text-[11px] leading-tight">
+                        ✓ {row.nyayalinkTitle}
+                      </div>
+                      <div className="text-[10px] text-slate-600 leading-snug">
+                        {row.nyayalinkDesc}
+                      </div>
+                    </div>
+
+                    {/* Competitor */}
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-400 text-[9px] uppercase tracking-wider">
+                          {comparisonCompetitor === 'portals' ? 'Big Portals' : 'Offline CA'}
+                        </span>
+                        <span className="bg-rose-100 text-rose-700 text-[8px] font-bold px-1.5 py-0.2 rounded-full uppercase">✕</span>
+                      </div>
+                      <div className="font-bold text-rose-700 text-[11px] leading-tight">
+                        {row.competitorTitle}
+                      </div>
+                      <div className="text-[10px] text-slate-500 leading-snug">
+                        {row.competitorDesc}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Mobile CTA */}
+            <Link
+              href="/#catalog-section"
+              className="block w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3 rounded-xl text-center uppercase tracking-wider shadow-xs transition"
+            >
+              Start Any Filing for ₹999 Token →
+            </Link>
           </div>
         </div>
       </section>
+
 
       {/* ======================================================== */}
       {/* 7. STEP-BY-STEP EXECUTION WORKFLOW                      */}
