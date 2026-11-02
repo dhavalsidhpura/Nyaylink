@@ -173,7 +173,7 @@ export default function Footer() {
       </div>
 
       {/* 4. COPYRIGHT & MANDATORY POLICIES BAR */}
-      <div className="bg-[#031c2d] py-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
+      <div className="bg-[#031c2d] py-4 pb-20 md:pb-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>© {new Date().getFullYear()} {BRAND.name} — {BRAND.tagline}. All Rights Reserved. {BRAND.city} {BRAND.pincode}.</p>
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-300">

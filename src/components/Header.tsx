@@ -102,6 +102,12 @@ const MENU_TOOLS = {
 
 export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
+
+  const toggleMobileSection = (sec: string) => {
+    setOpenMobileSection(openMobileSection === sec ? null : sec);
+  };
 
   return (
     <>
@@ -362,13 +368,229 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard"
-              className="bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-4 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
+              className="hidden sm:inline-block bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-3.5 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
             >
               My Dashboard
             </Link>
+
+            {/* Mobile Menu Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden w-9 h-9 rounded-xl bg-nyaya-teal text-white flex items-center justify-center font-bold text-base hover:bg-nyaya-teal/80 transition"
+              aria-label="Toggle Navigation"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
           </div>
         </div>
+      
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-nyaya-navy/98 border-t border-slate-700/80 px-4 py-5 max-h-[80vh] overflow-y-auto space-y-4 animate-in fade-in slide-in-from-top-2 text-xs">
+            
+            {/* Quick Actions at Top */}
+            <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-700/60">
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="bg-nyaya-gold text-nyaya-navy font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px]"
+              >
+                👤 My Dashboard
+              </Link>
+              <a
+                href="https://wa.me/919920054785?text=Hello%20NyayaLink%2C%20I%20need%20assistance."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-center py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5"
+              >
+                <span>💬</span> WhatsApp CA
+              </a>
+            </div>
+
+            {/* Accordion 1: Founder Tools */}
+            <div className="border-b border-slate-700/60 pb-3">
+              <button
+                type="button"
+                onClick={() => toggleMobileSection('tools')}
+                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-[#F4B942] uppercase tracking-wider py-1.5"
+              >
+                <span className="flex items-center gap-2">
+                  <span>⚙️</span> Founder Tools &amp; Calculators
+                </span>
+                <span className="text-xs">{openMobileSection === 'tools' ? '▲' : '▼'}</span>
+              </button>
+
+              {openMobileSection === 'tools' && (
+                <div className="pt-2 pl-3 space-y-2 text-slate-300">
+                  <Link
+                    href="/tools/incorporation-calculator"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-[#F4B942] font-bold py-1 hover:underline"
+                  >
+                    🏛️ All-India Incorporation Cost Calculator (NEW)
+                  </Link>
+                  <Link
+                    href="/tools/startup-india-checker"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-[#F4B942] font-bold py-1 hover:underline"
+                  >
+                    🇮🇳 Startup India &amp; 80-IAC Diagnostic (NEW)
+                  </Link>
+                  <Link
+                    href="/tools/company-name-search"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-1 hover:text-white"
+                  >
+                    🔍 MCA Company Name Availability (Rule 8)
+                  </Link>
+                  <Link
+                    href="/tools/trademark-search"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-1 hover:text-white"
+                  >
+                    ™️ Trademark Class &amp; Similarity Search
+                  </Link>
+                  <Link
+                    href="/tools/gst-search"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-1 hover:text-white"
+                  >
+                    📊 GSTIN Verification &amp; Filing History
+                  </Link>
+                  <Link
+                    href="/tools"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-cyan-300 font-bold py-1 hover:underline"
+                  >
+                    ⚡ All 7 Founder Tools Hub →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Accordion 2: Company Registration */}
+            <div className="border-b border-slate-700/60 pb-3">
+              <button
+                type="button"
+                onClick={() => toggleMobileSection('company')}
+                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
+              >
+                <span className="flex items-center gap-2">
+                  <span>💼</span> Company Registration
+                </span>
+                <span className="text-xs">{openMobileSection === 'company' ? '▲' : '▼'}</span>
+              </button>
+
+              {openMobileSection === 'company' && (
+                <div className="pt-2 pl-3 space-y-2 text-slate-300">
+                  {MENU_COMPANY_REG.column1.items.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/services/${item.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-1 hover:text-nyaya-gold"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Accordion 3: Trademark & IPR */}
+            <div className="border-b border-slate-700/60 pb-3">
+              <button
+                type="button"
+                onClick={() => toggleMobileSection('trademark')}
+                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
+              >
+                <span className="flex items-center gap-2">
+                  <span>™️</span> Trademark &amp; IPR
+                </span>
+                <span className="text-xs">{openMobileSection === 'trademark' ? '▲' : '▼'}</span>
+              </button>
+
+              {openMobileSection === 'trademark' && (
+                <div className="pt-2 pl-3 space-y-2 text-slate-300">
+                  {MENU_TRADEMARK.column1.items.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/services/${item.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-1 hover:text-nyaya-gold"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Accordion 4: Tax & Compliance */}
+            <div className="border-b border-slate-700/60 pb-3">
+              <button
+                type="button"
+                onClick={() => toggleMobileSection('tax')}
+                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
+              >
+                <span className="flex items-center gap-2">
+                  <span>📊</span> Tax &amp; GST Compliance
+                </span>
+                <span className="text-xs">{openMobileSection === 'tax' ? '▲' : '▼'}</span>
+              </button>
+
+              {openMobileSection === 'tax' && (
+                <div className="pt-2 pl-3 space-y-2 text-slate-300">
+                  {MENU_TAX_GST.column1.items.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/services/${item.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-1 hover:text-nyaya-gold"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Direct Links */}
+            <div className="space-y-2.5 pt-1">
+              <Link
+                href="/packages"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-[#F4B942] font-extrabold text-sm py-1.5"
+              >
+                📦 Bundled Founder Packages (Save 42%)
+              </Link>
+              <Link
+                href="/vakil"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-emerald-400 font-extrabold text-sm py-1.5"
+              >
+                👨‍⚖️ वकील Search (Verified Advocates)
+              </Link>
+              <Link
+                href="/#catalog-section"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-slate-300 font-bold text-sm py-1.5"
+              >
+                📋 Browse All Services
+              </Link>
+            </div>
+
+            {/* Contact Footer */}
+            <div className="pt-3 border-t border-slate-700/60 space-y-1 text-slate-400 text-[11px]">
+              <div>📞 Helpline: <a href="tel:+919920054785" className="text-white font-bold">+91 9920054785</a></div>
+              <div>✉️ Email: <a href="mailto:info@nyayalink.com" className="text-white">info@nyayalink.com</a></div>
+            </div>
+
+          </div>
+        )}
       </header>
+
     </>
   );
 }

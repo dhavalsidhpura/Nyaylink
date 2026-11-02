@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import Footer from '@/components/Footer';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import Providers from '@/components/Providers';
 import './globals.css';
 
@@ -87,6 +88,7 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         <div className="print:hidden">
           <Footer />
+          <MobileBottomNav />
         </div>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>

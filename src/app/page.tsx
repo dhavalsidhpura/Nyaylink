@@ -2293,39 +2293,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ======================================================== */}
-      {/* 9. STICKY ACTION BAR FOR MOBILE DEVICES (<1024px)        */}
-      {/* ======================================================== */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-2.5 px-4 flex items-center justify-between z-40 border-t border-cyan-800 shadow-2xl backdrop-blur-md">
-        <a
-          href="https://wa.me/919920054785?text=Hello%20NyayaLink%20I%20need%20assistance"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-white/10 px-3 py-2 rounded-xl"
-        >
-          <span>💬</span> Chat CA
-        </a>
-        <a
-          href="tel:+919920054785"
-          className="flex items-center gap-1.5 text-xs font-bold text-[#F4B942]"
-        >
-          <span>📞</span> Call Desk
-        </a>
-        <button
-          type="button"
-          onClick={() => {
-            const el = document.getElementById('hero-booking-card');
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth' });
-            } else {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-3.5 py-2 rounded-xl uppercase tracking-wider shadow cursor-pointer flex items-center gap-1 active:scale-95 transition"
-        >
-          <span>⚡ Book ₹999</span>
-        </button>
-      </div>
+
 
       {/* ======================================================== */}
       {/* 10. FLOATING WHATSAPP EXPRESS ASSIST (DESKTOP)           */}

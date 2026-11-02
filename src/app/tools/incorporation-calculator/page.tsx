@@ -204,7 +204,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
   const bookingUrl = `/services/${entity.slug}?state=${selectedState}&capital=${authorizedCapital}&directors=${directorCount}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-28 lg:pb-20">
       {/* Hero Header */}
       <section className="bg-[#073B5C] text-white pt-10 pb-16 px-4 border-b border-slate-700/60 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#0E7490]/20 rounded-full blur-3xl pointer-events-none" />
@@ -711,6 +711,31 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
         </section>
 
       </div>
+
+      {/* STICKY MOBILE BOTTOM CALCULATOR BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] print:hidden">
+        <div className="min-w-0">
+          <span className="text-[10px] uppercase font-bold text-slate-500 block truncate">
+            {entity.name} · {stateRule.name}
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <strong className="text-base font-black text-[#073B5C] font-mono">
+              {formatINR(calculations.grandTotal)}
+            </strong>
+            <span className="text-[10px] text-emerald-600 font-bold">
+              (₹999 Token)
+            </span>
+          </div>
+        </div>
+
+        <Link
+          href={bookingUrl}
+          className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-4 py-2.5 rounded-xl uppercase tracking-wider shadow-md transition shrink-0"
+        >
+          Lock In ₹999 →
+        </Link>
+      </div>
+
     </div>
   );
 }

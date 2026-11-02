@@ -1555,6 +1555,51 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
         </div>
       )}
 
+      {/* STICKY MOBILE BOTTOM BOOKING BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] print:hidden">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] uppercase font-bold text-slate-500">
+              {payAdvance ? 'Advance Token' : 'Total Price'}
+            </span>
+            <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.2 rounded">
+              Zero Markup
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <strong className="text-base font-black text-[#073B5C] font-mono">
+              {formatINR(activePayAmount)}
+            </strong>
+            {payAdvance && (
+              <span className="text-[10px] text-slate-400 line-through">
+                {formatINR(totalEstimatedCost)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href={`https://wa.me/919920054785?text=${encodeURIComponent(
+              `Hi NyayaLink, I am looking at ${displayTitle} and want quick guidance.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm"
+          >
+            💬
+          </a>
+
+          <button
+            type="button"
+            onClick={() => setIsCheckoutModalOpen(true)}
+            className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-4 py-2.5 rounded-xl uppercase tracking-wider shadow-md transition cursor-pointer"
+          >
+            {payAdvance ? 'Book for ₹999 →' : 'Book Filing →'}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -125,7 +125,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
       </div>
 
       {/* Interactive Tabs Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+      <div className="flex sm:grid sm:grid-cols-5 gap-2 pt-1 overflow-x-auto pb-2 scrollbar-none snap-x">
         {DELIVERABLES.map((item) => {
           const isSelected = activeItem.id === item.id;
           return (
@@ -133,7 +133,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
               key={item.id}
               type="button"
               onClick={() => setActiveItem(item)}
-              className={`p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+              className={`min-w-[135px] sm:min-w-0 shrink-0 sm:shrink snap-start p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
                 isSelected
                   ? 'border-[#073B5C] bg-[#073B5C] text-white shadow-md ring-2 ring-[#073B5C]/20'
                   : 'border-slate-200 hover:border-slate-300 bg-slate-50/70 text-slate-700'
