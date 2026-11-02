@@ -24,6 +24,38 @@ interface Props {
   params: { orderNumber: string };
 }
 
+function getOfficialGovernmentTrackingUrl(slug: string, srn: string): { label: string; url: string } {
+  const lower = slug.toLowerCase();
+  if (lower.includes('trademark') || lower.includes('copyright')) {
+    return {
+      label: 'IP India Registry',
+      url: 'https://ipindiaservices.gov.in/eregister/eregister.aspx',
+    };
+  }
+  if (lower.includes('gst')) {
+    return {
+      label: 'GSTN Government Portal',
+      url: 'https://services.gst.gov.in/services/arnstatus',
+    };
+  }
+  if (lower.includes('fssai')) {
+    return {
+      label: 'FoSCoS Food Safety Portal',
+      url: 'https://foscos.fssai.gov.in/',
+    };
+  }
+  if (lower.includes('iec') || lower.includes('import-export')) {
+    return {
+      label: 'DGFT Customs Portal',
+      url: 'https://www.dgft.gov.in/CP/',
+    };
+  }
+  return {
+    label: 'MCA V3 Official Portal',
+    url: 'https://www.mca.gov.in/mcafoportal/trackSRN.do',
+  };
+}
+
 export default async function OrderTrackingPage({ params }: Props) {
   const user = await getSessionUser();
   if (!user) redirect(`/login?callbackUrl=/orders/${encodeURIComponent(params.orderNumber)}`);
@@ -80,11 +112,29 @@ export default async function OrderTrackingPage({ params }: Props) {
               <p className="text-xs text-slate-500">
                 Expected timeline: {order.service.sla} · Desk: <strong>{order.assignedCA?.name || 'Being assigned'}</strong>
               </p>
-              {order.srn && (
-                <p className="text-xs text-slate-600">
-                  Government SRN/ARN: <strong className="font-mono">{order.srn}</strong>
-                </p>
-              )}
+              {order.srn && (() => {
+                const portal = getOfficialGovernmentTrackingUrl(order.service.slug, order.srn);
+                return (
+                  <div className="p-2.5 sm:p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🏛️</span>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Government Filing Reference</span>
+                        <span className="font-mono font-black text-slate-800 text-xs sm:text-sm">{order.srn}</span>
+                      </div>
+                    </div>
+                    <a
+                      href={portal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-extrabold text-[11px] px-3 py-1.5 rounded-xl transition shadow-xs"
+                    >
+                      <span>Verify on {portal.label}</span>
+                      <span>↗</span>
+                    </a>
+                  </div>
+                );
+              })()}
 <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
                   href={`https://wa.me/919920054785?text=${encodeURIComponent(`Hello NyayaLink, I am on Order #${order.orderNumber} (${order.service.title}) and need assistance with my documents.`)}`}
@@ -104,7 +154,36 @@ export default async function OrderTrackingPage({ params }: Props) {
           <OrderProgress status={order.status} />
         </section>
 
-                {order.status === 'APPROVED' && (
+                {order.intakeData && typeof order.intakeData === 'object' && (order.intakeData as any).isPackageBooking === 'true' && (
+          <section className="bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-3xl p-5 sm:p-6 shadow-md space-y-3">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <div className="space-y-0.5">
+                <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Multi-Service Bundled Suite
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-white">
+                  {(order.intakeData as any).packageTitle || 'All-In-One Business Package'}
+                </h3>
+                <p className="text-xs text-cyan-100">
+                  Single KYC filing executing parallel statutory registrations across multiple government ministries.
+                </p>
+              </div>
+            </div>
+
+            {(order.intakeData as any).bundleIncludedServices && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 pt-1 text-xs">
+                {(order.intakeData as any).bundleIncludedServices.split(' • ').map((svcName: string, idx: number) => (
+                  <div key={idx} className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/20 flex items-center gap-2">
+                    <span className="text-emerald-400 font-black text-sm">✓</span>
+                    <span className="font-bold text-[11px] text-white leading-tight">{svcName}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {order.status === 'APPROVED' && (
           <section className="bg-gradient-to-r from-emerald-600 via-teal-700 to-[#073B5C] text-white rounded-3xl p-6 shadow-md space-y-4">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
               <div className="space-y-1">

@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
+import { MASTER_PACKAGES, PackageItem } from '@/data/packages';
 import { MASTER_SERVICES } from '@/data/services';
 import { getServiceStructure } from '@/data/serviceDetails';
 import {
@@ -118,6 +119,20 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const [phone, setPhone] = useState('');
   const [entityName, setEntityName] = useState(prefilledName);
   const [consent, setConsent] = useState(true);
+  const [email, setEmail] = useState('');
+
+  // In-Modal Seamless OTP States
+  const [otpStep, setOtpStep] = useState<'form' | 'otp'>('form');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpChannel, setOtpChannel] = useState<'phone' | 'email'>('phone');
+  const [otpCooldown, setOtpCooldown] = useState<number>(0);
+
+  // Package bundle detection from URL (?package=startup-launchpad-bundle)
+  const packageParam = searchParams?.get('package');
+  const matchedPackage: PackageItem | null = useMemo(() => {
+    if (!packageParam) return null;
+    return MASTER_PACKAGES.find((p) => p.slug === packageParam || p.id === packageParam) || null;
+  }, [packageParam]);
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -131,6 +146,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   }, [prefilledName]);
 
   // Restore draft saved before auth redirect
+  // OTP resend countdown
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const t = setTimeout(() => setOtpCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpCooldown]);
+
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY(slug));
@@ -138,6 +160,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
       const d = JSON.parse(raw);
       setFullName(d.fullName || '');
       setPhone(d.phone || '');
+      setEmail(d.email || '');
       setEntityName(d.entityName || prefilledName);
       setSelectedState(d.selectedState || 'MH');
       if (d.openCheckout) setIsCheckoutModalOpen(true);
@@ -147,8 +170,11 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   }, [slug, prefilledName]);
 
   useEffect(() => {
-    if (signedIn && !fullName && session?.user?.name) setFullName(session.user.name);
-  }, [signedIn, session, fullName]);
+    if (signedIn) {
+      if (!fullName && session?.user?.name) setFullName(session.user.name);
+      if (!email && session?.user?.email) setEmail(session.user.email);
+    }
+  }, [signedIn, session, fullName, email]);
 
   // Pricing calculations
   const baseProfFee = serviceData ? serviceData.professionalFee : (pricing ? pricing.professionalFee : masterService.price);
@@ -209,7 +235,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
     try {
       sessionStorage.setItem(
         DRAFT_KEY(slug),
-        JSON.stringify({ fullName, phone, entityName, selectedState, openCheckout: true })
+        JSON.stringify({ fullName, phone, email, entityName, selectedState, openCheckout: true })
       );
     } catch {
       /* storage unavailable */
@@ -217,10 +243,8 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
     router.push(`/login?callbackUrl=${encodeURIComponent(`/services/${slug}`)}`);
   };
 
-  const handleCheckoutSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!signedIn) return saveDraftAndSignIn();
-
+  // Core order creation and payment execution
+  const executeOrderCreationAndPayment = async () => {
     setIsProcessing(true);
     setCheckoutError('');
     if (!idempotencyKey.current) idempotencyKey.current = crypto.randomUUID();
@@ -237,9 +261,20 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
           intake: {
             applicantName: fullName,
             mobile: phone,
-            entityName: entityName || details.title,
+            email: email || session?.user?.email || '',
+            entityName: entityName || (matchedPackage ? matchedPackage.title : details.title),
             selectedState,
             bookingPlan: payAdvance ? 'ADVANCE_999' : 'FULL_PAYMENT',
+            ...(matchedPackage
+              ? {
+                  isPackageBooking: 'true',
+                  packageId: matchedPackage.id,
+                  packageSlug: matchedPackage.slug,
+                  packageTitle: matchedPackage.title,
+                  bundleIncludedServices: matchedPackage.includedServices.map((s) => s.name).join(' • '),
+                  bundleDeliverables: matchedPackage.deliverables.join(' | '),
+                }
+              : {}),
           },
         }),
       });
@@ -276,6 +311,104 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
     }
   };
 
+  // Zero-redirect in-modal Checkout Submission
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (signedIn) {
+      return executeOrderCreationAndPayment();
+    }
+
+    const targetIdentifier = phone.trim() || email.trim();
+    if (!targetIdentifier) {
+      setCheckoutError('Please enter your mobile number or email address.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setCheckoutError('');
+
+    try {
+      const res = await fetch('/api/auth/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: targetIdentifier }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setCheckoutError(data.error || 'Could not send verification code.');
+        setIsProcessing(false);
+        return;
+      }
+
+      setOtpChannel(data.channel || (targetIdentifier.includes('@') ? 'email' : 'phone'));
+      setOtpStep('otp');
+      setOtpCooldown(30);
+    } catch {
+      setCheckoutError('Network error while requesting verification code.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Verify OTP and proceed directly to payment
+  const handleVerifyOtpAndProceed = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.trim().length < 4) {
+      setCheckoutError('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setCheckoutError('');
+    const targetIdentifier = phone.trim() || email.trim();
+
+    try {
+      const res = await signIn('otp', {
+        redirect: false,
+        identifier: targetIdentifier,
+        code: otpCode.trim(),
+        name: fullName,
+        email: otpChannel === 'phone' ? email : '',
+        consent: 'true',
+      });
+
+      if (res?.error) {
+        setCheckoutError(res.error === 'NEW_USER_DETAILS_REQUIRED' ? 'Please provide your name.' : res.error);
+        setIsProcessing(false);
+        return;
+      }
+
+      await executeOrderCreationAndPayment();
+    } catch {
+      setCheckoutError('Verification failed. Please check the code and try again.');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (otpCooldown > 0) return;
+    setIsProcessing(true);
+    setCheckoutError('');
+    const targetIdentifier = phone.trim() || email.trim();
+    try {
+      const res = await fetch('/api/auth/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: targetIdentifier }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpCooldown(30);
+      } else {
+        setCheckoutError(data.error || 'Failed to resend code.');
+      }
+    } catch {
+      setCheckoutError('Network error. Failed to resend code.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 flex flex-col antialiased pb-28 lg:pb-12">
       {/* 1. TOP NAV STRIP */}
@@ -305,7 +438,40 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
       </header>
 
       {/* 2. MAIN 65/35 GRID LAYOUT */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-grow">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-grow space-y-6">
+
+        {/* PACKAGE BUNDLE ACTIVATION BANNER */}
+        {matchedPackage && (
+          <div className="bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#052840] text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-cyan-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-200">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-0.5 rounded-full shadow-xs">
+                  Starter Suite Activated • Save {matchedPackage.savingsPercent}%
+                </span>
+                <span className="text-xs text-cyan-200 font-semibold">⏱️ SLA: {matchedPackage.sla}</span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2">
+                <span>{matchedPackage.icon}</span> {matchedPackage.title}
+              </h2>
+              <p className="text-xs text-cyan-100 max-w-2xl leading-relaxed">
+                Bundled Services: <strong className="text-white">{matchedPackage.includedServices.map((s) => s.name).join(' + ')}</strong>
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="text-right">
+                <span className="text-[10px] text-cyan-200 line-through block">₹{matchedPackage.standaloneTotal.toLocaleString()}</span>
+                <span className="text-xl font-black text-[#F4B942]">₹{matchedPackage.packagePrice.toLocaleString()}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCheckoutModalOpen(true)}
+                className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-4 py-2.5 rounded-2xl uppercase tracking-wider transition shadow cursor-pointer"
+              >
+                Book Package ₹999 →
+              </button>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
           {/* ======================================================== */}
@@ -825,133 +991,248 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </button>
             </div>
 
-            <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-xs">
-              
-              {!signedIn && (
-                <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C]">
-                  <span>⚡ An account will be created automatically using your phone or email to track your filing.</span>
-                </div>
-              )}
+            {otpStep === 'form' ? (
+              <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-xs">
+                
+                {matchedPackage && (
+                  <div className="p-3 bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-2xl space-y-1">
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
+                      Bundled Package • Save {matchedPackage.savingsPercent}%
+                    </span>
+                    <h4 className="font-bold text-xs">{matchedPackage.title}</h4>
+                    <p className="text-[10px] text-cyan-100">
+                      Includes: {matchedPackage.includedServices.map((s) => s.name).join(' + ')}
+                    </p>
+                  </div>
+                )}
 
-              {/* Applicant Name */}
-              <div>
-                <label className="block font-bold text-[#073B5C] mb-1">
-                  Applicant Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                />
-              </div>
+                {!signedIn && (
+                  <div className="p-2.5 bg-cyan-50 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C] flex items-center gap-2">
+                    <span className="text-base">⚡</span>
+                    <span>No separate sign-up required. Fast 1-click mobile verification will secure your booking room.</span>
+                  </div>
+                )}
 
-              {/* Mobile Number */}
-              <div>
-                <label className="block font-bold text-[#073B5C] mb-1">
-                  WhatsApp / Mobile Number (+91) *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                />
-              </div>
-
-              {/* Proposed Name / Brand */}
-              <div>
-                <label className="block font-bold text-[#073B5C] mb-1">
-                  Proposed Company / Brand / Entity Name
-                </label>
-                <input
-                  type="text"
-                  value={entityName}
-                  onChange={(e) => setEntityName(e.target.value)}
-                  placeholder="e.g. Acme Innovations (can finalize later with CA)"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                />
-              </div>
-
-              {/* Selected State & Amount Summary */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                {/* Applicant Name */}
                 <div>
-                  <span className="text-[10px] text-slate-500 block">Jurisdiction: {selectedState}</span>
-                  <strong className="text-slate-800 text-xs">
-                    {payAdvance ? '₹999 Booking Token' : 'Full Payment'}
-                  </strong>
+                  <label className="block font-bold text-[#073B5C] mb-1">
+                    Applicant Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                  />
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-slate-400 block">Total Package:</span>
-                  <strong className="text-emerald-700 text-xs font-black">
-                    {formatINR(totalEstimatedCost)}
-                  </strong>
+
+                {/* Mobile Number */}
+                <div>
+                  <label className="block font-bold text-[#073B5C] mb-1">
+                    WhatsApp / Mobile Number (+91) *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="10-digit mobile number"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                  />
                 </div>
-              </div>
 
-              {/* Statutory Pure Agent Fee Disclosure */}
-              <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
-                <span className="font-extrabold flex items-center gap-1 text-amber-950">
-                  <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
-                </span>
-                <p>
-                  Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
-                </p>
-              </div>
-
-              {/* Advance Token Scope Note */}
-              {payAdvance && (
-                <div className="p-2.5 bg-cyan-50/80 border border-cyan-200/80 rounded-xl text-[10px] text-[#073B5C] leading-tight">
-                  <strong>ℹ️ Advance Token Scope:</strong> This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.
+                {/* Email Address for official deliverables */}
+                <div>
+                  <label className="block font-bold text-[#073B5C] mb-1">
+                    Official Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. rahul@mycompany.com"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                  />
+                  <span className="text-[9px] text-slate-400 block mt-0.5">Government registration certificates & invoices will be emailed here.</span>
                 </div>
-              )}
 
-              {/* Consent checkbox */}
-              <label className="flex items-start gap-2 text-[10px] text-slate-500 leading-tight">
-                <input
-                  type="checkbox"
-                  required
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-0.5 accent-[#0E7490]"
-                />
-                <span>
-                  I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link>,{' '}
-                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>,{' '}
-                  <Link href="/refund-policy" target="_blank" className="underline text-[#0E7490]">Refund Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
-                </span>
-              </label>
+                {/* Proposed Name / Brand */}
+                <div>
+                  <label className="block font-bold text-[#073B5C] mb-1">
+                    Proposed Company / Brand / Entity Name
+                  </label>
+                  <input
+                    type="text"
+                    value={entityName}
+                    onChange={(e) => setEntityName(e.target.value)}
+                    placeholder="e.g. Acme Innovations (can finalize later with CA)"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                  />
+                </div>
 
-              {checkoutError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
-                  {checkoutError}
-                  {pendingOrder && (
-                    <div className="pt-1">
-                      <Link href={`/orders/${pendingOrder}`} className="underline text-[#073B5C]">
-                        Open Saved Order #{pendingOrder} →
-                      </Link>
-                    </div>
+                {/* Selected State & Amount Summary */}
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-500 block">Jurisdiction: {selectedState}</span>
+                    <strong className="text-slate-800 text-xs">
+                      {payAdvance ? '₹999 Booking Token' : 'Full Payment'}
+                    </strong>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-400 block">Total Scope:</span>
+                    <strong className="text-emerald-700 text-xs font-black">
+                      {matchedPackage ? formatINR(matchedPackage.packagePrice) : formatINR(totalEstimatedCost)}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Statutory Pure Agent Fee Disclosure */}
+                <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
+                  <span className="font-extrabold flex items-center gap-1 text-amber-950">
+                    <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
+                  </span>
+                  <p>
+                    Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
+                  </p>
+                </div>
+
+                {/* Advance Token Scope Note */}
+                {payAdvance && (
+                  <div className="p-2.5 bg-cyan-50/80 border border-cyan-200/80 rounded-xl text-[10px] text-[#073B5C] leading-tight">
+                    <strong>ℹ️ Advance Token Scope:</strong> This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.
+                  </div>
+                )}
+
+                {/* Consent checkbox */}
+                <label className="flex items-start gap-2 text-[10px] text-slate-500 leading-tight">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 accent-[#0E7490]"
+                  />
+                  <span>
+                    I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link>,{' '}
+                    <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>,{' '}
+                    <Link href="/refund-policy" target="_blank" className="underline text-[#0E7490]">Refund Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
+                  </span>
+                </label>
+
+                {checkoutError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
+                    {checkoutError}
+                    {pendingOrder && (
+                      <div className="pt-1">
+                        <Link href={`/orders/${pendingOrder}`} className="underline text-[#073B5C]">
+                          Open Saved Order #{pendingOrder} →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* CTA in Modal */}
+                <button
+                  type="submit"
+                  disabled={isProcessing || !fullName || phone.length < 10 || !email}
+                  className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isProcessing
+                    ? 'Connecting Gateway…'
+                    : signedIn
+                    ? `Confirm & Pay ${formatINR(activePayAmount)} →`
+                    : `Verify & Pay ${formatINR(activePayAmount)} →`}
+                </button>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                  <span>🔒 100% Paperless & SSL Secured</span>
+                  {!signedIn && (
+                    <button
+                      type="button"
+                      onClick={saveDraftAndSignIn}
+                      className="text-[#0E7490] font-bold hover:underline cursor-pointer"
+                    >
+                      Sign in with Password →
+                    </button>
                   )}
                 </div>
-              )}
+              </form>
+            ) : (
+              /* IN-MODAL OTP STEP */
+              <div className="space-y-4 text-xs animate-in fade-in duration-150">
+                <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-2xl text-[11px] text-[#073B5C] space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <span>📱</span> Enter Verification Code
+                  </div>
+                  <p>
+                    We sent a 6-digit one-time code to <strong className="font-mono text-slate-800">{phone || email}</strong>.
+                  </p>
+                </div>
 
-              {/* CTA in Modal */}
-              <button
-                type="submit"
-                disabled={isProcessing || !fullName || phone.length < 10}
-                className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
-              >
-                {isProcessing ? 'Connecting Gateway…' : `Confirm & Pay ${formatINR(activePayAmount)} →`}
-              </button>
+                <form onSubmit={handleVerifyOtpAndProceed} className="space-y-4">
+                  <div>
+                    <label className="block font-bold text-[#073B5C] mb-1 text-center">
+                      6-Digit One-Time Password (OTP) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="• • • • • •"
+                      autoFocus
+                      className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl p-3 text-center text-xl font-mono tracking-widest font-black focus:outline-none focus:border-[#0E7490]"
+                    />
+                  </div>
 
-              <p className="text-[9px] text-slate-400 text-center">
-                🔒 256-Bit SSL Encrypted. Invoices and tracking sent immediately.
-              </p>
-            </form>
+                  {checkoutError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
+                      {checkoutError}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <button
+                      type="button"
+                      onClick={() => { setOtpStep('form'); setCheckoutError(''); }}
+                      className="text-[#0E7490] font-bold hover:underline cursor-pointer"
+                    >
+                      ← Change Details
+                    </button>
+
+                    {otpCooldown > 0 ? (
+                      <span className="text-slate-400 font-mono">Resend in {otpCooldown}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={isProcessing}
+                        className="text-[#073B5C] font-extrabold hover:underline cursor-pointer"
+                      >
+                        Resend Code
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isProcessing || otpCode.length < 4}
+                    className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {isProcessing ? 'Verifying & Opening Payment…' : `Verify & Launch Payment (${formatINR(activePayAmount)}) →`}
+                  </button>
+                </form>
+
+                <p className="text-[10px] text-slate-400 text-center">
+                  Your payment window opens immediately upon code verification.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

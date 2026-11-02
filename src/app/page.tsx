@@ -1390,6 +1390,250 @@ export default function HomePage() {
       </section>
 
       {/* ======================================================== */}
+      {/* 4.5 STARTING A BUSINESS: 4 1-CLICK FOUNDER PLAYBOOKS     */}
+      {/* ======================================================== */}
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 w-full">
+        <div className="bg-gradient-to-b from-white to-slate-50/80 rounded-3xl border-2 border-[#0E7490]/30 shadow-md p-6 sm:p-10 space-y-8">
+          
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200/80 pb-6">
+            <div className="space-y-1.5 max-w-3xl">
+              <div className="inline-flex items-center gap-2 bg-[#0E7490]/10 border border-[#0E7490]/30 px-3 py-1 rounded-full text-xs font-black text-[#0E7490]">
+                <span>⚡</span> Zero Guesswork • 1-Click Business Starter Kits
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-black text-[#073B5C] tracking-tight">
+                Starting a New Business in India?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Do not buy fragmented licenses one by one. Choose your business model below to get the exact legal entity, tax registrations, municipal approvals, and bank setup bundled together at discounted package rates.
+              </p>
+            </div>
+
+            <Link
+              href="/packages"
+              className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3 rounded-2xl transition shadow flex items-center gap-1.5 shrink-0"
+            >
+              <span>Explore All 6 Packages</span>
+              <span>→</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            
+            {/* PLAYBOOK 1: SELLING ON AMAZON / FLIPKART */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl p-2.5 bg-amber-50 rounded-2xl border border-amber-100">🛒</span>
+                  <span className="bg-emerald-50 text-emerald-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-emerald-200">
+                    Amazon Ready
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-[#073B5C] text-base leading-snug">
+                    Selling on Amazon, Flipkart & E-Com
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                    Sell goods nationwide via online marketplaces or your own Shopify store with full tax authorization.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1 text-[11px]">
+                  <strong className="text-[#073B5C] block text-[10px] uppercase tracking-wider font-extrabold">Included Registrations:</strong>
+                  <ul className="text-slate-600 space-y-0.5">
+                    <li>✓ 15-Digit Marketplace GSTIN</li>
+                    <li>✓ Lifetime Import Export Code (IEC)</li>
+                    <li>✓ MSME Udyam (50% TM Subsidy)</li>
+                    <li>✓ GST LUT for 0% Global Export</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 line-through block">₹11,496</span>
+                    <strong className="text-lg font-black text-[#073B5C]">₹5,999</strong>
+                    <span className="text-[10px] text-emerald-700 font-bold ml-1.5">(Save 47%)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono font-bold">⏱️ 3-7 Days</span>
+                </div>
+
+                <Link
+                  href="/services/gst-registration?package=ecommerce-seller-suite"
+                  className="block w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs py-3 rounded-xl text-center uppercase tracking-wider transition shadow-sm"
+                >
+                  Start for ₹999 Token →
+                </Link>
+              </div>
+            </div>
+
+            {/* PLAYBOOK 2: RESTAURANT / CAFE / CLOUD KITCHEN */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl p-2.5 bg-orange-50 rounded-2xl border border-orange-100">🍲</span>
+                  <span className="bg-orange-50 text-orange-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-orange-200">
+                    FSSAI + Swiggy
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-[#073B5C] text-base leading-snug">
+                    Restaurant, Cafe & Cloud Kitchen
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                    100% compliant food business launch. Fully cleared for Swiggy & Zomato partner onboarding.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1 text-[11px]">
+                  <strong className="text-[#073B5C] block text-[10px] uppercase tracking-wider font-extrabold">Included Registrations:</strong>
+                  <ul className="text-slate-600 space-y-0.5">
+                    <li>✓ 14-Digit FoSCoS FSSAI Food License</li>
+                    <li>✓ 5% Restaurant GST Scheme</li>
+                    <li>✓ Municipal Shop Act (Gumasta)</li>
+                    <li>✓ Swiggy/Zomato Document Dossier</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 line-through block">₹12,496</span>
+                    <strong className="text-lg font-black text-[#073B5C]">₹6,499</strong>
+                    <span className="text-[10px] text-emerald-700 font-bold ml-1.5">(Save 48%)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono font-bold">⏱️ 5-10 Days</span>
+                </div>
+
+                <Link
+                  href="/services/fssai-food-license?package=restaurant-kitchen-compliance-kit"
+                  className="block w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs py-3 rounded-xl text-center uppercase tracking-wider transition shadow-sm"
+                >
+                  Start for ₹999 Token →
+                </Link>
+              </div>
+            </div>
+
+            {/* PLAYBOOK 3: TECH STARTUP & PVT LTD */}
+            <div className="bg-white rounded-3xl p-5 border-2 border-[#0E7490] transition shadow-md hover:shadow-xl flex flex-col justify-between space-y-4 relative">
+              <div className="absolute -top-3 right-4 bg-[#073B5C] text-[#F4B942] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                Most Popular
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl p-2.5 bg-cyan-50 rounded-2xl border border-cyan-100">🚀</span>
+                  <span className="bg-cyan-50 text-cyan-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-cyan-200">
+                    Venture Ready
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-[#073B5C] text-base leading-snug">
+                    Tech Startup & Pvt Ltd Company
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                    Formal corporate structure with limited liability, investor equity readiness, and bank account setup.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1 text-[11px]">
+                  <strong className="text-[#073B5C] block text-[10px] uppercase tracking-wider font-extrabold">Included Registrations:</strong>
+                  <ul className="text-slate-600 space-y-0.5">
+                    <li>✓ MCA SPICe+ Pvt Ltd CoI with CIN</li>
+                    <li>✓ 2 Class-3 DSCs + PAN & TAN</li>
+                    <li>✓ 15-Digit GSTIN Registration</li>
+                    <li>✓ MSME Certificate & INC-20A Filing</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 line-through block">₹15,497</span>
+                    <strong className="text-lg font-black text-[#073B5C]">₹8,999</strong>
+                    <span className="text-[10px] text-emerald-700 font-bold ml-1.5">(Save 42%)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono font-bold">⏱️ 7-10 Days</span>
+                </div>
+
+                <Link
+                  href="/services/private-limited-company?package=startup-launchpad-bundle"
+                  className="block w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3 rounded-xl text-center uppercase tracking-wider transition shadow-sm"
+                >
+                  Start for ₹999 Token →
+                </Link>
+              </div>
+            </div>
+
+            {/* PLAYBOOK 4: RETAIL STORE / LOCAL SHOP */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl p-2.5 bg-emerald-50 rounded-2xl border border-emerald-100">🏬</span>
+                  <span className="bg-blue-50 text-blue-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-blue-200">
+                    Municipal Legal
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-[#073B5C] text-base leading-snug">
+                    Retail Store & Commercial Office
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                    Physical shop or retail establishment registration under state labor laws with current account opening.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1 text-[11px]">
+                  <strong className="text-[#073B5C] block text-[10px] uppercase tracking-wider font-extrabold">Included Registrations:</strong>
+                  <ul className="text-slate-600 space-y-0.5">
+                    <li>✓ Municipal Shop & Establishment (Gumasta)</li>
+                    <li>✓ 15-Digit GST Registration</li>
+                    <li>✓ Green MSME Udyam Certificate</li>
+                    <li>✓ Partner Bank Current Account KYC</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 line-through block">₹8,497</span>
+                    <strong className="text-lg font-black text-[#073B5C]">₹4,999</strong>
+                    <span className="text-[10px] text-emerald-700 font-bold ml-1.5">(Save 41%)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono font-bold">⏱️ 3-5 Days</span>
+                </div>
+
+                <Link
+                  href="/services/shop-and-establishment-license?package=retail-store-launch-pack"
+                  className="block w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs py-3 rounded-xl text-center uppercase tracking-wider transition shadow-sm"
+                >
+                  Start for ₹999 Token →
+                </Link>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 border-t border-slate-100">
+            <span className="flex items-center gap-1.5">
+              <span>💳</span> <strong>₹999 Booking Token:</strong> Locks in parallel CA execution. Remaining balance billed only after documentation verification.
+            </span>
+            <span className="flex items-center gap-1.5 text-[#073B5C] font-bold">
+              <span>🛡️</span> Supervised by Empanelled Chartered Accountants & Company Secretaries
+            </span>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ======================================================== */}
       {/* 5. MAIN SERVICES DIRECTORY (MICRO-COMMITMENT CATALOG)   */}
       {/* ======================================================== */}
       <main id="catalog-section" className="max-w-[1600px] mx-auto px-4 sm:px-8 py-12 w-full flex-grow space-y-8">
