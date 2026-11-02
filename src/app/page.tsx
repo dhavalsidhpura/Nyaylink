@@ -2014,286 +2014,430 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Desktop Full 3-Way Comparison Table (hidden on mobile) */}
-          <div className="overflow-x-auto hidden md:block rounded-3xl border-2 border-slate-200/90 shadow-md bg-white">
-            <table className="w-full text-left text-xs border-collapse">
+                    {/* Desktop Full 3-Way Comparison Table (hidden on mobile) */}
+          <div className="hidden md:block rounded-3xl border-2 border-slate-200 shadow-md bg-white overflow-hidden">
+            <table className="w-full text-left text-xs border-collapse table-fixed">
               <thead>
-                <tr className="border-b-2 border-slate-200 text-[#073B5C] bg-slate-50/80">
-                  <th className="py-4 px-5 font-black text-xs uppercase tracking-wider text-slate-500 w-1/4">
-                    Execution Dimension
-                  </th>
-                  <th className="py-4 px-5 font-black bg-gradient-to-b from-cyan-100/90 to-cyan-50/60 text-[#073B5C] border-x-2 border-[#0E7490] w-1/3 relative shadow-xs">
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full absolute -top-3 right-4 shadow-sm border border-amber-300">
-                      ⚡ Best Choice For Founders
+                <tr className="border-b-2 border-slate-200 text-[#073B5C]">
+                  {/* Column 1: Dimension */}
+                  <th className="py-4 px-5 align-middle w-[24%] border-r border-slate-200/80 bg-slate-50/90">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
+                      Execution Dimension
                     </span>
-                    <div className="flex items-center gap-1.5 text-sm font-black text-[#073B5C]">
-                      <span>🛡️</span> NyayaLink Portal
+                    <span className="text-[10px] text-slate-400 font-medium">Standard Operating Model</span>
+                  </th>
+
+                  {/* Column 2: NyayaLink Winner (No negative margin clipping!) */}
+                  <th className="py-4 px-5 align-middle w-[32%] bg-gradient-to-b from-[#0E7490]/15 to-cyan-50/70 border-x-2 border-[#0E7490] relative shadow-xs">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="inline-flex items-center gap-1 bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs border border-amber-300">
+                        ⚡ Recommended for Founders
+                      </span>
+                      <span className="text-[10px] font-bold text-[#0E7490] uppercase tracking-wider">
+                        Pure Agent ₹0
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-base font-black text-[#073B5C]">
+                      <span className="w-6 h-6 rounded-lg bg-[#073B5C] text-[#F4B942] flex items-center justify-center text-xs shadow-xs">
+                        ⚖️
+                      </span>
+                      <span>NyayaLink Portal</span>
                     </div>
                   </th>
-                  <th className="py-4 px-5 font-bold text-slate-600 w-1/4">
-                    <div className="text-xs font-bold text-slate-700">Big Portals</div>
+
+                  {/* Column 3: Big Portals */}
+                  <th className="py-4 px-5 align-middle w-[22%] border-r border-slate-200/80 bg-slate-50/60">
+                    <div className="text-xs font-black text-slate-700">Big Legal Portals</div>
                     <div className="text-[10px] text-slate-400 font-normal">Vakilsearch / IndiaFilings</div>
                   </th>
-                  <th className="py-4 px-5 font-bold text-slate-600 w-1/4">
-                    <div className="text-xs font-bold text-slate-700">Offline CA / Lawyer</div>
-                    <div className="text-[10px] text-slate-400 font-normal">Traditional Practice</div>
+
+                  {/* Column 4: Offline CA / Lawyer */}
+                  <th className="py-4 px-5 align-middle w-[22%] bg-slate-50/60">
+                    <div className="text-xs font-black text-slate-700">Traditional Offline CA</div>
+                    <div className="text-[10px] text-slate-400 font-normal">Independent Practice</div>
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
                 {/* Row 1: Advance Booking Model */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">💳</span>
-                      <span>Advance Booking Model</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        💳
+                      </span>
                       <div>
-                        <div>₹999 Split-Ticket Token</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
-                          Pay balance only after drafting verification & official name clearance.
-                        </div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Advance Booking Model
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Token Commitment
+                        </span>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-rose-700">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div className="font-bold">100% Locked Upfront</div>
-                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
-                          ₹7,000–₹12,000 paid before drafting begins.
-                        </div>
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          ₹999 Split-Ticket Token
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                          Pay balance only after drafting verification & official MCA name approval.
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Unclear Cash Advances</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          100% Locked Upfront
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                          ₹7,000–₹12,000 paid before drafting or filing begins.
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
+                      <div>
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Unclear Cash Advances
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Open-ended hourly retainers or lump-sum advances.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
                 {/* Row 2: Statutory Stamp Duty */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🏛️</span>
-                      <span>Statutory Stamp Duty</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        🏛️
+                      </span>
+                      <div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Statutory Stamp Duty
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Rule 33 Compliance
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div>Pure Agent ₹0 Markup</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          Pure Agent ₹0 Markup
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                           State duty passed-through at exact govt receipt (Rule 33 statutory pass-through).
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-rose-700">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Hidden Markups</div>
-                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Hidden Portal Markups
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Inflated state stamp fees and surprise checkout additions.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Unitemized Out-of-Pocket</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Unitemized Out-of-Pocket
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Opaque reimbursement claims with uncertain state stamp duty.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
                 {/* Row 3: Legal Supervision */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">⚖️</span>
-                      <span>Legal Supervision</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        ⚖️
+                      </span>
+                      <div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Legal Supervision
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Filing Authority
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div>Empanelled CA & Advocate Desk</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          Empanelled CA & Advocate Desk
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                           Every dossier signed and filed by licensed corporate practitioners.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-rose-700">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Call-Center Sales Reps</div>
-                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Call-Center Sales Reps
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Junior relationship coordinators reading scripted FAQs.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-600">
-                      <span className="font-bold text-emerald-600">✓</span>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✓
+                      </span>
                       <div>
-                        <div className="font-bold text-slate-700">Experienced Practitioner</div>
-                        <div className="text-[11px] font-normal text-slate-500 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Experienced Practitioner
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Competent, but hard to reach during peak corporate tax seasons.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
                 {/* Row 4: Live Status Tracking */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📡</span>
-                      <span>Live Status Tracking</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        📡
+                      </span>
+                      <div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Live Status Tracking
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Real-time Room
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div>Real-Time SRN Tracking Room</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          Real-Time SRN Tracking Room
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                           Live MCA V3, GSTN & IP India status sync directly in your vault.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Delayed Email Queues</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Delayed Email Queues
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Manual ticket replies with opaque queue status.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Manual Follow-ups</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Manual Follow-ups
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Frequent phone calls required with uncertain timelines.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
                 {/* Row 5: Document Security */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🔐</span>
-                      <span>Document Security</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        🔐
+                      </span>
+                      <div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Document Security
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Storage & Vault
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div>256-Bit SSL Lifetime Vault</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          256-Bit SSL Lifetime Vault
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                           Permanent cloud storage for COI, PAN, TAN & annual filings.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Expiring Download Links</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Expiring Download Links
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Temporary email download links expiring after 30 to 60 days.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">Physical Paper Files</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          Physical Paper Files
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Physical files prone to misplacement, tears, or wear.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
                 </tr>
 
                 {/* Row 6: Turnaround SLA Guarantee */}
-                <tr className="hover:bg-slate-50/60 transition">
-                  <td className="py-4 px-5 font-bold text-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">⏱️</span>
-                      <span>Turnaround SLA Guarantee</span>
+                <tr className="hover:bg-slate-50/50 transition">
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                        ⏱️
+                      </span>
+                      <div>
+                        <span className="font-black text-[#073B5C] text-xs block leading-snug">
+                          Turnaround SLA Guarantee
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                          Delivery Timeline
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 bg-cyan-50/40 text-[#073B5C] border-x-2 border-[#0E7490]">
-                    <div className="font-extrabold flex items-start gap-1.5 text-[#073B5C]">
-                      <span className="text-emerald-700 font-black">✓</span>
+                  <td className="py-4 px-5 align-top bg-cyan-50/40 border-x-2 border-[#0E7490]">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-xs">
+                        ✓
+                      </span>
                       <div>
-                        <div>3–7 Working Days Guaranteed</div>
-                        <div className="text-[11px] font-normal text-slate-600 mt-0.5">
+                        <strong className="text-xs font-black text-[#073B5C] block leading-snug">
+                          3–7 Working Days Guaranteed
+                        </strong>
+                        <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                           Automated 4-hour SLA orphan escalation to senior CS desk.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top border-r border-slate-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">10–20 Days Average</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          10–20 Days Average
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Severe delays due to mass call-center backlogs.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
-                    <div className="flex items-start gap-1.5 text-slate-500">
-                      <span className="font-bold">✕</span>
+                  <td className="py-4 px-5 align-top">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                        ✕
+                      </span>
                       <div>
-                        <div className="font-bold">2–4 Weeks Turnaround</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5">
+                        <strong className="text-xs font-bold text-slate-700 block leading-snug">
+                          2–4 Weeks Turnaround
+                        </strong>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                           Subject to practitioner's offline litigation workload.
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -2301,6 +2445,7 @@ export default function HomePage() {
               </tbody>
             </table>
           </div>
+
 
           {/* Desktop Trust Strip */}
           <div className="hidden md:flex bg-gradient-to-r from-[#073B5C] via-[#052A42] to-[#073B5C] text-white p-5 rounded-3xl items-center justify-between gap-4 shadow-sm border border-cyan-800/40">
