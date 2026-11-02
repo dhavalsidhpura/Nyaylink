@@ -8,6 +8,7 @@ import type { DashboardData } from './page';
 import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
 import { formatINR } from '@/lib/pricing';
+import StatutoryExpiryRadar from '@/components/StatutoryExpiryRadar';
 
 type Props = DashboardData;
 
@@ -104,7 +105,7 @@ function FilingLifecycleGuide() {
 
 export default function DashboardClient({ user, orders, documents, invoices, consultations }: Props) {
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'filings' | 'consultations' | 'vault' | 'billing' | 'support'
+    'overview' | 'filings' | 'renewals' | 'consultations' | 'vault' | 'billing' | 'support'
   >('overview');
 
   const activeOrders = orders.filter((o) => o.status !== 'APPROVED' && o.status !== 'REJECTED');
@@ -205,6 +206,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
             {([
               ['overview', '📊', 'Overview', activeOrders.length ? `${activeOrders.length} Active` : null],
               ['filings', '📋', 'Filings & SRNs', queriesPending.length ? `${queriesPending.length} Query` : null],
+              ['renewals', '🛡️', 'License Radar & Expiries', '1 Due Soon'],
               ['consultations', '⚖️', 'Consultations', upcoming.length ? `${upcoming.length} Upcoming` : null],
               ['vault', '🔒', 'Document Vault', rejectedDocs.length ? `${rejectedDocs.length} Re-upload` : documents.length ? String(documents.length) : null],
               ['billing', '🧾', 'Billing & Invoices', null],
@@ -444,7 +446,34 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 </div>
               </div>
 
+              {/* Statutory License Expiry Radar Banner on Overview */}
+              <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border border-amber-300 p-5 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      Statutory Radar Alert
+                    </span>
+                    <span className="text-xs text-amber-900 font-bold">1 License in Early Renewal Window</span>
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    <strong>FOSCOS State Food License (Lic #11524034000891)</strong> expires in <strong>42 days</strong>. Mandatory renewal window is active to avoid ₹100/day late penalty.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('renewals')}
+                  className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl shadow transition shrink-0 cursor-pointer"
+                >
+                  View Expiry Radar &rarr;
+                </button>
+              </div>
+
               <FilingLifecycleGuide />
+            </div>
+          )}
+
+          {activeTab === 'renewals' && (
+            <div className="space-y-6 animate-fadeIn">
+              <StatutoryExpiryRadar userPhone={user.phone} userEmail={user.email} />
             </div>
           )}
 
