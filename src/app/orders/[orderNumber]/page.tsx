@@ -85,6 +85,17 @@ export default async function OrderTrackingPage({ params }: Props) {
                   Government SRN/ARN: <strong className="font-mono">{order.srn}</strong>
                 </p>
               )}
+<div className="flex flex-wrap items-center gap-3 pt-2">
+                <a
+                  href={`https://wa.me/919920054785?text=${encodeURIComponent(`Hello NyayaLink, I am on Order #${order.orderNumber} (${order.service.title}) and need assistance with my documents.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition"
+                >
+                  <span>💬</span> WhatsApp Assigned CA Desk
+                </a>
+                <span className="text-[11px] text-slate-500">Live Mon–Sat 9:30 AM – 7:00 PM</span>
+              </div>
             </div>
             <span className="self-start text-[10px] font-extrabold px-3 py-1 rounded-full uppercase bg-slate-100 text-[#073B5C]">
               {STATUS_LABEL[order.status]}
@@ -147,6 +158,10 @@ export default async function OrderTrackingPage({ params }: Props) {
               We have received your ₹{formatINR(order.amountPaid)} booking advance. A Chartered Accountant / Legal Counsel has been assigned to your case. 
               <strong> Please upload the required documents below</strong> so our team can draft your statutory application and reserve your entity name. The remaining balance will only be billed once your documents are verified.
             </p>
+<div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-700 font-semibold border-t border-emerald-200/60 mt-2">
+              <span className="text-sm">⏰</span>
+              <span><strong>No Rush Guarantee:</strong> Your booking token never expires. You can upload documents today, tomorrow, or send them to your CA on WhatsApp whenever ready.</span>
+            </div>
           </section>
         )}
 

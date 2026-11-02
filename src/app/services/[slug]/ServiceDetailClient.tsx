@@ -422,6 +422,43 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </div>
             </div>
 
+            {/* PLAIN-ENGLISH FOUNDER DELIVERABLE DECODER */}
+            <div className="bg-gradient-to-br from-cyan-950 via-[#073B5C] to-[#041E30] text-white rounded-3xl p-5 sm:p-7 shadow-sm space-y-4 border border-cyan-800/40">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">💡</span>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-[#F4B942]">First-Time Founder Plain-Language Decoder</h3>
+                    <p className="text-[11px] text-cyan-200">What these legal deliverables mean for your day-to-day business operations:</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono bg-cyan-900/60 text-cyan-300 border border-cyan-700/50 px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                  Zero Bureaucracy
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
+                  <span className="font-bold text-[#F4B942] text-[11px] block">🏦 COI + CIN Number</span>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Your company&apos;s birth certificate. Present this directly to any bank (HDFC, ICICI, SBI) to open your Current Account and receive payments.
+                  </p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
+                  <span className="font-bold text-[#F4B942] text-[11px] block">🛒 PAN + GST Ready</span>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Corporate tax identity. Required to register on Amazon Seller Central, Flipkart, Zomato, Swiggy, or to issue official tax invoices.
+                  </p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
+                  <span className="font-bold text-[#F4B942] text-[11px] block">✍️ Class-3 DSC Tokens</span>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Your electronic cryptographic signatures. Ensures you never sign physical papers or visit government offices—all filings are 100% paperless.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* SECTION 3: SIMPLIFIED DOCUMENTS (PROGRESSIVE DISCLOSURE GRID) */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
@@ -696,6 +733,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   </span>
                 </div>
               </div>
+
+              <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-2.5 text-center text-[11px] text-emerald-900 font-bold space-y-0.5">
+                  <span className="block font-black text-emerald-800">🛡️ 100% Paperless & Zero Physical Visits</span>
+                  <span className="text-[10px] text-emerald-700 block font-normal">
+                    Never visit government offices or courts. Certified CAs sign electronically on your behalf.
+                  </span>
+                </div>
 
               {/* TRUST SIGNALS */}
               <div className="pt-1 space-y-1.5 text-[11px] text-slate-500 text-center font-medium">

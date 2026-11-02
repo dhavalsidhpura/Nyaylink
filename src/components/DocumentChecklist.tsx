@@ -421,7 +421,16 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         )}
 
         <p className="text-[11px] text-slate-500">
-          PDF, JPG or PNG up to 10 MB. On mobile you can photograph the document directly. Files are stored encrypted and only your
+          {mode === 'client' && (
+          <div className="p-3 bg-cyan-50/70 border border-cyan-200 rounded-2xl flex items-center gap-2 text-[11px] text-cyan-900">
+            <span className="text-base shrink-0">🛡️</span>
+            <span>
+              <strong>Upload at your own pace:</strong> Your assigned CA desk remains reserved. If you need a couple of days to get an NOC signed by your property owner, there is zero penalty or expiry.
+            </span>
+          </div>
+        )}
+
+        PDF, JPG or PNG up to 10 MB. On mobile you can photograph the document directly. Files are stored encrypted and only your
           assigned compliance team can open them.
         </p>
         {locked && lockedReason && <p className="text-[11px] font-bold text-amber-700">{lockedReason}</p>}
