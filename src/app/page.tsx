@@ -147,7 +147,11 @@ export default function HomePage() {
     return getStateStampDuty(estimatorState).amount;
   }, [isCompanyRegService, estimatorState]);
 
-  const estimatorTotalOutlay = (currentEstimatorService?.price || 0) + estimatorStampDuty;
+  const estimatorGstAmount = useMemo(() => {
+    return Math.round(((currentEstimatorService?.price || 0) * 18) / 100);
+  }, [currentEstimatorService?.price]);
+
+  const estimatorTotalOutlay = (currentEstimatorService?.price || 0) + estimatorGstAmount + estimatorStampDuty;
 
   // Filtered Catalog Services
   const filteredServices = useMemo(() => {
@@ -718,7 +722,7 @@ export default function HomePage() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 bg-[#0E7490]/50 border border-cyan-400/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#F4B942]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              ISO 9001:2015 Certified Portal • Zero Hidden Charges
+              MCA V3 & Bar Council Compliant • Zero Hidden Charges
             </div>
 
             <h1 className="text-3xl sm:text-5xl 2xl:text-6xl font-black tracking-tight leading-tight text-white">
@@ -990,6 +994,11 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex justify-between items-center text-slate-600">
+                      <span>GST @ 18% (ITC Eligible):</span>
+                      <strong className="text-slate-900">{formatINR(estimatorGstAmount)}</strong>
+                    </div>
+
+                    <div className="flex justify-between items-center text-slate-600">
                       <span>Govt Stamp / Statutory Fee:</span>
                       <strong className="text-slate-900">
                         {estimatorStampDuty > 0 ? formatINR(estimatorStampDuty) : 'Direct at actuals'}
@@ -997,8 +1006,8 @@ export default function HomePage() {
                     </div>
 
                     <div className="border-t border-slate-200 pt-1.5 flex justify-between items-center font-extrabold text-[#073B5C] text-sm">
-                      <span>Estimated Outlay:</span>
-                      <span className="text-base text-slate-900">{formatINR(estimatorTotalOutlay)}</span>
+                      <span>Total Payable (GST-Inclusive):</span>
+                      <span className="text-base text-emerald-700 font-black">{formatINR(estimatorTotalOutlay)}</span>
                     </div>
                   </div>
 
@@ -1265,12 +1274,12 @@ export default function HomePage() {
       <section className="bg-white border-b border-slate-200 py-6 px-4 sm:px-8">
         <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-center">
           <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
-            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">50,000+</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Filings Completed</p>
+            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">1,200+</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Businesses & Startups Advised</p>
           </div>
           <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
             <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Google Verified</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Verified Client Rating</p>
           </div>
           <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
             <strong className="text-xl sm:text-3xl font-black text-[#0E7490]">₹999 Token</strong>

@@ -591,7 +591,22 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               </div>
 
               <div className="space-y-4">
-                {myOrders.filter((o) => o.status !== 'REJECTED').map((o) => (
+                {myOrders.filter((o) => o.status !== 'REJECTED').length === 0 ? (
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center space-y-3">
+                    <span className="text-3xl block">📋</span>
+                    <strong className="text-slate-800 text-sm block">No Filing Dockets Assigned to Your Desk Yet</strong>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Once client filing orders (Private Limited, LLP, Trademarks, GST) are claimed from the Open Pool or allocated by Operations, you can record MCA Service Request Numbers (SRN), upload government challans, and trigger client updates here.
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('pool')}
+                      className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow-xs cursor-pointer"
+                    >
+                      Browse Claimable Open Dockets →
+                    </button>
+                  </div>
+                ) : (
+                  myOrders.filter((o) => o.status !== 'REJECTED').map((o) => (
                   <div
                     key={o.id}
                     className="p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4"
@@ -622,7 +637,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                       {o.srn ? 'Update SRN / Status' : 'Enter Official SRN'}
                     </button>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
           )}

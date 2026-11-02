@@ -702,7 +702,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 <div className="flex items-center justify-center gap-3 text-slate-600 font-semibold text-[10px]">
                   <span>🔒 256-Bit SSL</span>
                   <span>•</span>
-                  <span>🛡️ 100% Name Guarantee</span>
+                  <span>🛡️ Pre-Checked MCA & TM Search</span>
                   <span>•</span>
                   <span>🤝 Zero Hidden Fees</span>
                 </div>
@@ -877,7 +877,8 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 />
                 <span>
                   I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link>,{' '}
-                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
+                  <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>,{' '}
+                  <Link href="/refund-policy" target="_blank" className="underline text-[#0E7490]">Refund Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
                 </span>
               </label>
 

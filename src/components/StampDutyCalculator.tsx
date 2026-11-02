@@ -30,10 +30,10 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
 
   const mcaGovtFee = authorizedCapital <= 1500000 ? 0 : Math.round((authorizedCapital - 1500000) * 0.003);
   const panTanGovtFee = stateRule.panTanFee || 131;
-  const nameApprovalFee = 1000; // RUN / SPICe+ Part A reservation
+  const gstAmount = Math.round((baseProfFee * 18) / 100);
 
   const totalStatutoryPassThrough = stateStampEstimate + panTanGovtFee + mcaGovtFee;
-  const grandTotal = baseProfFee + totalStatutoryPassThrough;
+  const grandTotal = baseProfFee + gstAmount + totalStatutoryPassThrough;
 
   return (
     <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-md space-y-5 text-xs font-sans">
@@ -46,7 +46,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
             </h3>
           </div>
           <p className="text-slate-500 font-medium text-[11px] mt-0.5">
-            Transparent Pure Agent breakdown: Professional Fee + Exact Government MCA & Stamp Duty.
+            Transparent Pure Agent breakdown: Professional Fee + 18% GST + Exact Government Stamp Duty.
           </p>
         </div>
         <span className="bg-emerald-50 text-emerald-800 border border-emerald-300/60 font-black px-3 py-1 rounded-full uppercase tracking-wider text-[10px] self-start sm:self-auto">
@@ -88,7 +88,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
             />
           </div>
           <span className="text-[10px] text-slate-400 mt-1 block">
-            Standard startup default: ₹1,00,000 (MCA Govt Fee is ₹0 up to ₹15 Lakhs).
+            Standard startup default: ₹1,00,000 (MCA Govt Fee is ₹0 for authorized capital ≤ ₹15 Lakhs).
           </span>
         </div>
       </div>
@@ -106,6 +106,15 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
             <p className="text-[10px] text-slate-500">Includes 2 DSC tokens, DIN drafting, SPICe+ Part B & Certificate</p>
           </div>
           <strong className="text-slate-900 text-sm">{formatINR(baseProfFee)}</strong>
+        </div>
+
+        {/* GST on Professional Fee */}
+        <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
+          <div>
+            <span className="font-bold text-slate-800">GST on Professional Fee (18%):</span>
+            <p className="text-[10px] text-slate-500">Official tax invoice eligible for 100% Input Tax Credit (ITC)</p>
+          </div>
+          <strong className="text-slate-900 font-mono text-sm">{formatINR(gstAmount)}</strong>
         </div>
 
         {/* Part B: Statutory Pass-Through Outlays */}
@@ -138,7 +147,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         {/* Grand Total */}
         <div className="flex justify-between items-center pt-2 font-black text-[#073B5C] text-sm sm:text-base">
           <div>
-            <span>Total Landed Outlay to the Rupee:</span>
+            <span>Total Landed Outlay to the Rupee (GST-Inclusive):</span>
             <p className="text-[10px] text-slate-500 font-normal">
               No surprise calls. Professional fee billed with GST invoice; government fees passed through at actuals.
             </p>

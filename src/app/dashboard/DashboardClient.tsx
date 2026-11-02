@@ -58,6 +58,11 @@ export default function DashboardClient({ user, orders, documents, invoices, con
           </Link>
 
           <div className="flex items-center gap-3">
+            {['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'].includes(user.role) && (
+              <Link href="/admin" className="bg-[#F4B942] text-[#073B5C] px-3 py-1 rounded-xl text-xs font-black shadow hover:bg-amber-400">
+                ⚡ Staff Console ({user.role}) →
+              </Link>
+            )}
             {user.role === 'LAWYER' && (
               <Link href="/lawyer/dashboard" className="text-[#F4B942] text-xs font-bold hover:underline">
                 Advocate dashboard →
@@ -75,6 +80,23 @@ export default function DashboardClient({ user, orders, documents, invoices, con
           </div>
         </div>
       </header>
+
+      {['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'].includes(user.role) && (
+        <div className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 text-xs font-medium flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm border-b border-amber-600">
+          <div className="flex items-center gap-2">
+            <span className="bg-black text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+              Staff Mode ({user.role})
+            </span>
+            <span>You are previewing the Client Vault as <strong>{user.name}</strong> ({user.email}).</span>
+          </div>
+          <Link
+            href="/admin"
+            className="bg-slate-950 hover:bg-black text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow whitespace-nowrap transition"
+          >
+            Open Staff Workspace →
+          </Link>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* SIDEBAR */}
@@ -209,8 +231,34 @@ export default function DashboardClient({ user, orders, documents, invoices, con
               </div>
 
               {orders.length === 0 ? (
-                <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center text-xs text-slate-500">
-                  No filings yet.
+                <div className="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm text-center space-y-4">
+                  <span className="text-4xl block">🚀</span>
+                  <div className="space-y-1">
+                    <h3 className="font-extrabold text-[#073B5C] text-base">No Active Filings Yet</h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Your business registrations, trademark dockets, and compliance filings will appear here with live MCA/GSTN milestone tracking once booked.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2 pt-2 text-xs">
+                    <Link
+                      href="/services/private-limited-company"
+                      className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black px-4 py-2.5 rounded-xl transition shadow-xs"
+                    >
+                      🏢 Incorporate Pvt Ltd Company →
+                    </Link>
+                    <Link
+                      href="/services/trademark-registration"
+                      className="bg-white hover:bg-slate-50 text-[#073B5C] border border-slate-300 font-bold px-4 py-2.5 rounded-xl transition"
+                    >
+                      ™️ File Trademark
+                    </Link>
+                    <Link
+                      href="/services/consumer-complaint-notice"
+                      className="bg-white hover:bg-slate-50 text-[#073B5C] border border-slate-300 font-bold px-4 py-2.5 rounded-xl transition"
+                    >
+                      ⚖️ Send Legal Notice
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -282,9 +330,24 @@ export default function DashboardClient({ user, orders, documents, invoices, con
 
           {activeTab === 'vault' && (
             <div className="space-y-6 animate-fadeIn">
-              <div>
-                <h2 className="text-xl font-extrabold text-[#073B5C]">Encrypted Document Vault</h2>
-                <p className="text-xs text-slate-500">Documents uploaded against your filings.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#073B5C]">Encrypted Document Vault</h2>
+                  <p className="text-xs text-slate-500">Documents uploaded against your filings.</p>
+                </div>
+                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider self-start sm:self-auto">
+                  🔒 256-Bit SSL Encrypted
+                </span>
+              </div>
+
+              <div className="bg-cyan-50/80 border border-cyan-200 p-3.5 rounded-2xl text-xs text-[#073B5C] flex items-start gap-2.5">
+                <span className="text-lg shrink-0">🪪</span>
+                <div className="space-y-0.5">
+                  <strong>UIDAI & DPDP Privacy Compliance:</strong>
+                  <p className="text-[11px] text-slate-600">
+                    For director and signatory KYC, please upload <strong>Masked Aadhaar</strong> copies (showing only the last 4 digits) as mandated by UIDAI. Documents are restricted strictly to your assigned Chartered Accountant.
+                  </p>
+                </div>
               </div>
 
               <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
