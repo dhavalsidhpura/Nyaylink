@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#073B5C" />
+      <stop offset="100%" stop-color="#031D2E" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  <!-- Background Badge -->
+  <rect width="32" height="32" rx="8" fill="url(#bg)" />
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="none" stroke="#0E7490" stroke-width="1" stroke-opacity="0.5" />
+  
+  <!-- Scales of Justice (Nyaya Emblem) -->
+  <!-- Central Pillar -->
+  <path d="M16 5 L16 26" stroke="url(#gold)" stroke-width="2" stroke-linecap="round" />
+  <!-- Pillar Base -->
+  <path d="M11 26 L21 26" stroke="url(#gold)" stroke-width="2" stroke-linecap="round" />
+  <circle cx="16" cy="5" r="1.5" fill="#FCD34D" />
+  
+  <!-- Horizontal Beam -->
+  <path d="M7 10 L25 10" stroke="url(#gold)" stroke-width="1.8" stroke-linecap="round" />
+  
+  <!-- Left Pan Strings & Pan -->
+  <path d="M7 10 L4 17 L10 17 Z" fill="none" stroke="#FCD34D" stroke-width="1" stroke-linejoin="round" />
+  <path d="M3 17 Q7 20 11 17" fill="#0E7490" stroke="#FCD34D" stroke-width="1" />
+  
+  <!-- Right Pan Strings & Pan -->
+  <path d="M25 10 L22 17 L28 17 Z" fill="none" stroke="#FCD34D" stroke-width="1" stroke-linejoin="round" />
+  <path d="M21 17 Q25 20 29 17" fill="#0E7490" stroke="#FCD34D" stroke-width="1" />
+</svg>

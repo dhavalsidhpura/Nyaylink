@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { MASTER_SERVICES } from '@/data/services';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';
   const currentDate = new Date();
 
   // Core Landing Pages

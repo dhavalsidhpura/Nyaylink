@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyayalink.com';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -54,7 +54,7 @@ const organizationJsonLd = {
   '@type': 'LegalService',
   name: 'NyayaLink',
   url: baseUrl,
-  logo: `${baseUrl}/icon.png`,
+  logo: `${baseUrl}/icon.svg`,
   description: 'Digital incorporation, licensing, and corporate compliance platform in Mumbai, India.',
   telephone: '+919920054785',
   email: 'info@nyayalink.com',

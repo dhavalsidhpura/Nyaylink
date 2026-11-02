@@ -3,11 +3,12 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  swcMinify: true,
 
   // Server external packages and optimization in Next.js 14
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
-    optimizePackageImports: ['zod'],
+    optimizePackageImports: ['zod', 'lucide-react'],
   },
 
   // Image optimization with modern WebP and AVIF formats

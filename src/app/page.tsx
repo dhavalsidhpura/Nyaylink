@@ -91,8 +91,12 @@ export default function HomePage() {
         if (data?.success && Array.isArray(data.services) && data.services.length > 0) {
           const map = new Map<string, any>();
           for (const s of MASTER_SERVICES) map.set(s.slug, s);
+          let hasPriceChange = false;
           for (const s of data.services) {
             const existing = map.get(s.slug);
+            if (existing && Number(s.professionalFee) !== existing.price) {
+              hasPriceChange = true;
+            }
             map.set(s.slug, {
               id: s.slug,
               slug: s.slug,
@@ -108,7 +112,9 @@ export default function HomePage() {
               docs: s.requirements?.map((r: any) => r.label).join(', ') || existing?.docs || 'ID & Address Proof',
             });
           }
-          setServicesList(Array.from(map.values()));
+          if (hasPriceChange || map.size !== MASTER_SERVICES.length) {
+            setServicesList(Array.from(map.values()));
+          }
         }
       })
       .catch((err) => {
@@ -120,8 +126,9 @@ export default function HomePage() {
     return () => controller.abort();
   }, []);
 
-  // Close hero search on click outside
+  // Close hero search on click outside (only active when dropdown is open)
   useEffect(() => {
+    if (!isHeroSearchOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (searchDropdownRef.current && !searchDropdownRef.current.contains(e.target as Node)) {
         setIsHeroSearchOpen(false);
@@ -129,7 +136,7 @@ export default function HomePage() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isHeroSearchOpen]);
 
   // Hero Omnisearch Suggestions
   const heroSearchMatches = useMemo(() => {
@@ -1380,7 +1387,7 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 3.1 LIVE ACTIVITY & FILING TICKER BANNER                 */}
       {/* ======================================================== */}
-      <div className="bg-[#052840] border-y border-cyan-900/60 py-2.5 px-4 sm:px-8 text-xs">
+      <div className="bg-[#052840] border-y border-cyan-900/60 py-2.5 px-4 sm:px-8 text-xs min-h-[44px]">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5 overflow-hidden w-full sm:w-auto">
             <span className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider shrink-0 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full shadow-xs">

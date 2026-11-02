@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="apple-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#073B5C" />
+      <stop offset="100%" stop-color="#021522" />
+    </linearGradient>
+    <linearGradient id="apple-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#apple-bg)" />
+  <rect x="2" y="2" width="176" height="176" rx="38" fill="none" stroke="#0E7490" stroke-width="4" stroke-opacity="0.4" />
+  
+  <!-- Scales of Justice -->
+  <path d="M90 28 L90 148" stroke="url(#apple-gold)" stroke-width="10" stroke-linecap="round" />
+  <path d="M60 148 L120 148" stroke="url(#apple-gold)" stroke-width="10" stroke-linecap="round" />
+  <circle cx="90" cy="28" r="8" fill="#FCD34D" />
+  
+  <path d="M40 56 L140 56" stroke="url(#apple-gold)" stroke-width="9" stroke-linecap="round" />
+  
+  <path d="M40 56 L24 96 L56 96 Z" fill="none" stroke="#FCD34D" stroke-width="5" stroke-linejoin="round" />
+  <path d="M18 96 Q40 114 62 96" fill="#0E7490" stroke="#FCD34D" stroke-width="5" />
+  
+  <path d="M140 56 L124 96 L156 96 Z" fill="none" stroke="#FCD34D" stroke-width="5" stroke-linejoin="round" />
+  <path d="M118 96 Q140 114 162 96" fill="#0E7490" stroke="#FCD34D" stroke-width="5" />
+</svg>
