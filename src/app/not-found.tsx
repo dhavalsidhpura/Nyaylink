@@ -44,7 +44,7 @@ export default function NotFound() {
                 href="/#catalog-section"
                 className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl font-bold text-[#073B5C] flex items-center justify-between transition"
               >
-                <span>🏢 All 51 Services</span>
+                <span>🏢 All 58 Services</span>
                 <span className="text-slate-400">→</span>
               </Link>
               <Link

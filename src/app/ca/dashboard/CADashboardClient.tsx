@@ -228,6 +228,21 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
         </div>
       </header>
 
+      {user.email?.endsWith('.local') && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-950 px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+              Staging / Demo Session
+            </span>
+            <span className="text-slate-700">
+              Logged in as seeded test CA identity <strong>{user.name}</strong> ({user.email}). In production, only ICAI-verified practitioners can access this portal.
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-500 font-medium">Sandbox Mode</span>
+        </div>
+      )}
+
+
       {/* TOP KPI CARDS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 w-full">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

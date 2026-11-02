@@ -75,7 +75,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // All 51 Active Compliance & Registration Services
+  // All 58 Active Compliance & Registration Services
   const servicePages: MetadataRoute.Sitemap = MASTER_SERVICES.map((service) => ({
     url: `${baseUrl}/services/${service.slug}`,
     lastModified: currentDate,

@@ -298,7 +298,7 @@ export default function HomePage() {
           <div className="hidden md:flex flex-1 max-w-md mx-4 relative" ref={searchDropdownRef}>
             <input
               type="text"
-              placeholder="Search 35+ services (e.g. Pvt Ltd, Trademark, GST)..."
+              placeholder="Search 58 legal and compliance services (e.g. Pvt Ltd, Trademark, GST)..."
               value={heroSearch}
               onChange={(e) => {
                 setHeroSearch(e.target.value);
@@ -525,7 +525,7 @@ export default function HomePage() {
               </Link>
 
               <a href="#catalog-section" className="text-cyan-200 hover:text-white font-extrabold flex items-center gap-1 text-xs">
-                Explore All 40+ Services ↓
+                Explore All 58 Services ↓
               </a>
             </div>
           </nav>

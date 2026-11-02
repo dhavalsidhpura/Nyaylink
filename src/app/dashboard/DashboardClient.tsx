@@ -29,6 +29,79 @@ const STATUS_STYLE: Record<string, string> = {
   REJECTED: 'bg-rose-100 text-rose-800',
 };
 
+
+function FilingLifecycleGuide() {
+  return (
+    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+      <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+            Statutory Transparency &amp; Process SLA
+          </span>
+          <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C]">
+            6-Stage Post-Payment Filing Lifecycle
+          </h3>
+        </div>
+        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg self-start sm:self-auto">
+          Standard 7–10 Working Day SLA
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 text-xs">
+        {[
+          {
+            step: '01',
+            icon: '💳',
+            title: 'Advance Token (₹999)',
+            desc: 'Instant dedicated Client Vault initialized; dedicated CA/CS compliance desk assigned to your docket within 4 hours.',
+          },
+          {
+            step: '02',
+            icon: '🔒',
+            title: 'Encrypted Vault Upload',
+            desc: 'Upload Masked Aadhaar (first 8 digits redacted), PAN, and utility bill NOC directly to AES-256 S3 storage.',
+          },
+          {
+            step: '03',
+            icon: '✍️',
+            title: 'CA Scrutiny & Class 3 DSC',
+            desc: 'Certified CA drafts e-MOA/e-AOA, verifies director eligibility, and provisions cryptographic Class 3 signing tokens.',
+          },
+          {
+            step: '04',
+            icon: '🏛️',
+            title: 'MCA CRC SPICe+ Filing',
+            desc: 'Filing submitted directly to MCA V3 portal; government SRN generated and Pure Agent pass-through fees settled.',
+          },
+          {
+            step: '05',
+            icon: '🔎',
+            title: 'Scrutiny & Resubmission',
+            desc: 'Live tracking of CRC processing; zero-fee drafting modifications included if the Registrar requests clarification.',
+          },
+          {
+            step: '06',
+            icon: '📜',
+            title: 'COI & Kit Allotment',
+            desc: 'Official 21-digit CIN, PAN, TAN, EPFO, ESIC registration, and digital MOA/AOA delivered to your vault.',
+          },
+        ].map((item) => (
+          <div key={item.step} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5 hover:border-slate-300 transition">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+                Stage {item.step}
+              </span>
+              <span className="text-base">{item.icon}</span>
+            </div>
+            <strong className="text-slate-800 text-xs font-bold block pt-1">{item.title}</strong>
+            <p className="text-[11px] text-slate-500 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardClient({ user, orders, documents, invoices, consultations }: Props) {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'filings' | 'consultations' | 'vault' | 'billing' | 'support'
@@ -80,6 +153,21 @@ export default function DashboardClient({ user, orders, documents, invoices, con
           </div>
         </div>
       </header>
+
+      {user.email?.endsWith('.local') && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-950 px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+              Staging / Demo Session
+            </span>
+            <span className="text-slate-700">
+              Authenticated with test identity <strong>{user.email}</strong>. Live customer filings and real payments are strictly isolated in production.
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-500 font-medium">Sandbox Mode</span>
+        </div>
+      )}
+
 
       {['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'].includes(user.role) && (
         <div className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 text-xs font-medium flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm border-b border-amber-600">
@@ -220,6 +308,8 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   </Link>
                 </div>
               )}
+
+              <FilingLifecycleGuide />
             </div>
           )}
 
@@ -231,6 +321,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
               </div>
 
               {orders.length === 0 ? (
+                <>
                 <div className="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-sm text-center space-y-4">
                   <span className="text-4xl block">🚀</span>
                   <div className="space-y-1">
@@ -260,6 +351,9 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                     </Link>
                   </div>
                 </div>
+
+                <FilingLifecycleGuide />
+                </>
               ) : (
                 <div className="space-y-6">
                   {orders.map((order) => (
