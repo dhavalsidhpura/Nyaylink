@@ -367,6 +367,13 @@ export default function Header() {
           {/* Action Button */}
           <div className="flex items-center gap-2">
             <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-nyaya-gold text-white hover:text-nyaya-gold font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-xs"
+            >
+              <span>🔑</span>
+              <span>Log In</span>
+            </Link>
+            <Link
               href="/dashboard"
               className="hidden sm:inline-block bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-3.5 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
             >
@@ -392,11 +399,18 @@ export default function Header() {
             {/* Quick Actions at Top */}
             <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-700/60">
               <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="bg-nyaya-gold text-nyaya-navy font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px] flex items-center justify-center gap-1 shadow-sm"
+              >
+                <span>🔑</span> Client Login
+              </Link>
+              <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-nyaya-gold text-nyaya-navy font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px]"
+                className="bg-white/10 hover:bg-white/20 text-white font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px] flex items-center justify-center gap-1"
               >
-                👤 My Dashboard
+                <span>👤</span> My Dashboard
               </Link>
               <a
                 href="https://wa.me/919920054785?text=Hello%20NyayaLink%2C%20I%20need%20assistance."

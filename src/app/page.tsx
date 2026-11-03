@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
 import { INDIAN_STATES, getStateStampDuty, formatINR, getPricingModelBadge } from '@/lib/pricing';
+import SmartAdvisorDrawer from '@/components/SmartAdvisorDrawer';
 
 export default function HomePage() {
   const router = useRouter();
@@ -361,6 +362,26 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-20 lg:pb-0">
 
       {/* ======================================================== */}
+      {/* 0. PROMINENT 2026 ANNOUNCEMENT & OFFER BANNER            */}
+      {/* ======================================================== */}
+      <div className="bg-[#041E30] text-white py-1.5 px-3 sm:px-8 border-b border-cyan-500/20 text-center text-xs">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-center gap-2 flex-wrap">
+          <span className="bg-[#0E7490] text-[#F4B942] font-black text-[10px] uppercase px-2 py-0.5 rounded-full tracking-wider border border-cyan-400/30">
+            🚀 2026 Founder Fast-Track
+          </span>
+          <span className="font-semibold text-slate-200 text-[11px] sm:text-xs">
+            Flat ₹999 Booking Advance • Direct CA Supervision • Pure Agent Rule 33 Govt Fee Transparency
+          </span>
+          <Link
+            href="/packages"
+            className="text-[#F4B942] hover:text-white font-extrabold text-[11px] sm:text-xs underline underline-offset-2 ml-1"
+          >
+            Explore Founder Bundles →
+          </Link>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
       {/* 1. TOP GLOBAL TRUST & ADVISORY RIBBON (ALL DEVICES)      */}
       {/* ======================================================== */}
       <div className="bg-gradient-to-r from-[#031522] via-[#073B5C] to-[#031522] text-white text-[11px] py-2 px-3 sm:px-8 border-b border-cyan-800/40">
@@ -395,6 +416,14 @@ export default function HomePage() {
             >
               <span>💬</span> WhatsApp CA
             </a>
+            <span className="text-cyan-600 hidden sm:inline">|</span>
+            <Link
+              href="/login"
+              className="text-white hover:text-[#F4B942] font-extrabold flex items-center gap-1 transition text-[11px]"
+            >
+              <span>🔑</span>
+              <span>Client Log In</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -482,6 +511,14 @@ export default function HomePage() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-cyan-400/40 hover:border-[#F4B942] text-white hover:text-[#F4B942] font-black text-xs px-3 py-1.5 rounded-xl transition shadow-xs"
+            >
+              <span>🔑</span>
+              <span>Log In</span>
+            </Link>
+
             <Link
               href="/vakil"
               className="hidden sm:inline-flex items-center gap-1.5 text-xs text-[#F4B942] hover:text-amber-300 font-bold px-2 py-1.5 transition"
@@ -688,6 +725,13 @@ export default function HomePage() {
 
             {/* Quick links inside drawer */}
             <div className="space-y-2 text-xs">
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 p-3 bg-[#F4B942] text-[#073B5C] rounded-xl font-black text-sm uppercase tracking-wider shadow-md"
+              >
+                <span>🔑</span> Client Log In / Access Vault →
+              </Link>
               <Link
                 href="/packages"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -3171,18 +3215,9 @@ export default function HomePage() {
 
 
       {/* ======================================================== */}
-      {/* 10. FLOATING WHATSAPP EXPRESS ASSIST (DESKTOP)           */}
+      {/* 10. SMART 2026 AI ADVISOR & FLOATING DESK              */}
       {/* ======================================================== */}
-      <a
-        href="https://wa.me/919920054785?text=Hello%20NyayaLink%20I%20have%20a%20question%20about%20a%20filing"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hidden md:flex fixed bottom-6 right-6 z-40 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-4 py-3 rounded-full shadow-2xl items-center gap-2 transition-all hover:scale-105 border-2 border-white/40 cursor-pointer"
-        title="Chat with CA Desk on WhatsApp"
-      >
-        <span className="text-base">💬</span>
-        <span>Chat with CA Desk</span>
-      </a>
+      <SmartAdvisorDrawer />
 
     </div>
   );
