@@ -11,6 +11,20 @@ export default function HomePage() {
 
   // Navigation & Drawer
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobileMenuOpen]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileExpandedCat, setMobileExpandedCat] = useState<string | null>('company-reg');
 
@@ -361,7 +375,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-20 lg:pb-0">
+    <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-20 lg:pb-0 overflow-x-hidden w-full max-w-[100vw]">
 
       {/* ======================================================== */}
       {/* 0. PROMINENT 2026 ANNOUNCEMENT & OFFER BANNER            */}
@@ -401,7 +415,7 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-[11px]">
+          <div className="flex items-center gap-2 sm:gap-3 text-[11px] flex-wrap justify-center sm:justify-end">
             <a
               href="tel:+919920054785"
               className="text-[#F4B942] hover:underline font-extrabold flex items-center gap-1"
@@ -721,7 +735,7 @@ export default function HomePage() {
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="relative w-4/5 max-w-sm bg-[#073B5C] text-white h-full shadow-2xl flex flex-col p-5 overflow-y-auto space-y-5">
+          <div className="relative w-full max-w-xs sm:max-w-sm bg-[#073B5C] text-white h-full shadow-2xl flex flex-col p-4 sm:p-5 overflow-y-auto space-y-4 touch-pan-y">
             <div className="flex items-center justify-between border-b border-cyan-800 pb-3">
               <span className="font-mono font-black text-lg text-white">
                 Nyaya<span className="text-[#F4B942]">Link</span> Menu
@@ -923,7 +937,7 @@ export default function HomePage() {
             {/* 1. MASTER INTENT SEARCH (SINGLE AUTHORITATIVE SEARCH FIELD) */}
             <div className="space-y-3">
               <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-xl max-w-xl">
-                <div className="flex items-center gap-2 bg-white rounded-xl px-3.5 py-2.5 text-slate-800 shadow-inner">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white rounded-xl p-2 sm:px-3.5 sm:py-2.5 text-slate-800 shadow-inner">
                   <span className="text-base text-slate-400">🔍</span>
                   <input
                     type="text"
@@ -1021,8 +1035,8 @@ export default function HomePage() {
 
           {/* Right Column: Interactive 3-Tab Command Center (5 cols) */}
           <div className="lg:col-span-5" id="hero-booking-card">
-            <div className="bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border border-white/20 relative">
-              <div className="absolute -top-3 right-6 bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3.5 py-1 rounded-full shadow-md">
+            <div className="bg-white text-slate-800 rounded-3xl p-4 sm:p-7 shadow-2xl border border-white/20 relative overflow-hidden">
+              <div className="absolute -top-3 right-4 sm:right-6 bg-[#F4B942] text-[#073B5C] text-[9px] sm:text-[10px] font-black uppercase px-2.5 sm:px-3.5 py-1 rounded-full shadow-md truncate max-w-[85%]">
                 ⚡ Instant Booking & Verification Desk
               </div>
 
@@ -1358,7 +1372,7 @@ export default function HomePage() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
                           <label className="block font-bold text-[#073B5C] mb-1">Mobile (+91) *</label>
                           <input
@@ -1557,7 +1571,7 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 4.5 STARTING A BUSINESS: 4 1-CLICK FOUNDER PLAYBOOKS     */}
       {/* ======================================================== */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 w-full">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 w-full overflow-hidden">
         <div className="bg-gradient-to-b from-white to-slate-50/80 rounded-3xl border-2 border-[#0E7490]/30 shadow-md p-6 sm:p-10 space-y-8">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200/80 pb-6">
@@ -1614,7 +1628,7 @@ export default function HomePage() {
           <div
             ref={packagesSliderRef}
             onScroll={handlePackagesScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-5 md:overflow-visible md:mx-0 md:px-0"
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 px-1 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-5 md:overflow-visible md:px-0"
           >
             
             {/* PLAYBOOK 1: SELLING ON AMAZON / FLIPKART */}

@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+    position: relative;
+    overscroll-behavior-x: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Prevent oversized media elements from breaking horizontal layout */
+  img, svg, video, canvas, audio, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Prevent iOS Safari from auto-zooming on focus (font-size < 16px causes viewport shift) */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: inherit;
+    }
+  }
+}

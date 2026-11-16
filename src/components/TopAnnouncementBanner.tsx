@@ -24,9 +24,9 @@ export default function TopAnnouncementBanner() {
   return (
     <aside
       aria-label="Statutory fee announcement"
-      className="bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#073B5C] text-white px-3 sm:px-4 py-2 border-b border-cyan-400/20 text-xs shadow-xs relative z-50 animate-in fade-in duration-300"
+      className="bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#073B5C] text-white px-3 sm:px-4 py-2 border-b border-cyan-400/20 text-xs shadow-xs relative z-50 animate-in fade-in duration-300 overflow-hidden w-full"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
           <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2 py-0.5 rounded-full shrink-0 shadow-xs">
             ⚡ 2026 Statutory Benefit

@@ -83,6 +83,16 @@ const PRESET_OPTIONS: PresetOption[] = [
 export default function SmartAdvisorDrawer() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
   const [activeTab, setActiveTab] = useState<'advisor' | 'callback' | 'disclaimer'>('advisor');
   const [hasPrompted, setHasPrompted] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<PresetOption>(PRESET_OPTIONS[0]);

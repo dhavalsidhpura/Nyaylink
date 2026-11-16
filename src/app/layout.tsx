@@ -18,7 +18,8 @@ export const viewport: Viewport = {
   themeColor: '#073B5C',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';

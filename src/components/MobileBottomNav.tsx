@@ -51,7 +51,7 @@ export default function MobileBottomNav() {
                 <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-base shadow-sm group-active:scale-95 transition-transform">
                   {item.icon}
                 </div>
-                <span className="text-[10px] font-bold text-emerald-300 mt-0.5">
+                <span className="text-[9px] sm:text-[10px] font-bold text-emerald-300 mt-0.5 truncate max-w-full">
                   {item.label}
                 </span>
               </a>
@@ -70,7 +70,7 @@ export default function MobileBottomNav() {
                 {item.icon}
               </span>
               <span
-                className={`text-[10px] font-extrabold mt-0.5 leading-none ${
+                className={`text-[9px] sm:text-[10px] font-extrabold mt-0.5 leading-none truncate max-w-full ${
                   isActive ? 'text-[#F4B942]' : 'text-slate-300'
                 }`}
               >
