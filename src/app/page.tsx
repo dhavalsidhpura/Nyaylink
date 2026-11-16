@@ -29,10 +29,13 @@ export default function HomePage() {
   const [activePackageIndex, setActivePackageIndex] = useState(0);
   const [comparisonCompetitor, setComparisonCompetitor] = useState<'portals' | 'offline'>('portals');
   // Entity Matchmaker Decision Wizard State
-  const [wizardFounders, setWizardFounders] = useState<'solo' | 'multi'>('multi');
-  const [wizardFunding, setWizardFunding] = useState<'bootstrap' | 'vc'>('vc');
-  const [wizardLiability, setWizardLiability] = useState<'shield' | 'fast'>('shield');
+  // Entity Matchmaker Decision Wizard State (Interactive Step-by-Step)
+  const [wizardStep, setWizardStep] = useState<number>(1);
+  const [wizardFounders, setWizardFounders] = useState<'solo' | 'multi' | null>(null);
+  const [wizardFunding, setWizardFunding] = useState<'bootstrap' | 'vc' | null>(null);
+  const [wizardLiability, setWizardLiability] = useState<'shield' | 'fast' | null>(null);
   const [isWizardOpen, setIsWizardOpen] = useState(true);
+  const isWizardCompleted = wizardFounders !== null && wizardFunding !== null && wizardLiability !== null;
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Hero 3-Tab Command Center (Hero Right)
@@ -416,6 +419,16 @@ export default function HomePage() {
             >
               <span>💬</span> WhatsApp CA
             </a>
+            <span className="text-cyan-600 hidden md:inline">|</span>
+            <div className="hidden md:flex items-center gap-2 text-slate-400">
+              <span className="text-slate-500">For Experts:</span>
+              <Link href="/ca/dashboard" className="text-slate-300 hover:text-[#F4B942] text-[10px] font-semibold underline underline-offset-2">
+                CA Portal
+              </Link>
+              <Link href="/lawyer/join" className="text-slate-300 hover:text-[#F4B942] text-[10px] font-semibold underline underline-offset-2">
+                Advocates
+              </Link>
+            </div>
             <span className="text-cyan-600 hidden sm:inline">|</span>
             <Link
               href="/login"
@@ -908,136 +921,100 @@ export default function HomePage() {
               Company Incorporation, Trademark protection, GST returns, and FSSAI licenses executed 100% online by empanelled Chartered Accountants and High Court Advocates.
             </p>
 
-            {/* HERO PROMINENT SEARCH BAR */}
-            <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-xl max-w-xl">
-              <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 text-slate-800">
-                <span className="text-base text-slate-400">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Type what you need (e.g. Pvt Ltd, Trademark, GST Return)..."
-                  value={heroSearch}
-                  onChange={(e) => {
-                    setHeroSearch(e.target.value);
-                    setIsHeroSearchOpen(true);
-                  }}
-                  className="w-full text-xs font-medium focus:outline-none placeholder:text-slate-400"
-                />
+            {/* 1. MASTER INTENT SEARCH (SINGLE AUTHORITATIVE SEARCH FIELD) */}
+            <div className="space-y-3">
+              <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-xl max-w-xl">
+                <div className="flex items-center gap-2 bg-white rounded-xl px-3.5 py-2.5 text-slate-800 shadow-inner">
+                  <span className="text-base text-slate-400">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search 58 filings or describe your need (e.g. Pvt Ltd, Trademark, GST, Cloud Kitchen)..."
+                    value={heroSearch}
+                    onChange={(e) => {
+                      setHeroSearch(e.target.value);
+                      setIsHeroSearchOpen(true);
+                    }}
+                    className="w-full text-xs sm:text-sm font-medium focus:outline-none placeholder:text-slate-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (heroSearchMatches.length > 0) {
+                        router.push(`/services/${heroSearchMatches[0].slug}`);
+                      }
+                    }}
+                    className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2 rounded-lg cursor-pointer whitespace-nowrap transition shadow-xs"
+                  >
+                    Find Service →
+                  </button>
+                </div>
+
+                {/* Autocomplete dropdown */}
+                {isHeroSearchOpen && heroSearchMatches.length > 0 && (
+                  <div className="mt-2 bg-white rounded-xl p-2 divide-y divide-slate-100 text-slate-800 shadow-xl max-h-72 overflow-y-auto">
+                    {heroSearchMatches.map((s) => (
+                      <Link
+                        key={s.slug}
+                        href={`/services/${s.slug}`}
+                        className="p-2.5 hover:bg-slate-50 flex justify-between items-center text-xs rounded-lg transition"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{s.icon}</span>
+                          <span className="font-bold text-[#073B5C]">{s.title}</span>
+                        </div>
+                        <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded">
+                          Start for ₹999 Advance
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. GUIDED ADVISORY CALLOUT (UNSURE FOUNDERS) */}
+              <div className="flex items-center gap-2 text-xs text-slate-200">
+                <span className="text-[#F4B942] font-black text-sm">💡</span>
+                <span>Unsure which legal structure fits your business?</span>
                 <button
                   type="button"
                   onClick={() => {
-                    if (heroSearchMatches.length > 0) {
-                      router.push(`/services/${heroSearchMatches[0].slug}`);
-                    }
+                    const el = document.getElementById('wizard-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-3.5 py-1.5 rounded-lg cursor-pointer whitespace-nowrap transition"
+                  className="text-[#F4B942] hover:text-white font-extrabold underline underline-offset-2 cursor-pointer transition"
                 >
-                  Explore →
+                  Take 30-Sec Entity Matchmaker ↓
                 </button>
               </div>
 
-              {/* Autocomplete under Hero search */}
-              {isHeroSearchOpen && heroSearchMatches.length > 0 && (
-                <div className="mt-2 bg-white rounded-xl p-2 divide-y divide-slate-100 text-slate-800 shadow-xl">
-                  {heroSearchMatches.map((s) => (
-                    <Link
-                      key={s.slug}
-                      href={`/services/${s.slug}`}
-                      className="p-2 hover:bg-slate-50 flex justify-between items-center text-xs rounded-lg transition"
-                    >
-                      <span className="font-bold text-[#073B5C]">{s.icon} {s.title}</span>
-                      <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded">
-                        Start for ₹999 Advance
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Quick Category Jump (2×2 on Mobile, Flex on Desktop) */}
-            <div className="space-y-2 pt-1">
-              <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider block">
-                Popular Filings:
-              </span>
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 text-xs">
+              {/* 3. POPULAR SERVICE PILLS */}
+              <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
+                <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider">
+                  Popular:
+                </span>
                 <Link
                   href="/services/private-limited-company"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 text-[11px]"
                 >
-                  <span className="text-base shrink-0">🏢</span>
-                  <span className="truncate">Pvt Ltd Company</span>
+                  <span>🏢</span> Pvt Ltd Company
                 </Link>
                 <Link
                   href="/services/trademark-registration"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 text-[11px]"
                 >
-                  <span className="text-base shrink-0">™️</span>
-                  <span className="truncate">Trademark Filing</span>
+                  <span>™️</span> Trademark Filing
                 </Link>
                 <Link
                   href="/services/gst-registration"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 text-[11px]"
                 >
-                  <span className="text-base shrink-0">🧾</span>
-                  <span className="truncate">GST Registration</span>
+                  <span>🧾</span> GST Registration
                 </Link>
                 <Link
                   href="/services/fssai-food-license"
-                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 truncate"
+                  className="bg-white/10 hover:bg-[#0E7490] border border-white/20 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 text-[11px]"
                 >
-                  <span className="text-base shrink-0">🍽️</span>
-                  <span className="truncate">FSSAI License</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Instant Free Diagnostic Tools Ribbon (2×2 on Mobile, Flex on Desktop) */}
-            <div className="pt-3 border-t border-cyan-900/60 space-y-2">
-              <span className="text-[11px] text-cyan-200 font-bold uppercase tracking-wider block">
-                Free Verification Desks:
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                <Link
-                  href="/tools/incorporation-calculator"
-                  className="p-2 sm:px-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 rounded-xl font-bold text-emerald-300 flex items-center gap-1.5 transition truncate"
-                >
-                  <span>🏛️</span>
-                  <span className="truncate">Cost Calculator ↗</span>
-                </Link>
-                <Link
-                  href="/tools/startup-india-checker"
-                  className="p-2 sm:px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 rounded-xl font-bold text-[#F4B942] flex items-center gap-1.5 transition truncate"
-                >
-                  <span>🇮🇳</span>
-                  <span className="truncate">80-IAC Checker ↗</span>
-                </Link>
-                <Link
-                  href="/tools/company-name-search"
-                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
-                >
-                  <span>🏢</span>
-                  <span className="truncate">MCA Search ↗</span>
-                </Link>
-                <Link
-                  href="/tools/trademark-search"
-                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
-                >
-                  <span>™️</span>
-                  <span className="truncate">TM Finder ↗</span>
-                </Link>
-                <Link
-                  href="/tools/gst-search"
-                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-white flex items-center gap-1.5 transition truncate"
-                >
-                  <span>🧾</span>
-                  <span className="truncate">Verify GSTIN ↗</span>
-                </Link>
-                <Link
-                  href="/tools"
-                  className="p-2 sm:px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-bold text-cyan-300 flex items-center gap-1.5 transition truncate"
-                >
-                  <span>⚡</span>
-                  <span className="truncate">All Tools Hub ↗</span>
+                  <span>🍽️</span> FSSAI License
                 </Link>
               </div>
             </div>
@@ -1884,7 +1861,7 @@ export default function HomePage() {
         {/* ======================================================== */}
         {/* INTERACTIVE 3-QUESTION BUSINESS ENTITY MATCHMAKER WIZARD */}
         {/* ======================================================== */}
-        <div className="bg-white rounded-3xl border-2 border-[#0E7490]/40 shadow-sm p-5 sm:p-8 space-y-6">
+        <div id="wizard-section" className="bg-white rounded-3xl border-2 border-[#0E7490]/40 shadow-sm p-5 sm:p-8 space-y-6 scroll-mt-24">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 bg-[#0E7490]/10 border border-[#0E7490]/30 px-3 py-1 rounded-full text-[11px] font-black text-[#0E7490]">
@@ -1908,188 +1885,531 @@ export default function HomePage() {
           </div>
 
           {isWizardOpen && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              {/* Left Column: The 3 Questions */}
-              <div className="lg:col-span-7 space-y-4">
-                {/* Question 1 */}
-                <div className="space-y-2">
-                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">1</span>
-                    <span>How many founders / partners are starting?</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setWizardFounders('solo')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardFounders === 'solo'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">👤</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">Just Me Alone</div>
-                        <div className="text-[10px] text-slate-500">Solo Entrepreneur</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWizardFounders('multi')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardFounders === 'multi'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">👥</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">2 or More People</div>
-                        <div className="text-[10px] text-slate-500">Co-Founders / Partners</div>
-                      </div>
-                    </button>
-                  </div>
+            <div className="space-y-6">
+              {/* Stepper Header Pills */}
+              <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep(1)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer ${
+                      wizardStep === 1
+                        ? 'bg-[#073B5C] text-[#F4B942] shadow-xs'
+                        : wizardFounders !== null
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    <span>{wizardFounders !== null ? '✓' : '1'}</span>
+                    <span>1. Founders</span>
+                  </button>
+
+                  <span className="text-slate-300">→</span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (wizardFounders !== null) setWizardStep(2);
+                    }}
+                    disabled={wizardFounders === null}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                      wizardFounders === null
+                        ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400'
+                        : wizardStep === 2
+                        ? 'bg-[#073B5C] text-[#F4B942] shadow-xs cursor-pointer'
+                        : wizardFunding !== null
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 cursor-pointer'
+                        : 'bg-slate-100 text-slate-600 cursor-pointer'
+                    }`}
+                  >
+                    <span>{wizardFunding !== null ? '✓' : '2'}</span>
+                    <span>2. Capital Strategy</span>
+                  </button>
+
+                  <span className="text-slate-300">→</span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (wizardFounders !== null && wizardFunding !== null) setWizardStep(3);
+                    }}
+                    disabled={wizardFounders === null || wizardFunding === null}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition ${
+                      wizardFounders === null || wizardFunding === null
+                        ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400'
+                        : wizardStep === 3
+                        ? 'bg-[#073B5C] text-[#F4B942] shadow-xs cursor-pointer'
+                        : wizardLiability !== null
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 cursor-pointer'
+                        : 'bg-slate-100 text-slate-600 cursor-pointer'
+                    }`}
+                  >
+                    <span>{wizardLiability !== null ? '✓' : '3'}</span>
+                    <span>3. Liability Shield</span>
+                  </button>
                 </div>
 
-                {/* Question 2 */}
-                <div className="space-y-2">
-                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">2</span>
-                    <span>What is your funding and capital strategy?</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setWizardFunding('vc')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardFunding === 'vc'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">🚀</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">Raise External Capital</div>
-                        <div className="text-[10px] text-slate-500">VC, Angel or Investor Equity</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWizardFunding('bootstrap')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardFunding === 'bootstrap'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">💡</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">Bootstrapped / Local</div>
-                        <div className="text-[10px] text-slate-500">Self-Funded, Low Compliance</div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Question 3 */}
-                <div className="space-y-2">
-                  <label className="text-xs font-extrabold text-[#073B5C] flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-[#073B5C] text-[#F4B942] text-[10px] font-black flex items-center justify-center">3</span>
-                    <span>Do you need complete limited liability protection?</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setWizardLiability('shield')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardLiability === 'shield'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">🛡️</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">100% Limited Liability</div>
-                        <div className="text-[10px] text-slate-500">Shield Personal Home & Assets</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWizardLiability('fast')}
-                      className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
-                        wizardLiability === 'fast'
-                          ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-xl">⚡</span>
-                      <div>
-                        <div className="text-xs font-black text-[#073B5C]">Fastest & Lowest Cost</div>
-                        <div className="text-[10px] text-slate-500">Minimal Filings & Lowest Fees</div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
+                {isWizardCompleted && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWizardFounders(null);
+                      setWizardFunding(null);
+                      setWizardLiability(null);
+                      setWizardStep(1);
+                    }}
+                    className="text-[11px] font-bold text-slate-500 hover:text-[#073B5C] underline cursor-pointer shrink-0"
+                  >
+                    ↺ Reset & Start Over
+                  </button>
+                )}
               </div>
 
-              {/* Right Column: Live Recommendation Card */}
-              <div className="lg:col-span-5 bg-gradient-to-br from-[#073B5C] via-[#052A42] to-[#041E30] text-white p-5 sm:p-6 rounded-3xl flex flex-col justify-between space-y-4 shadow-lg border border-cyan-800 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0E7490]/20 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Left Column: Interactive Progressive Step Questions */}
+                <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+                  {/* STEP 1: Founders */}
+                  {wizardStep === 1 && (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                      <div>
+                        <div className="text-[11px] font-black uppercase tracking-wider text-[#0E7490]">Question 1 of 3</div>
+                        <h4 className="text-base sm:text-lg font-black text-[#073B5C]">
+                          How many founders or partners are starting this venture?
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Indian corporate law strictly separates single-owner entities (OPC / Sole Prop) from multi-director corporate structures (Pvt Ltd / LLP).
+                        </p>
+                      </div>
 
-                <div className="space-y-3 relative z-10">
-                  <div className="flex items-center justify-between">
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
-                      ⚡ 100% Recommended Fit
-                    </span>
-                    <span className="text-emerald-400 text-xs font-bold font-mono">
-                      Verified Match
-                    </span>
-                  </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardFounders('solo');
+                            setWizardStep(2);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardFounders === 'solo'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">👤</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Just Me Alone</div>
+                              <div className="text-[11px] font-bold text-[#0E7490]">Solo Entrepreneur / 1 Owner</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            100% control, single director & shareholder. Best for independent consultants, solo tech creators, or freelancers.
+                          </p>
+                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select Solo & Continue →
+                          </span>
+                        </button>
 
-                  <div>
-                    <h4 className="text-xl font-black text-white leading-tight">
-                      {entityRecommendation.title}
-                    </h4>
-                    <p className="text-xs text-cyan-200 mt-1 leading-relaxed">
-                      {entityRecommendation.tagline}
-                    </p>
-                  </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardFounders('multi');
+                            setWizardStep(2);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardFounders === 'multi'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">👥</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">2 or More People</div>
+                              <div className="text-[11px] font-bold text-[#0E7490]">Co-Founders / Partners</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Split equity, assign board seats, or share commercial partnership responsibilities with at least 2 partners.
+                          </p>
+                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select 2+ Partners & Continue →
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-2 text-xs">
-                    <strong className="text-[#F4B942] block text-[10px] uppercase tracking-wider font-extrabold">
-                      Why This Entity Fits You Best:
-                    </strong>
-                    <ul className="text-slate-200 space-y-1.5 text-[11px]">
-                      {entityRecommendation.features.map((feat, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-1.5">
-                          <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {/* STEP 2: Funding & Capital Strategy */}
+                  {wizardStep === 2 && (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                      <div>
+                        <div className="text-[11px] font-black uppercase tracking-wider text-[#0E7490]">Question 2 of 3</div>
+                        <h4 className="text-base sm:text-lg font-black text-[#073B5C]">
+                          What is your funding and capital growth strategy?
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Institutional VC, angel networks, and ESOP pools mandate specific share capital provisions under MCA & RBI regulations.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardFunding('vc');
+                            setWizardStep(3);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardFunding === 'vc'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">🚀</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Raise VC / Angel Capital</div>
+                              <div className="text-[11px] font-bold text-[#0E7490]">Institutional Equity & ESOPs</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Plans to pitch venture capitalists, issue preference/equity shares, issue SAFE notes, or create employee stock pools.
+                          </p>
+                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select External Capital →
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardFunding('bootstrap');
+                            setWizardStep(3);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardFunding === 'bootstrap'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">💡</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Bootstrapped / Self-Funded</div>
+                              <div className="text-[11px] font-bold text-[#0E7490]">Client Funded & Cash Flow</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Financed from personal savings or client revenue. Priority is keeping operational compliance overhead lean and low-cost.
+                          </p>
+                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select Bootstrapped →
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setWizardStep(1)}
+                          className="text-xs font-bold text-slate-500 hover:text-[#073B5C] flex items-center gap-1 cursor-pointer"
+                        >
+                          ← Back to Question 1
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3: Limited Liability Protection */}
+                  {wizardStep === 3 && (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                      <div>
+                        <div className="text-[11px] font-black uppercase tracking-wider text-[#0E7490]">Question 3 of 3</div>
+                        <h4 className="text-base sm:text-lg font-black text-[#073B5C]">
+                          Do you need complete personal asset & limited liability protection?
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Protects your personal home, bank savings, and property from business liabilities, vendor disputes, or bankruptcy.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardLiability('shield');
+                            setWizardStep(4);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardLiability === 'shield'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">🛡️</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">100% Limited Liability Shield</div>
+                              <div className="text-[11px] font-bold text-emerald-700">Shield Personal Wealth</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Corporate veil legally protects your personal assets. If company suffers losses, personal wealth remains 100% untouched.
+                          </p>
+                          <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select Shield & See Fit →
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWizardLiability('fast');
+                            setWizardStep(4);
+                          }}
+                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                            wizardLiability === 'fast'
+                              ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
+                              : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">⚡</span>
+                            <div>
+                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Fastest & Lowest Cost</div>
+                              <div className="text-[11px] font-bold text-amber-700">Immediate 3-Day Launch</div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Need a GSTIN and current bank account in 3 days with zero annual MCA secretarial audits. (Sole Proprietorship / Partnership).
+                          </p>
+                          <span className="text-[11px] font-bold text-amber-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Select Fast Launch →
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setWizardStep(2)}
+                          className="text-xs font-bold text-slate-500 hover:text-[#073B5C] flex items-center gap-1 cursor-pointer"
+                        >
+                          ← Back to Question 2
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 4 / COMPLETED STATE: Summary of Answers */}
+                  {wizardStep >= 4 && isWizardCompleted && (
+                    <div className="space-y-4 animate-in fade-in duration-200 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center">✓</span>
+                          <h4 className="text-sm font-black text-[#073B5C]">Your Venture Profile Assessment Completed</h4>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setWizardStep(1)}
+                          className="text-xs font-bold text-[#0E7490] hover:underline cursor-pointer"
+                        >
+                          Change Answers
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                        <div
+                          onClick={() => setWizardStep(1)}
+                          className="bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-[#0E7490] transition"
+                        >
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">1. Founders</div>
+                          <div className="font-extrabold text-[#073B5C] mt-0.5">
+                            {wizardFounders === 'solo' ? '👤 Solo Founder' : '👥 2+ Co-Founders'}
+                          </div>
+                        </div>
+
+                        <div
+                          onClick={() => setWizardStep(2)}
+                          className="bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-[#0E7490] transition"
+                        >
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">2. Funding</div>
+                          <div className="font-extrabold text-[#073B5C] mt-0.5">
+                            {wizardFunding === 'vc' ? '🚀 VC / Angel Equity' : '💡 Bootstrapped'}
+                          </div>
+                        </div>
+
+                        <div
+                          onClick={() => setWizardStep(3)}
+                          className="bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-[#0E7490] transition"
+                        >
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">3. Liability</div>
+                          <div className="font-extrabold text-[#073B5C] mt-0.5">
+                            {wizardLiability === 'shield' ? '🛡️ 100% Limited Shield' : '⚡ Fast / Low Cost'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-cyan-50/60 rounded-xl border border-[#0E7490]/20 text-xs text-slate-600 flex items-start gap-2">
+                        <span className="text-base shrink-0">💡</span>
+                        <span>
+                          Based on Indian Corporate Law (Companies Act 2013 & LLP Act 2008), see your customized structure recommendation on the right.
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3 relative z-10">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Full Package Fee</span>
-                    <span className="text-lg font-black text-[#F4B942]">{entityRecommendation.price}</span>
-                    <span className="text-[10px] text-emerald-400 block font-bold">Start with {entityRecommendation.advanceToken} Token</span>
-                  </div>
+                {/* Right Column: Live Diagnostic Engine or Recommendation Card */}
+                <div className="lg:col-span-5 flex flex-col justify-between">
+                  {!isWizardCompleted ? (
+                    /* Step Progress Diagnostic Card */
+                    <div className="bg-gradient-to-br from-[#073B5C] via-[#052A42] to-[#041E30] text-white p-6 rounded-3xl flex flex-col justify-between space-y-5 shadow-lg border border-cyan-800 relative overflow-hidden h-full">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#0E7490]/20 rounded-full blur-2xl pointer-events-none"></div>
 
-                  <Link
-                    href={entityRecommendation.packageUrl}
-                    className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl transition shadow text-center uppercase tracking-wider shrink-0 cursor-pointer"
-                  >
-                    Start for ₹999 Token →
-                  </Link>
+                      <div className="space-y-4 relative z-10">
+                        <div className="flex items-center justify-between">
+                          <span className="bg-cyan-950 text-cyan-300 border border-cyan-700/50 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">
+                            ⏳ Live Statutory Engine
+                          </span>
+                          <span className="text-[#F4B942] text-xs font-mono font-bold">
+                            Question {wizardStep} of 3
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-lg font-black text-white">
+                            Analyzing Corporate Structure Fit
+                          </h4>
+                          <p className="text-xs text-cyan-200 mt-1 leading-relaxed">
+                            Our engine cross-references your answers against MCA V3 thresholds, tax compliance brackets, and liability protections.
+                          </p>
+                        </div>
+
+                        {/* Visual Progress Bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-[11px] text-slate-300">
+                            <span>Diagnostic Progress</span>
+                            <span className="font-bold text-[#F4B942]">
+                              {wizardStep === 1 ? '33%' : wizardStep === 2 ? '66%' : '90%'}
+                            </span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#0E7490] to-[#F4B942] rounded-full transition-all duration-300"
+                              style={{
+                                width: wizardStep === 1 ? '33%' : wizardStep === 2 ? '66%' : '90%',
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+
+                        {/* Checklist Factors */}
+                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-2.5 text-xs">
+                          <strong className="text-[#F4B942] block text-[10px] uppercase tracking-wider font-extrabold">
+                            Statutory Checkpoint Evaluation:
+                          </strong>
+                          <ul className="space-y-2 text-[11px]">
+                            <li className="flex items-center justify-between">
+                              <span className="text-slate-300">1. Quorum & Ownership Type</span>
+                              {wizardFounders !== null ? (
+                                <span className="text-emerald-400 font-bold">✓ Selected</span>
+                              ) : (
+                                <span className="text-slate-400 font-mono">Waiting...</span>
+                              )}
+                            </li>
+                            <li className="flex items-center justify-between">
+                              <span className="text-slate-300">2. External Equity & ESOP Rules</span>
+                              {wizardFunding !== null ? (
+                                <span className="text-emerald-400 font-bold">✓ Selected</span>
+                              ) : (
+                                <span className="text-slate-400 font-mono">Waiting...</span>
+                              )}
+                            </li>
+                            <li className="flex items-center justify-between">
+                              <span className="text-slate-300">3. Corporate Veil Asset Protection</span>
+                              {wizardLiability !== null ? (
+                                <span className="text-emerald-400 font-bold">✓ Selected</span>
+                              ) : (
+                                <span className="text-slate-400 font-mono">Waiting...</span>
+                              )}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/10 relative z-10 text-center">
+                        <span className="text-xs text-slate-300">
+                          👈 Complete Question {wizardStep} on the left to reveal recommendation
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Final Recommendation Card (Revealed only after user completes wizard) */
+                    <div className="bg-gradient-to-br from-[#073B5C] via-[#052A42] to-[#041E30] text-white p-5 sm:p-6 rounded-3xl flex flex-col justify-between space-y-4 shadow-lg border-2 border-[#F4B942]/60 relative overflow-hidden h-full animate-in zoom-in-95 duration-200">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#F4B942]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                      <div className="space-y-3 relative z-10">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                            ⭐ Recommended Starting Point
+                          </span>
+                          <span className="text-emerald-400 text-xs font-bold font-mono">
+                            ✓ Tailored to Profile
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                            {entityRecommendation.title}
+                          </h4>
+                          <p className="text-xs text-cyan-200 mt-1 leading-relaxed">
+                            {entityRecommendation.tagline}
+                          </p>
+                        </div>
+
+                        <div className="bg-white/10 p-3.5 rounded-2xl border border-white/10 space-y-2 text-xs">
+                          <strong className="text-[#F4B942] block text-[10px] uppercase tracking-wider font-extrabold">
+                            Why This Fits You Best:
+                          </strong>
+                          <ul className="text-slate-200 space-y-1.5 text-[11px]">
+                            {entityRecommendation.features.map((feat, fIdx) => (
+                              <li key={fIdx} className="flex items-start gap-1.5">
+                                <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                                <span>{feat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative z-10">
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Full Package Fee</span>
+                          <span className="text-lg font-black text-[#F4B942]">{entityRecommendation.price}</span>
+                          <span className="text-[10px] text-emerald-400 block font-bold">Start with {entityRecommendation.advanceToken} Token</span>
+                        </div>
+
+                        <Link
+                          href={entityRecommendation.packageUrl}
+                          className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl transition shadow text-center uppercase tracking-wider shrink-0 cursor-pointer"
+                        >
+                          Start for ₹999 Token →
+                        </Link>
+                      </div>
+
+                      <div className="text-[10px] text-slate-400 border-t border-white/5 pt-2 text-center">
+                        Facilitation guidance. Statutory filings handled by empanelled CAs/Advocates.
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Header & Search */}
+                {/* Header & Search */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
             <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">

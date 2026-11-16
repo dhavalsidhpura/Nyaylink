@@ -116,31 +116,33 @@ export default function Header() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-6">
             <a href="tel:+919920054785" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              📞 <strong className="text-white">+91 9920054785</strong> (Mon-Sat 9AM-7PM)
+              📞 <strong className="text-white">+91 9920054785</strong> (Mon–Sat 9AM–7PM IST)
             </a>
-            <a href="mailto:info@nyayalink.com" className="hidden sm:flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              ✉️ info@nyayalink.com
+            <a href="mailto:info@nyaylink.com" className="hidden sm:flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
+              ✉️ info@nyaylink.com
             </a>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-slate-400">Already registered?</span>
-            <Link
-              href="/login"
-              className="bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-bold px-3 py-1 rounded transition-colors text-xs shadow-sm"
-            >
-              Client Login
-            </Link>
-            <Link
-              href="/lawyer/join"
-              className="text-slate-400 hover:text-white underline font-medium text-xs"
-            >
-              For Advocates
-            </Link>
+          <div className="flex items-center gap-3 sm:gap-4 text-xs">
+            <span className="text-slate-400 hidden md:inline">For Experts:</span>
             <Link
               href="/ca/dashboard"
-              className="text-slate-400 hover:text-[#F4B942] underline font-medium text-xs transition-colors"
+              className="text-slate-300 hover:text-nyaya-gold transition-colors"
             >
-              For CAs / Experts
+              CA Partner Portal
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link
+              href="/lawyer/join"
+              className="text-slate-300 hover:text-white transition-colors"
+            >
+              Advocates
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link
+              href="/tools/track-status"
+              className="text-slate-300 hover:text-white transition-colors"
+            >
+              Track Filing
             </Link>
           </div>
         </div>
@@ -367,6 +369,12 @@ export default function Header() {
           {/* Action Button */}
           <div className="flex items-center gap-2">
             <Link
+              href="/tools/track-status"
+              className="hidden lg:inline-flex items-center gap-1 text-slate-200 hover:text-nyaya-gold text-xs font-bold px-2 py-1 transition"
+            >
+              Track Filing
+            </Link>
+            <Link
               href="/login"
               className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-nyaya-gold text-white hover:text-nyaya-gold font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-xs"
             >
@@ -375,9 +383,10 @@ export default function Header() {
             </Link>
             <Link
               href="/dashboard"
-              className="hidden sm:inline-block bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-extrabold text-xs px-3.5 py-2 rounded-xl shadow transition-colors uppercase tracking-wider"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-black text-xs px-3.5 py-2 rounded-xl shadow transition uppercase tracking-wider"
             >
-              My Dashboard
+              <span>📁</span>
+              <span>Client Vault</span>
             </Link>
 
             {/* Mobile Menu Hamburger Button */}
