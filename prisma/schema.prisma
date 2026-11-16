@@ -129,6 +129,20 @@ model User {
   accessLogs     DocumentAccessLog[]
   lawyerProfile  LawyerProfile?
   consultations  Consultation[]   @relation("ClientConsultations")
+
+  // ERP / Multi-tenancy & Back-office relations (Additive)
+  orgMemberships     OrganizationMember[]
+  createdQuotes      Quote[]              @relation("QuoteCreator")
+  clientQuotes       Quote[]              @relation("ClientQuotes")
+  leadMatters        Matter[]             @relation("AssignedLeadMatters")
+  execMatters        Matter[]             @relation("AssignedExecMatters")
+  assignedTasks      MatterTask[]
+  uploadedEvidence   MatterEvidence[]
+  createdJournals    JournalEntry[]       @relation("JournalCreator")
+  approvedJournals   JournalEntry[]       @relation("JournalApprover")
+  requestedApprovals ApprovalRequest[]   @relation("ApprovalRequester")
+  reviewedApprovals  ApprovalRequest[]    @relation("ApprovalReviewer")
+  auditLogs          AuditLog[]
 }
 
 model OtpCode {
@@ -167,6 +181,8 @@ model Lead {
   assignedToId   String?
   assignedTo     User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
   createdAt      DateTime   @default(now())
+
+  quotes         Quote[]
 }
 
 // Monotonic counters for gap-free invoice numbers and readable order numbers.
@@ -196,6 +212,8 @@ model Service {
 
   orders       Order[]
   requirements ServiceDocRequirement[]
+  bundleItems  BundleItem[]
+  quotes       Quote[]
 }
 
 model ServiceDocRequirement {
@@ -244,8 +262,19 @@ model Order {
   payments   Payment[]
   messages   OrderMessage[]
 
+  // Optional Organization & Legal Entity linkage
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  legalEntityId  String?
+  legalEntity    LegalEntity?  @relation(fields: [legalEntityId], references: [id])
+  quoteId        String?
+  quote          Quote?        @relation(fields: [quoteId], references: [id])
+  matters        Matter[]
+
   @@index([clientId])
   @@index([assignedCAId])
+  @@index([organizationId])
+  @@index([legalEntityId])
 }
 
 model Payment {
@@ -483,4 +512,387 @@ model Payout {
   paidAt        DateTime?
   createdAt     DateTime       @default(now())
   consultations Consultation[]
+}
+
+
+// ==========================================
+// ERP / CRM MULTI-TENANCY & LEGAL ENTITIES
+// ==========================================
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  FINANCE
+}
+
+enum EntityType {
+  PRIVATE_LIMITED
+  LLP
+  ONE_PERSON_COMPANY
+  PUBLIC_LIMITED
+  SECTION_8
+  PROPRIETORSHIP
+  PARTNERSHIP
+  TRUST_SOCIETY
+  FOREIGN_SUBSIDIARY
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  stateCode   String   @default("MH")
+  gstin       String?
+  pan         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     OrganizationMember[]
+  entities    LegalEntity[]
+  orders      Order[]
+  matters     Matter[]
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           OrgRole      @default(MEMBER)
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model LegalEntity {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  legalName        String
+  entityType       EntityType
+  cin              String?      @unique
+  pan              String?
+  gstin            String?
+  registeredOffice String?
+  stateCode        String       @default("MH")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  orders           Order[]
+  matters          Matter[]
+
+  @@index([organizationId])
+}
+
+// ==========================================
+// DYNAMIC CATALOG BUNDLES & CRM QUOTES
+// ==========================================
+
+enum CatalogStatus {
+  DRAFT
+  UNDER_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+model Bundle {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  title          String
+  tagline        String
+  category       String
+  badge          String
+  icon           String
+  popular        Boolean       @default(false)
+  targetAudience String
+  description    String
+  packagePrice   Decimal       @db.Decimal(12, 2)
+  advanceToken   Decimal       @default(999) @db.Decimal(12, 2)
+  sla            String
+  status         CatalogStatus @default(PUBLISHED)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  items          BundleItem[]
+  quotes         Quote[]
+}
+
+model BundleItem {
+  id              String   @id @default(cuid())
+  bundleId        String
+  bundle          Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  serviceId       String?
+  service         Service? @relation(fields: [serviceId], references: [id])
+  slug            String
+  name            String
+  standalonePrice Decimal  @db.Decimal(12, 2)
+  icon            String
+  sortOrder       Int      @default(0)
+
+  @@index([bundleId])
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  EXPIRED
+  REJECTED
+}
+
+model Quote {
+  id              String       @id @default(cuid())
+  quoteNumber     String       @unique
+  leadId          String?
+  lead            Lead?        @relation(fields: [leadId], references: [id])
+  clientId        String?
+  client          User?        @relation("ClientQuotes", fields: [clientId], references: [id])
+  serviceId       String?
+  service         Service?     @relation(fields: [serviceId], references: [id])
+  bundleId        String?
+  bundle          Bundle?      @relation(fields: [bundleId], references: [id])
+  professionalFee Decimal      @db.Decimal(12, 2)
+  govtFee         Decimal      @default(0) @db.Decimal(12, 2)
+  gstAmount       Decimal      @db.Decimal(12, 2)
+  totalAmount     Decimal      @db.Decimal(12, 2)
+  discountAmount  Decimal      @default(0) @db.Decimal(12, 2)
+  validUntil      DateTime
+  status          QuoteStatus  @default(DRAFT)
+  snapshot        Json
+  createdById     String?
+  createdBy       User?        @relation("QuoteCreator", fields: [createdById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  orders          Order[]
+
+  @@index([leadId])
+  @@index([clientId])
+}
+
+// ==========================================
+// STATUTORY MATTERS & DOMAIN STATE MACHINES
+// ==========================================
+
+enum MatterVertical {
+  COMPANY_REGISTRATION
+  TAXATION_GST_VCFO
+  TRADEMARK_IPR
+  LICENSES_PERMITS
+  LEGAL_DISPUTES
+  BUSINESS_TECH
+}
+
+enum MatterStatus {
+  INTAKE_PENDING
+  DOCS_COLLECTION
+  PROFESSIONAL_REVIEW
+  QUERY_COMMUNICATED
+  FILING_PREPARED
+  STATUTORY_SUBMITTED
+  GOVERNMENT_QUERY_RESUBMIT
+  STATUTORY_APPROVED
+  CERTIFICATE_ISSUED
+  REJECTED_CLOSED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+model Matter {
+  id                String          @id @default(cuid())
+  matterNumber      String          @unique // e.g. "MAT-2026-0001"
+  title             String
+  vertical          MatterVertical
+  status            MatterStatus    @default(INTAKE_PENDING)
+  statutoryStatus   String?         // Actual government portal status (e.g. "SPICe+ Part B Resubmission")
+  authorityName     String?         // "MCA_V3", "GSTN", "IP_INDIA", "FOSCOS", "DGFT", "CONSUMER_FORUM"
+  srnArn            String?         // Official government SRN / ARN / TM application number
+  filingTimestamp   DateTime?       // Actual portal submission timestamp
+  statutoryDeadline DateTime?       // Departmental confirmed deadline
+  orderId           String?
+  order             Order?          @relation(fields: [orderId], references: [id])
+  organizationId    String?
+  organization      Organization?   @relation(fields: [organizationId], references: [id])
+  legalEntityId     String?
+  legalEntity       LegalEntity?    @relation(fields: [legalEntityId], references: [id])
+  assignedLeadId    String?
+  assignedLead      User?           @relation("AssignedLeadMatters", fields: [assignedLeadId], references: [id])
+  complianceExecId  String?
+  complianceExec    User?           @relation("AssignedExecMatters", fields: [complianceExecId], references: [id])
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  tasks             MatterTask[]
+  evidenceFiles     MatterEvidence[]
+
+  @@index([orderId])
+  @@index([organizationId])
+  @@index([assignedLeadId])
+  @@index([complianceExecId])
+}
+
+model MatterTask {
+  id           String     @id @default(cuid())
+  matterId     String
+  matter       Matter     @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  assignedToId String?
+  assignedTo   User?      @relation(fields: [assignedToId], references: [id])
+  status       TaskStatus @default(PENDING)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([matterId])
+}
+
+model MatterEvidence {
+  id           String   @id @default(cuid())
+  matterId     String
+  matter       Matter   @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  title        String
+  category     String   // "CHALLAN", "PORTAL_RECEIPT", "GOVT_QUERY", "CERTIFICATE"
+  storageKey   String
+  mimeType     String
+  sizeBytes    Int
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([matterId])
+}
+
+// ==========================================
+// DOUBLE-ENTRY GENERAL LEDGER (GL)
+// ==========================================
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  VOID
+}
+
+model Account {
+  id        String      @id @default(cuid())
+  code      String      @unique // e.g. "1001", "2001", "4001"
+  name      String
+  type      AccountType
+  currency  String      @default("INR")
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  lines     JournalLine[]
+}
+
+model JournalEntry {
+  id            String        @id @default(cuid())
+  entryNo       String        @unique // e.g. "JE-2026-0001"
+  date          DateTime      @default(now())
+  description   String
+  referenceType String        // "PAYMENT", "REFUND", "GOVT_FEE_DISBURSEMENT", "MANUAL_ADJUSTMENT"
+  referenceId   String?
+  status        JournalStatus @default(POSTED)
+  isTest        Boolean       @default(false)
+  createdById   String?
+  createdBy     User?         @relation("JournalCreator", fields: [createdById], references: [id])
+  approvedById  String?
+  approvedBy    User?         @relation("JournalApprover", fields: [approvedById], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  lines         JournalLine[]
+
+  @@index([referenceType, referenceId])
+  @@index([date])
+}
+
+model JournalLine {
+  id             String       @id @default(cuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  accountId      String
+  account        Account      @relation(fields: [accountId], references: [id])
+  debit          Decimal      @default(0) @db.Decimal(12, 2)
+  credit         Decimal      @default(0) @db.Decimal(12, 2)
+  description    String?
+
+  @@index([journalEntryId])
+  @@index([accountId])
+}
+
+// ==========================================
+// MAKER-CHECKER APPROVAL DESK & AUDIT LOGS
+// ==========================================
+
+enum ApprovalType {
+  REFUND
+  CATALOG_PRICE_CHANGE
+  MANUAL_LEDGER_ADJUSTMENT
+  PAYOUT_DISBURSEMENT
+  RULE_OVERRIDE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ApprovalRequest {
+  id          String         @id @default(cuid())
+  type        ApprovalType
+  status      ApprovalStatus @default(PENDING)
+  title       String
+  reason      String
+  payload     Json
+  requesterId String
+  requester   User           @relation("ApprovalRequester", fields: [requesterId], references: [id])
+  reviewerId  String?
+  reviewer    User?          @relation("ApprovalReviewer", fields: [reviewerId], references: [id])
+  reviewNotes String?
+  reviewedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([status])
+  @@index([requesterId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorRole  Role?
+  action     String   // e.g. "CATALOG_UPDATE", "PII_UNMASK", "REFUND_REQUESTED", "RBAC_ESCALATE"
+  entityType String   // "Service", "Order", "Lead", "LedgerEntry", "User"
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  actor      User?    @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
 }
