@@ -3,7 +3,20 @@
 import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
 
+import { usePathname } from 'next/navigation';
+
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Suppress public consumer footer on back-office, partner, and administrative workspaces
+  if (
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/ca') ||
+    pathname?.startsWith('/lawyer/dashboard') ||
+    pathname?.startsWith('/unauthorized')
+  ) {
+    return null;
+  }
   return (
     <footer className="bg-[#052A42] text-slate-300 text-xs border-t border-[#0E7490]/30 font-sans mt-auto">
       

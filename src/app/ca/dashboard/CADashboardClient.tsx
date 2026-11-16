@@ -228,19 +228,36 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
         </div>
       </header>
 
-      {user.email?.endsWith('.local') && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-950 px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      {user.role === 'SUPER_ADMIN' ? (
+        <div className="bg-amber-500/15 border-b border-amber-500/40 text-amber-950 px-4 py-2.5 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-              Staging / Demo Session
+            <span className="bg-amber-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider shadow-xs">
+              👁️ Super Admin Preview
             </span>
-            <span className="text-slate-700">
-              Logged in as seeded test CA identity <strong>{user.name}</strong> ({user.email}). In production, only ICAI-verified practitioners can access this portal.
+            <span className="text-slate-800">
+              You are supervising the <strong>CA &amp; Compliance Partner Desk</strong> with elevated Super Admin privileges ({user.email}). To test actual practitioner docket claiming, sign in as <strong className="font-mono bg-white px-1.5 py-0.5 rounded border border-amber-300">ca.lead@nyayalink.local</strong>.
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">Sandbox Mode</span>
+          <Link
+            href="/admin/crm"
+            className="text-xs font-bold text-[#073B5C] bg-white border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 transition shrink-0"
+          >
+            ← Back to Ops Console
+          </Link>
         </div>
-      )}
+      ) : user.email?.endsWith('.local') ? (
+        <div className="bg-cyan-50 border-b border-cyan-200 text-[#073B5C] px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="bg-[#0E7490] text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-xs">
+              ICAI Practitioner Desk
+            </span>
+            <span>
+              Empanelled Partner Identity: <strong>{user.name}</strong> ({user.email}) • Active Queue: {myOrders.length} Dockets
+            </span>
+          </div>
+          <span className="text-[11px] text-emerald-700 font-bold">✓ ICAI Empanelled Verified</span>
+        </div>
+      ) : null}
 
 
       {/* TOP KPI CARDS */}

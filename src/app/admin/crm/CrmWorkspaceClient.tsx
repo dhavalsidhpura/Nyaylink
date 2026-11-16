@@ -34,7 +34,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStaffFilter, setSelectedStaffFilter] = useState('ALL');
-  const [unmaskPhones, setUnmaskPhones] = useState(currentRole === 'SUPER_ADMIN');
+  const [unmaskPhones, setUnmaskPhones] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // Modals state
@@ -255,15 +255,28 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
           <div className="flex items-center gap-3">
             {canSuperAdmin && (
-              <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer select-none bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                <input
-                  type="checkbox"
-                  checked={unmaskPhones}
-                  onChange={(e) => setUnmaskPhones(e.target.checked)}
-                  className="rounded text-[#0E7490] focus:ring-0 cursor-pointer"
-                />
-                <span>DLP: Unmask Full Phone Numbers</span>
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition">
+                  <input
+                    type="checkbox"
+                    checked={unmaskPhones}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setUnmaskPhones(next);
+                      if (next) {
+                        console.info(`[DLP Audit] Super Admin ${currentUserId} opted in to unmask customer phone numbers at ${new Date().toISOString()}`);
+                      }
+                    }}
+                    className="rounded text-[#0E7490] focus:ring-0 cursor-pointer"
+                  />
+                  <span>DLP: Opt-in Phone Unmasking</span>
+                </label>
+                {unmaskPhones && (
+                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
+                    <span>⚠️</span> PII Unmasked (Audited)
+                  </span>
+                )}
+              </div>
             )}
             <div className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex">
               <button

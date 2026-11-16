@@ -67,6 +67,14 @@ export async function middleware(request: NextRequest) {
         { status }
       );
     }
+
+    if (status === 403) {
+      const unauthUrl = new URL('/unauthorized', request.url);
+      unauthUrl.searchParams.set('from', pathname);
+      if (role) unauthUrl.searchParams.set('role', role);
+      return NextResponse.redirect(unauthUrl);
+    }
+
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);

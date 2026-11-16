@@ -132,9 +132,14 @@ export default function DashboardClient({ user, orders, documents, invoices, con
           </Link>
 
           <div className="flex items-center gap-3">
-            {['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'].includes(user.role) && (
-              <Link href="/admin" className="bg-[#F4B942] text-[#073B5C] px-3 py-1 rounded-xl text-xs font-black shadow hover:bg-amber-400">
+            {['SUPER_ADMIN', 'OPS_MANAGER', 'FINANCE_MANAGER'].includes(user.role) && (
+              <Link href="/admin/crm" className="bg-[#F4B942] text-[#073B5C] px-3 py-1 rounded-xl text-xs font-black shadow hover:bg-amber-400">
                 ⚡ Staff Console ({user.role}) →
+              </Link>
+            )}
+            {['CA_CS_LEAD', 'COMPLIANCE_EXEC'].includes(user.role) && (
+              <Link href="/ca/dashboard" className="bg-[#F4B942] text-[#073B5C] px-3 py-1 rounded-xl text-xs font-black shadow hover:bg-amber-400">
+                ⚡ CA Desk ({user.role}) →
               </Link>
             )}
             {user.role === 'LAWYER' && (
@@ -179,10 +184,10 @@ export default function DashboardClient({ user, orders, documents, invoices, con
             <span>You are previewing the Client Vault as <strong>{user.name}</strong> ({user.email}).</span>
           </div>
           <Link
-            href="/admin"
+            href={user.role === 'CA_CS_LEAD' || user.role === 'COMPLIANCE_EXEC' ? '/ca/dashboard' : '/admin/crm'}
             className="bg-slate-950 hover:bg-black text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow whitespace-nowrap transition"
           >
-            Open Staff Workspace →
+            {user.role === 'CA_CS_LEAD' || user.role === 'COMPLIANCE_EXEC' ? 'Open CA Desk →' : 'Open Staff Workspace →'}
           </Link>
         </div>
       )}
