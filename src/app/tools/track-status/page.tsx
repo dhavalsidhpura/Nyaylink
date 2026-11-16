@@ -231,14 +231,62 @@ export default function TrackStatusPage() {
                   {data.recommendation}
                 </p>
 
-                {data.status.includes('OBJECTED') && (
-                  <div className="pt-2">
+                {data.status.includes('OBJECTED') ? (
+                  <div className="pt-2 flex flex-wrap gap-2.5">
                     <Link
-                      href="/services/trademark-objection"
-                      className="inline-block bg-[#073B5C] hover:bg-[#052A42] text-[#F4B942] font-black text-xs px-4 py-2 rounded-xl transition-colors shadow"
+                      href="/services/trademark-objection-reply"
+                      className="inline-block bg-[#073B5C] hover:bg-[#052A42] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow"
                     >
                       File Official TM Objection Reply (₹2,999) →
                     </Link>
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Team, my tracking SRN ${data.srn} (${data.type}) is marked OBJECTED. I need urgent Advocate consultation to reply within statutory deadline.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow"
+                    >
+                      <span>💬 Urgent Advocate Assistance</span>
+                    </a>
+                  </div>
+                ) : data.status === 'APPROVED' ? (
+                  <div className="pt-2 flex flex-wrap gap-2.5">
+                    <Link
+                      href="/services/corporate-compliance-governance"
+                      className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-4 py-2.5 rounded-xl transition shadow"
+                    >
+                      File Form INC-20A Commencement (₹999 Token) →
+                    </Link>
+                    <Link
+                      href="/services/gst-registration"
+                      className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow"
+                    >
+                      Apply for Business GSTIN →
+                    </Link>
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Team, my registration ${data.srn} is APPROVED! I need assistance with post-incorporation bank account and statutory filings.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow"
+                    >
+                      <span>💬 WhatsApp Support</span>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="pt-2">
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Team, I am tracking SRN/ARN ${data.srn} (${data.type}, Status: ${data.status}). Can I get an update on current processing time?`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-[#073B5C] font-bold text-xs px-3.5 py-2 rounded-xl transition border border-slate-300"
+                    >
+                      <span>💬 Ask Caseworker on WhatsApp</span>
+                    </a>
                   </div>
                 )}
               </div>

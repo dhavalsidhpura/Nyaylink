@@ -168,13 +168,29 @@ export default function TrademarkSearchTool() {
                     <p className="text-[11px] leading-relaxed pt-1 text-slate-700">{result.filingTip}</p>
                   </div>
 
-                  <div className="pt-2">
-                    <Link
-                      href={`/services/trademark-registration?brand=${encodeURIComponent(result.brandName)}`}
-                      className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-6 py-3 rounded-xl uppercase tracking-wider text-center transition shadow"
-                    >
-                      File Trademark in Class {result.recommendedClass} (₹1,999 + Govt Fee) →
-                    </Link>
+                  <div className="pt-2 space-y-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <Link
+                        href={`/services/trademark-registration?brand=${encodeURIComponent(result.brandName)}&class=${result.recommendedClass}`}
+                        className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-6 py-3.5 rounded-xl uppercase tracking-wider text-center transition shadow flex-1 flex items-center justify-center gap-2"
+                      >
+                        <span>™️ File Trademark in Class {result.recommendedClass} for ₹999 Token →</span>
+                      </Link>
+                      <a
+                        href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                          `Hi NyayaLink IPR Team, I ran the Trademark Conflict Search for brand "${result.brandName}" in Class ${result.recommendedClass}. Result: Available (Score: ${result.score}/100). I want to file this mark with the ₹999 advance token.`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2 shrink-0"
+                      >
+                        <span>💬 WhatsApp IPR Advocate</span>
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-emerald-800 font-medium pt-0.5">
+                      <span>🛡️</span>
+                      <span>Empanelled High Court IPR Advocates handle Form TM-A drafting with 50% MSME Govt Fee Concession (Save ₹4,500).</span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -205,13 +221,29 @@ export default function TrademarkSearchTool() {
                     </div>
                   </div>
 
-                  <div className="pt-2">
-                    <Link
-                      href="/services/trademark-objection-reply"
-                      className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider text-center transition shadow"
-                    >
-                      Consult IPR Attorney for Clearance →
-                    </Link>
+                  <div className="pt-2 space-y-2 border-t border-rose-200">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <Link
+                        href={`/services/trademark-objection-reply?brand=${encodeURIComponent(result.brandName)}`}
+                        className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3.5 rounded-xl uppercase tracking-wider text-center transition shadow flex-1 flex items-center justify-center gap-2"
+                      >
+                        <span>⚖️ Consult IPR Advocate for Conflict Defense (₹999 Token) →</span>
+                      </Link>
+                      <a
+                        href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                          `Hi NyayaLink IPR Team, I ran Trademark Search for "${result.brandName}" in Class ${result.recommendedClass} and detected conflicting marks (${result.existingMarks.map((m) => m.name).join(', ')}). How can we legally distinguish or structure my application?`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2 shrink-0"
+                      >
+                        <span>💬 Chat with IPR Advocate</span>
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-rose-800 font-medium pt-0.5">
+                      <span>💡</span>
+                      <span>Our advocates evaluate Section 9/11 relative grounds, prior user affidavits, and device logo disclaimers to clear objections.</span>
+                    </div>
                   </div>
                 </div>
               )}

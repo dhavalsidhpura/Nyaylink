@@ -175,14 +175,46 @@ export default function CompanyNameSearchTool() {
                   </div>
                   <p className="text-xs text-emerald-800 leading-relaxed">{result.recommendation}</p>
 
-                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                    <Link
-                      href={`/services/private-limited-company?name=${encodeURIComponent(companyName.trim())}`}
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider text-center transition shadow"
-                    >
-                      Reserve Name & Incorporate Now (₹6,999) →
-                    </Link>
-                  </div>
+                  {(() => {
+                    const targetSlug =
+                      suffix === 'LLP'
+                        ? 'llp-registration'
+                        : suffix === 'OPC Private Limited'
+                        ? 'one-person-company'
+                        : suffix === 'Limited'
+                        ? 'public-limited-company'
+                        : suffix === 'Section 8'
+                        ? 'section-8-company'
+                        : 'private-limited-company';
+                    const targetUrl = `/services/${targetSlug}?name=${encodeURIComponent(companyName.trim())}&state=${encodeURIComponent(state)}`;
+
+                    return (
+                      <div className="space-y-2 pt-1">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                          <Link
+                            href={targetUrl}
+                            className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3.5 rounded-xl uppercase tracking-wider text-center transition shadow flex-1 flex items-center justify-center gap-2"
+                          >
+                            <span>🚀 Reserve &quot;{companyName.trim()}&quot; for ₹999 Token →</span>
+                          </Link>
+                          <a
+                            href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                              `Hi NyayaLink Team, I ran the MCA Name Availability Checker for "${companyName.trim()} ${suffix}" in ${state}. Result: Available (Score: ${result.score}/100). I want to reserve this name on MCA SPICe+ Part A with the ₹999 token.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2 shrink-0"
+                          >
+                            <span>💬 WhatsApp CS</span>
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-emerald-800 font-medium pt-0.5">
+                          <span>🛡️</span>
+                          <span>Empanelled CS verifies Rule 8 compliance prior to filing. 100% Free Re-submission Guarantee if ROC queries name.</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 space-y-3">
@@ -217,10 +249,11 @@ export default function CompanyNameSearchTool() {
                         {result.suggestedNames.map((sug, i) => (
                           <button
                             key={i}
+                            type="button"
                             onClick={() => {
                               setCompanyName(sug.replace(` ${suffix}`, ''));
                             }}
-                            className="bg-white border border-slate-300 text-slate-800 font-bold text-[11px] px-3 py-1.5 rounded-lg hover:border-[#0E7490] hover:text-[#0E7490] transition"
+                            className="bg-white border border-slate-300 text-slate-800 font-bold text-[11px] px-3 py-1.5 rounded-lg hover:border-[#0E7490] hover:text-[#0E7490] transition cursor-pointer"
                           >
                             + {sug}
                           </button>
@@ -228,6 +261,47 @@ export default function CompanyNameSearchTool() {
                       </div>
                     </div>
                   )}
+
+                  {(() => {
+                    const targetSlug =
+                      suffix === 'LLP'
+                        ? 'llp-registration'
+                        : suffix === 'OPC Private Limited'
+                        ? 'one-person-company'
+                        : suffix === 'Limited'
+                        ? 'public-limited-company'
+                        : suffix === 'Section 8'
+                        ? 'section-8-company'
+                        : 'private-limited-company';
+                    const targetUrl = `/services/${targetSlug}?note=mca-name-clearance&name=${encodeURIComponent(companyName.trim())}&state=${encodeURIComponent(state)}`;
+
+                    return (
+                      <div className="space-y-2 pt-2 border-t border-rose-200">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                          <Link
+                            href={targetUrl}
+                            className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3.5 rounded-xl uppercase tracking-wider text-center transition shadow flex-1 flex items-center justify-center gap-2"
+                          >
+                            <span>⚖️ File SPICe+ with 2 Alternative Names (₹999 Token) →</span>
+                          </Link>
+                          <a
+                            href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                              `Hi NyayaLink Team, I checked "${companyName.trim()} ${suffix}" on your MCA Name Checker and found conflicts (${result.conflicts.slice(0, 2).join(', ')}). How can your CS help me modify or clear the name for ROC approval?`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2 shrink-0"
+                          >
+                            <span>💬 Consult CS on Name Fix</span>
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-rose-800 font-medium pt-0.5">
+                          <span>💡</span>
+                          <span>Our CS drafts distinctive prefix/activity combinations and NOC affidavits under MCA Rule 8A/8B to secure name approval.</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

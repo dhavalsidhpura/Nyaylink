@@ -472,24 +472,29 @@ export default function StartupIndiaCheckerPage() {
                   </div>
 
                   {/* CTAs */}
-                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                    <Link
-                      href="/services/startup-india-seed-fund-registration"
-                      className="flex-1 bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-center py-3 px-4 rounded-xl shadow transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2"
-                    >
-                      <span>Book CA Dossier Preparation (₹3,499) →</span>
-                    </Link>
+                  <div className="pt-2 space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        href="/services/startup-india-seed-fund-registration"
+                        className="flex-1 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-center py-3.5 px-4 rounded-xl shadow transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2"
+                      >
+                        <span>🚀 Start DPIIT Recognition Dossier (₹999 Token) →</span>
+                      </Link>
 
-                    <a
-                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
-                        `Hi NyayaLink Startup Team, I completed the Startup India Eligibility Checker. My score is ${evaluation.score}%. Entity: ${entity}, Date: ${incorpDate}, Innovation: ${innovation}. I want to consult a senior CA for DPIIT recognition and Section 80-IAC filing.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition-all text-xs flex items-center justify-center gap-2"
-                    >
-                      <span>💬 Chat with Startup CA</span>
-                    </a>
+                      <a
+                        href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                          `Hi NyayaLink Startup Team, I completed the Startup India Eligibility Checker. My score is ${evaluation.score}%. Entity: ${entity}, Date: ${incorpDate}, Innovation: ${innovation}. I want to consult a senior CA for DPIIT recognition and Section 80-IAC filing.`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all text-xs flex items-center justify-center gap-2 shrink-0"
+                      >
+                        <span>💬 Chat with Startup CA</span>
+                      </a>
+                    </div>
+                    <div className="text-[11px] text-cyan-200 text-center font-medium pt-0.5">
+                      Advance booking locks in your senior CA dossier drafting desk. Balance fee payable only upon draft review.
+                    </div>
                   </div>
                 </div>
 

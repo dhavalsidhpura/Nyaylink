@@ -106,6 +106,24 @@ export default function GSTSearchTool() {
             </div>
           </form>
 
+          {/* New GST Registration Prompt for Unregistered Visitors */}
+          <div className="bg-gradient-to-r from-[#073B5C]/10 via-[#0E7490]/10 to-transparent p-4 rounded-2xl border border-[#0E7490]/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                Need a New GST Registration?
+              </span>
+              <p className="text-xs font-bold text-[#073B5C]">
+                Don&apos;t have a 15-digit GSTIN yet? Get registered in 3–5 working days with zero physical visits.
+              </p>
+            </div>
+            <Link
+              href="/services/gst-registration"
+              className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow shrink-0"
+            >
+              Apply for GSTIN (₹999 Token) →
+            </Link>
+          </div>
+
           {errorMsg && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-bold">
               ⚠️ {errorMsg}
@@ -153,13 +171,35 @@ export default function GSTSearchTool() {
                   .
                 </p>
 
-                <div className="pt-2">
-                  <Link
-                    href="/services/gst-return-filing"
-                    className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider text-center transition shadow"
-                  >
-                    File Monthly GST Returns (₹999/mo) →
-                  </Link>
+                <div className="pt-2 space-y-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <Link
+                      href="/services/gst-return-filing"
+                      className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider text-center transition shadow flex-1 flex items-center justify-center gap-1.5"
+                    >
+                      <span>📑 File Monthly GST Returns (GSTR-1 &amp; 3B) →</span>
+                    </Link>
+                    <Link
+                      href="/services/gst-modifications-amendment"
+                      className="bg-white hover:bg-slate-100 text-[#073B5C] font-bold text-xs px-4 py-3 rounded-xl transition border border-slate-300 text-center shrink-0"
+                    >
+                      <span>🛠️ Core Amendment</span>
+                    </Link>
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Tax Desk, I verified GSTIN ${data.gstin} (${data.stateName}, ${data.holderType}) on your search tool. I need professional assistance with GST return filing and reconciliation.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-3 rounded-xl transition shadow flex items-center justify-center gap-1.5 shrink-0"
+                    >
+                      <span>💬 WhatsApp CA</span>
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                    <span>🛡️</span>
+                    <span>Empanelled Chartered Accountants ensure 100% GSTR-2B Input Tax Credit reconciliation to protect against Section 16(2)(aa) notices.</span>
+                  </div>
                 </div>
               </div>
             </div>
