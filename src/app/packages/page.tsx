@@ -3,11 +3,23 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { MASTER_PACKAGES, PackageItem } from '@/data/packages';
+import Header from '@/components/Header';
 
 export default function PackagesPage() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedDeliverables, setExpandedDeliverables] = useState<Record<string, boolean>>({});
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // Compute category counts dynamically from MASTER_PACKAGES
+  const counts = useMemo(() => {
+    return {
+      all: MASTER_PACKAGES.length,
+      startup: MASTER_PACKAGES.filter((p) => p.category === 'startup').length,
+      industry: MASTER_PACKAGES.filter((p) => p.category === 'industry').length,
+      ecommerce: MASTER_PACKAGES.filter((p) => p.category === 'ecommerce' || p.category === 'retail').length,
+      compliance: MASTER_PACKAGES.filter((p) => p.category === 'compliance').length,
+    };
+  }, []);
 
   // Filter packages based on active category
   const filteredPackages = useMemo(() => {
@@ -26,60 +38,78 @@ export default function PackagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-24 lg:pb-12">
+    <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased pb-24 lg:pb-16">
       
+      {/* ======================================================== */}
+      {/* 0. NAVIGATION HEADER (FULL DESKTOP & MOBILE DRAWER)      */}
+      {/* ======================================================== */}
+      <Header />
+
       {/* ======================================================== */}
       {/* 1. HERO HEADER: BUNDLED PACKAGES COMMAND CENTER          */}
       {/* ======================================================== */}
-      <section className="bg-gradient-to-b from-[#073B5C] via-[#052A42] to-[#041E30] text-white py-12 sm:py-16 px-4 sm:px-8 border-b border-cyan-900 shadow-inner">
-        <div className="max-w-6xl mx-auto space-y-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-[#0E7490]/50 border border-cyan-400/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#F4B942]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Bundled Compliance & Business Suites • Save Up to 48%
+      <section className="bg-gradient-to-b from-[#073B5C] via-[#052A42] to-[#041E30] text-white py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 border-b border-cyan-900 shadow-inner">
+        <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 bg-[#0E7490]/50 border border-cyan-400/30 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-[#F4B942]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <span>Bundled Compliance &amp; Business Suites • Save Up to 48%</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight max-w-4xl mx-auto">
-            All-In-One Legal & Compliance Packages
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight max-w-4xl mx-auto text-white">
+            All-In-One Legal &amp; Compliance Packages
           </h1>
 
-          <p className="text-slate-300 text-xs sm:text-base leading-relaxed max-w-2xl mx-auto font-medium">
+          <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed max-w-2xl mx-auto font-medium">
             Stop buying fragmented statutory filings. Our curated business bundles combine incorporation, tax registrations, municipal licenses, and ongoing accounting at discounted package rates.
           </p>
 
-          {/* Value Props Ribbon */}
-          <div className="pt-2 flex flex-wrap justify-center items-center gap-3 sm:gap-6 text-xs text-cyan-200">
-            <span className="flex items-center gap-1.5">
-              <span>💳</span> Start Any Package with <strong>₹999 Advance Token</strong>
+          {/* Value Props Ribbon (Responsive wrapping across mobile, tablet, and desktop) */}
+          <div className="pt-2 flex flex-wrap justify-center items-center gap-2 sm:gap-3 lg:gap-5 text-xs text-cyan-200">
+            <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[11px] sm:text-xs">
+              <span>💳</span> Start Any Package with <strong>₹999 Token</strong>
             </span>
-            <span className="text-cyan-600 hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[11px] sm:text-xs">
               <span>⚡</span> Single KYC Document Intake
             </span>
-            <span className="text-cyan-600 hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <span>🛡️</span> Chartered Accountant & Advocate Supervised
+            <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl text-[11px] sm:text-xs">
+              <span>🛡️</span> CA &amp; Advocate Supervised
             </span>
           </div>
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 2. CATEGORY FILTER TABS (HORIZONTAL SWIPE ON MOBILE)     */}
+      {/* 2. CATEGORY FILTER TABS (SWIPABLE ON MOBILE / TABLET)    */}
       {/* ======================================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 w-full">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200/80 gap-3 mb-4">
+          <div>
+            <h2 className="text-base sm:text-xl font-black text-[#073B5C]">
+              Browse Bundled Suites
+            </h2>
+            <p className="text-[11px] sm:text-xs text-slate-500">
+              Select your business archetype or growth stage
+            </p>
+          </div>
+          <div className="self-start sm:self-auto text-[11px] sm:text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+            Showing <strong className="text-[#073B5C] font-black">{filteredPackages.length}</strong> of {MASTER_PACKAGES.length} Packages
+          </div>
+        </div>
+
+        {/* Category Tabs: Smooth swipe with edge bleed on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
-            { id: 'all', label: 'All Packages', count: MASTER_PACKAGES.length },
-            { id: 'startup', label: '🚀 Startups & Venture', count: 2 },
-            { id: 'industry', label: '🍲 Food & Dining', count: 1 },
-            { id: 'ecommerce', label: '🛒 E-Commerce & Retail', count: 2 },
-            { id: 'compliance', label: '📊 Compliance Retainer', count: 1 },
+            { id: 'all', label: 'All Packages', count: counts.all },
+            { id: 'startup', label: '🚀 Startups & Venture', count: counts.startup },
+            { id: 'industry', label: '🍲 Food & Brand', count: counts.industry },
+            { id: 'ecommerce', label: '🛒 E-Commerce & Retail', count: counts.ecommerce },
+            { id: 'compliance', label: '📊 Compliance Retainer', count: counts.compliance },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveCategory(tab.id)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-black whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs font-black whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 active:scale-95 shrink-0 ${
                 activeCategory === tab.id
                   ? 'bg-[#073B5C] text-[#F4B942] shadow-sm'
                   : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -97,71 +127,76 @@ export default function PackagesPage() {
       </div>
 
       {/* ======================================================== */}
-      {/* 3. PACKAGES GRID                                         */}
+      {/* 3. PACKAGES RESPONSIVE GRID (1 col Mobile, 2 cols Tablet, 3 cols Large Desktop) */}
       {/* ======================================================== */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 w-full flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 w-full flex-grow">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 items-stretch">
           {filteredPackages.map((pkg) => {
             const isDeliverablesOpen = !!expandedDeliverables[pkg.id];
 
             return (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-3xl border-2 transition-all shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden ${
-                  pkg.popular ? 'border-[#0E7490]' : 'border-slate-200/90'
+                className={`bg-white rounded-3xl border-2 transition-all duration-200 shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden ${
+                  pkg.popular ? 'border-[#0E7490] ring-1 ring-[#0E7490]/20' : 'border-slate-200/90'
                 }`}
               >
                 {/* Header & Badges */}
-                <div className="p-6 sm:p-7 space-y-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-3xl p-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-xs">
-                        {pkg.icon}
-                      </span>
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#0E7490] block">
-                          {pkg.categoryLabel}
-                        </span>
-                        <h2 className="text-xl sm:text-2xl font-black text-[#073B5C] leading-snug">
-                          {pkg.title}
-                        </h2>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[10px] font-extrabold px-3 py-1 rounded-full border border-amber-200">
+                <div className="p-4 sm:p-6 lg:p-7 space-y-3 sm:space-y-4 flex-1">
+                  
+                  {/* Meta Strip: Category label on left, badges on right */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-[#0E7490] bg-[#0E7490]/10 px-2.5 py-1 rounded-full border border-[#0E7490]/20">
+                      {pkg.categoryLabel}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200">
                         ⚡ {pkg.badge}
                       </span>
-                      <span className="bg-emerald-50 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="bg-emerald-50 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
                         Save {pkg.savingsPercent}%
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    {pkg.tagline}
-                  </p>
+                  {/* Icon + Title block (Full horizontal breathing room on all screens) */}
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl sm:text-3xl p-2 sm:p-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-xs shrink-0 mt-0.5">
+                      {pkg.icon}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-[#073B5C] leading-snug">
+                        {pkg.title}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                        {pkg.tagline}
+                      </p>
+                    </div>
+                  </div>
 
-                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500">
-                    <strong className="text-[#073B5C]">Target Audience:</strong> {pkg.targetAudience}
+                  {/* Target Audience Pill */}
+                  <div className="p-2.5 bg-slate-50/90 rounded-xl border border-slate-100 text-[11px] text-slate-600 leading-snug">
+                    <strong className="text-[#073B5C] font-extrabold">Best for:</strong> {pkg.targetAudience}
                   </div>
 
                   {/* Included Services Checklist */}
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-1.5 pt-1">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                      Services Included in this Bundle ({pkg.includedServices.length} Filings):
+                      Services Included ({pkg.includedServices.length} Filings):
                     </span>
                     <div className="space-y-1.5">
                       {pkg.includedServices.map((srv, idx) => (
                         <div
                           key={idx}
-                          className="p-2.5 bg-slate-50/70 hover:bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs gap-2"
+                          className="p-2 sm:p-2.5 bg-slate-50/70 hover:bg-slate-100/70 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs gap-2 transition-colors"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0">{srv.icon}</span>
-                            <span className="font-bold text-[#073B5C] truncate">{srv.name}</span>
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-sm sm:text-base shrink-0">{srv.icon}</span>
+                            <span className="font-bold text-[#073B5C] truncate text-[11px] sm:text-xs">
+                              {srv.name}
+                            </span>
                           </div>
-                          <span className="text-[11px] text-slate-400 line-through shrink-0 font-mono">
+                          <span className="text-[10px] sm:text-[11px] text-slate-400 line-through shrink-0 font-mono">
                             ₹{srv.standalonePrice.toLocaleString()}
                           </span>
                         </div>
@@ -170,21 +205,21 @@ export default function PackagesPage() {
                   </div>
 
                   {/* Progressive Disclosure: Deliverables */}
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => toggleDeliverables(pkg.id)}
-                      className="text-xs font-bold text-[#0E7490] hover:text-[#073B5C] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs font-bold text-[#0E7490] hover:text-[#073B5C] hover:underline flex items-center gap-1 cursor-pointer py-1"
                     >
-                      <span>{isDeliverablesOpen ? 'Hide included deliverables' : `+ View official deliverables (${pkg.deliverables.length} items)`}</span>
+                      <span>{isDeliverablesOpen ? 'Hide deliverables' : `+ View official deliverables (${pkg.deliverables.length} items)`}</span>
                       <span className="font-mono text-xs">{isDeliverablesOpen ? '▲' : '▼'}</span>
                     </button>
 
                     {isDeliverablesOpen && (
-                      <div className="mt-2.5 p-3.5 bg-cyan-50/50 rounded-2xl border border-cyan-200/70 space-y-1.5 text-xs text-slate-700 animate-in fade-in duration-150">
+                      <div className="mt-2 p-3 sm:p-3.5 bg-cyan-50/50 rounded-2xl border border-cyan-200/70 space-y-1.5 text-xs text-slate-700 animate-in fade-in duration-150">
                         {pkg.deliverables.map((item, dIdx) => (
-                          <div key={dIdx} className="flex items-start gap-2">
-                            <span className="text-emerald-600 font-black shrink-0">✓</span>
+                          <div key={dIdx} className="flex items-start gap-2 text-[11px] sm:text-xs leading-relaxed">
+                            <span className="text-emerald-600 font-black shrink-0 mt-0.5">✓</span>
                             <span>{item}</span>
                           </div>
                         ))}
@@ -194,24 +229,24 @@ export default function PackagesPage() {
                 </div>
 
                 {/* Pricing & Impulse CTA Footer */}
-                <div className="p-6 sm:p-7 bg-slate-50 border-t border-slate-200/80 space-y-3">
-                  <div className="flex items-baseline justify-between">
+                <div className="p-4 sm:p-6 lg:p-7 bg-slate-50 border-t border-slate-200/80 space-y-3 shrink-0">
+                  <div className="flex items-baseline justify-between gap-2">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-semibold block uppercase">
-                        Standalone Value: <span className="line-through">₹{pkg.standaloneTotal.toLocaleString()}</span>
+                      <span className="text-[10px] text-slate-400 font-semibold block uppercase tracking-wider">
+                        Standalone: <span className="line-through">₹{pkg.standaloneTotal.toLocaleString()}</span>
                       </span>
-                      <div className="flex items-baseline gap-2">
-                        <strong className="text-2xl font-black text-[#073B5C]">
+                      <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+                        <strong className="text-xl sm:text-2xl font-black text-[#073B5C]">
                           ₹{pkg.packagePrice.toLocaleString()}
                         </strong>
-                        <span className="text-xs font-bold text-emerald-700">
+                        <span className="text-[11px] sm:text-xs font-bold text-emerald-700">
                           (Save ₹{(pkg.standaloneTotal - pkg.packagePrice).toLocaleString()})
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
                         SLA Timeline
                       </span>
                       <span className="text-xs font-extrabold text-[#073B5C]">
@@ -220,16 +255,17 @@ export default function PackagesPage() {
                     </div>
                   </div>
 
-                  {/* Impulse CTA Button */}
+                  {/* Impulse CTA Button (Responsive text on mobile vs desktop) */}
                   <Link
                     href={`/services/${pkg.includedServices[0].slug}?package=${pkg.slug}`}
-                    className="w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs sm:text-sm py-3.5 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer text-center"
+                    className="w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs sm:text-sm py-3 sm:py-3.5 px-3 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 cursor-pointer text-center active:scale-[0.99]"
                   >
-                    <span>Start This Package for ₹999 Advance Token →</span>
+                    <span className="sm:hidden">Start for ₹999 Token →</span>
+                    <span className="hidden sm:inline">Start This Package for ₹999 Token →</span>
                   </Link>
 
                   <p className="text-[10px] text-slate-400 text-center leading-tight">
-                    🔒 ₹999 locks in parallel CA execution. Remaining balance billed after documentation approval.
+                    🔒 ₹999 advance locks in parallel CA execution. Remaining balance billed after documentation approval.
                   </p>
                 </div>
               </div>
@@ -239,19 +275,19 @@ export default function PackagesPage() {
       </main>
 
       {/* ======================================================== */}
-      {/* 4. CUSTOM BUNDLE INQUIRY DESK                            */}
+      {/* 4. CUSTOM BUNDLE INQUIRY DESK (RESPONSIVE BANNER)        */}
       {/* ======================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full">
-        <div className="bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-3xl p-6 sm:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl text-center md:text-left">
-            <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-1 rounded-full">
-              Enterprise & Custom Scopes
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
+        <div className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#0E7490] text-white rounded-3xl p-5 sm:p-8 lg:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl text-center md:text-left">
+            <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-1 rounded-full inline-block">
+              Enterprise &amp; Custom Scopes
             </span>
-            <h3 className="text-xl sm:text-3xl font-black">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black">
               Need a Custom Multi-Service Suite?
             </h3>
-            <p className="text-xs sm:text-sm text-cyan-100 leading-relaxed">
-              Managing multi-state GST registrations, multiple brand trademarks, or complex FDI foreign holding structures? Speak with a Senior CA to build a tailored retainer.
+            <p className="text-xs sm:text-sm text-cyan-100 leading-relaxed font-medium">
+              Managing multi-state GST registrations, multiple brand trademarks, or complex FDI foreign holding structures? Speak with our Senior CA desk to build a tailored retainer.
             </p>
           </div>
 
@@ -260,15 +296,15 @@ export default function PackagesPage() {
               href="https://wa.me/919920054785?text=Hello%20NyayaLink%20I%20need%20a%20custom%20compliance%20package"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs px-5 py-3.5 rounded-2xl transition shadow flex items-center justify-center gap-2"
+              className="bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs sm:text-sm px-5 py-3 sm:py-3.5 rounded-2xl transition shadow-md flex items-center justify-center gap-2"
             >
               <span>💬</span> WhatsApp Senior CA
             </a>
             <Link
               href="/vakil"
-              className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-xs px-5 py-3.5 rounded-2xl transition text-center"
+              className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-xs sm:text-sm px-5 py-3 sm:py-3.5 rounded-2xl transition text-center flex items-center justify-center gap-1.5"
             >
-              Lawyer Desk Consultation →
+              <span>👨‍⚖️</span> Lawyer Consultation →
             </Link>
           </div>
         </div>
@@ -277,12 +313,12 @@ export default function PackagesPage() {
       {/* ======================================================== */}
       {/* 5. PACKAGES FAQ ACCORDION                                */}
       {/* ======================================================== */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-8 py-10 w-full space-y-6">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-6">
         <div className="text-center space-y-2">
-          <h3 className="text-2xl sm:text-3xl font-black text-[#073B5C]">
+          <h3 className="text-xl sm:text-3xl font-black text-[#073B5C]">
             Frequently Asked Questions on Packages
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs sm:text-sm text-slate-500">
             Everything you need to know about bundled pricing, documentation, and statutory processing.
           </p>
         </div>
@@ -326,13 +362,13 @@ export default function PackagesPage() {
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
+                className="w-full text-left p-3.5 sm:p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
               >
-                <span>{faq.q}</span>
-                <span className="text-sm text-[#0E7490] font-mono">{openFaq === idx ? '−' : '+'}</span>
+                <span className="pr-2">{faq.q}</span>
+                <span className="text-sm text-[#0E7490] font-mono shrink-0">{openFaq === idx ? '−' : '+'}</span>
               </button>
               {openFaq === idx && (
-                <div className="p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
+                <div className="p-3.5 sm:p-4 bg-white text-slate-600 text-xs leading-relaxed border-t border-slate-100">
                   {faq.a}
                 </div>
               )}
