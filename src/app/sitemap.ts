@@ -26,6 +26,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/tools`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/tools/incorporation-calculator`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.88,
+    },
+    {
+      url: `${baseUrl}/tools/startup-india-checker`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.88,
+    },
+    {
       url: `${baseUrl}/tools/company-name-search`,
       lastModified: currentDate,
       changeFrequency: 'weekly',

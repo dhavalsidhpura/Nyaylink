@@ -19,10 +19,12 @@ export default function robots(): MetadataRoute.Robots {
         ],
         disallow: [
           '/admin/',
+          '/ca/',
           '/dashboard/',
           '/orders/',
           '/invoices/',
           '/lawyer/dashboard/',
+          '/unauthorized',
           '/api/',
         ],
       },
