@@ -4,6 +4,8 @@ import Script from 'next/script';
 import Footer from '@/components/Footer';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import Providers from '@/components/Providers';
+import TopAnnouncementBanner from '@/components/TopAnnouncementBanner';
+import SmartAdvisorDrawer from '@/components/SmartAdvisorDrawer';
 import './globals.css';
 
 const inter = Inter({
@@ -85,10 +87,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen bg-[#F0F4F8] antialiased`}>
+        <TopAnnouncementBanner />
         <Providers>{children}</Providers>
         <div className="print:hidden">
           <Footer />
           <MobileBottomNav />
+          <SmartAdvisorDrawer />
         </div>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>

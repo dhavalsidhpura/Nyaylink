@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
 import { INDIAN_STATES, getStateStampDuty, formatINR, getPricingModelBadge } from '@/lib/pricing';
-import SmartAdvisorDrawer from '@/components/SmartAdvisorDrawer';
 
 export default function HomePage() {
   const router = useRouter();
@@ -3534,10 +3533,7 @@ export default function HomePage() {
 
 
 
-      {/* ======================================================== */}
-      {/* 10. SMART 2026 AI ADVISOR & FLOATING DESK              */}
-      {/* ======================================================== */}
-      <SmartAdvisorDrawer />
+
 
     </div>
   );
