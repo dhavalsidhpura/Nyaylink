@@ -7,11 +7,16 @@ import { plain, num } from '@/lib/serialize';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = apiHandler(async () => {
+export const GET = apiHandler(async (request: Request) => {
   await requireRole(ROLE_GROUPS.finance);
+  const url = new URL(request.url);
+  const includeTest = url.searchParams.get('includeTest') === 'true';
+
+  const where = includeTest ? {} : { mode: { not: 'TEST_SIMULATION' } };
+
   const [ledger, totals] = await Promise.all([
-    prisma.ledgerEntry.findMany({ orderBy: { createdAt: 'desc' }, take: 100 }),
-    prisma.ledgerEntry.aggregate({ _sum: { credit: true, debit: true } }),
+    prisma.ledgerEntry.findMany({ where, orderBy: { createdAt: 'desc' }, take: 100 }),
+    prisma.ledgerEntry.aggregate({ where, _sum: { credit: true, debit: true } }),
   ]);
   const balance = num(totals._sum.credit) - num(totals._sum.debit);
   return NextResponse.json({ success: true, ledger: plain(ledger), balance });

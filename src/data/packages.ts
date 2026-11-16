@@ -27,8 +27,25 @@ export interface PackageItem {
   faqs: { q: string; a: string }[];
 }
 
+/**
+ * Enforces dynamic package arithmetic:
+ * standaloneTotal is strictly derived from the sum of component services.
+ * savingsPercent is strictly derived from (standaloneTotal - packagePrice) / standaloneTotal.
+ */
+function definePackage(
+  data: Omit<PackageItem, 'standaloneTotal' | 'savingsPercent'>
+): PackageItem {
+  const standaloneTotal = data.includedServices.reduce((sum, s) => sum + s.standalonePrice, 0);
+  const savingsPercent = Math.max(0, Math.round(((standaloneTotal - data.packagePrice) / standaloneTotal) * 100));
+  return {
+    ...data,
+    standaloneTotal,
+    savingsPercent,
+  };
+}
+
 export const MASTER_PACKAGES: PackageItem[] = [
-  {
+  definePackage({
     id: 'pkg-startup-launchpad',
     slug: 'startup-launchpad-bundle',
     category: 'startup',
@@ -40,16 +57,15 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: true,
     targetAudience: 'Early-stage founders, tech startups, and entrepreneurs launching a new scalable business.',
     description: 'A unified onboarding bundle combining Private Limited incorporation, director digital signatures, MSME priority subsidies, corporate bank account setup, and 15-digit GST registration.',
-    standaloneTotal: 15497,
     packagePrice: 8999,
     advanceToken: 999,
-    savingsPercent: 42,
     sla: '7 - 10 Working Days',
     includedServices: [
       { slug: 'private-limited-company', name: 'Private Limited Company Incorporation (SPICe+)', standalonePrice: 6999, icon: '🏢' },
       { slug: 'gst-registration', name: 'GST Registration & 15-Digit GSTIN Allotment', standalonePrice: 1499, icon: '🧾' },
       { slug: 'msme-udyam-registration', name: 'MSME Udyam Government Recognition Certificate', standalonePrice: 999, icon: '🎖️' },
       { slug: 'mca-inc-20a-commencement-of-business', name: 'MCA Form INC-20A Commencement of Business Filing', standalonePrice: 1499, icon: '📋' },
+      { slug: 'trademark-registration', name: 'Wordmark Trademark Registration (Class 1)', standalonePrice: 4499, icon: '™️' },
     ],
     deliverables: [
       'Official Certificate of Incorporation (CoI) with CIN',
@@ -70,9 +86,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'You only pay ₹999 today to initiate name reservation and Digital Signatures. The remaining package balance is billed only after your entity draft is approved.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-tech-founder',
     slug: 'tech-founder-venture-suite',
     category: 'startup',
@@ -83,16 +99,16 @@ export const MASTER_PACKAGES: PackageItem[] = [
     icon: '💻',
     targetAudience: 'Software engineers, AI startups, D2C ventures, and tech founders planning to raise angel or venture capital.',
     description: 'Designed specifically for tech founders requiring solid cap-table legal protections, trademark brand monopoly, and Startup India tax exemption dockets.',
-    standaloneTotal: 22496,
     packagePrice: 14999,
     advanceToken: 999,
-    savingsPercent: 33,
     sla: '10 - 14 Working Days',
     includedServices: [
       { slug: 'private-limited-company', name: 'Private Limited Company Incorporation', standalonePrice: 6999, icon: '🏢' },
       { slug: 'trademark-registration', name: 'Trademark Registration (™) in Relevant Class', standalonePrice: 1999, icon: '™️' },
       { slug: 'startup-india-dpiit-recognition', name: 'Startup India DPIIT Recognition & 80-IAC Docket', standalonePrice: 3499, icon: '🚀' },
       { slug: 'gst-lut-filing', name: 'GST Letter of Undertaking (LUT) for 0% SaaS Export', standalonePrice: 1499, icon: '✈️' },
+      { slug: 'legal-agreements-founder', name: 'Founder Restricted Stock & 4-Year Equity Vesting Agreement', standalonePrice: 4999, icon: '📜' },
+      { slug: 'legal-agreements-ip', name: 'Employee NDA & Intellectual Property (IP) Assignment Agreement', standalonePrice: 3499, icon: '🔒' },
     ],
     deliverables: [
       'Private Limited Company Registration + 2 Class-3 DSCs + PAN/TAN',
@@ -113,9 +129,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'Yes, the entity structure and custom Articles of Association are drafted to facilitate future director additions and ESOP allocations.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-restaurant-kitchen',
     slug: 'restaurant-kitchen-compliance-kit',
     category: 'industry',
@@ -127,16 +143,16 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: true,
     targetAudience: 'Cloud kitchens, dine-in restaurants, cafes, bakeries, food trucks, and culinary brands.',
     description: 'Covers mandatory 14-digit FoSCoS food licenses, GST under the restaurant scheme, local municipal Shop Act registration, and food aggregator compliance.',
-    standaloneTotal: 12496,
     packagePrice: 6499,
     advanceToken: 999,
-    savingsPercent: 48,
     sla: '5 - 10 Working Days',
     includedServices: [
       { slug: 'fssai-food-license', name: 'FSSAI Food Safety License / FoSCoS Registration', standalonePrice: 1999, icon: '🍲' },
       { slug: 'gst-registration', name: 'GST Registration (5% Restaurant Composition / Regular)', standalonePrice: 1499, icon: '🧾' },
       { slug: 'shop-and-establishment-license', name: 'Shop & Establishment (Gumasta Labor License)', standalonePrice: 1999, icon: '🏬' },
       { slug: 'msme-udyam-registration', name: 'MSME Udyam Registration Certificate', standalonePrice: 999, icon: '🎖️' },
+      { slug: 'swiggy-zomato-clearance', name: 'Swiggy & Zomato Partner Onboarding Clearance Dossier', standalonePrice: 2999, icon: '🛵' },
+      { slug: 'fsms-sop-manual', name: 'Food Safety Management System (FSMS) Standard Operating Procedures', standalonePrice: 2999, icon: '📋' },
     ],
     deliverables: [
       'Official 14-Digit FSSAI License with FoSCoS QR verification',
@@ -156,9 +172,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'The NyayaLink package covers complete CA drafting, kitchen layout review, and liaison. State portal fees (₹100 for basic registration or ₹2,000 for state license) are billed at actuals.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-ecommerce-seller',
     slug: 'ecommerce-seller-suite',
     category: 'ecommerce',
@@ -169,16 +185,16 @@ export const MASTER_PACKAGES: PackageItem[] = [
     icon: '🛒',
     targetAudience: 'Amazon, Flipkart, Meesho, Shopify, and Etsy sellers, dropshippers, and direct-to-consumer brands.',
     description: 'Combines multi-state GST registration for marketplace fulfillment centers (FBA/Flipkart nodes), Import Export Code (IEC), MSME perks, and zero-IGST export declarations.',
-    standaloneTotal: 11496,
     packagePrice: 5999,
     advanceToken: 999,
-    savingsPercent: 47,
     sla: '3 - 7 Working Days',
     includedServices: [
       { slug: 'gst-registration', name: 'GST Registration with HSN / E-Commerce Mapping', standalonePrice: 1499, icon: '🧾' },
       { slug: 'import-export-code-iec', name: 'Import Export Code (IEC) from DGFT Customs Portal', standalonePrice: 1499, icon: '🚢' },
       { slug: 'msme-udyam-registration', name: 'MSME Udyam Certificate', standalonePrice: 999, icon: '🎖️' },
       { slug: 'gst-lut-filing', name: 'GST LUT Filing for 0% Global Export Remittance', standalonePrice: 1499, icon: '✈️' },
+      { slug: 'trademark-registration', name: 'Brand Trademark Registration (Class 35 for Marketplace Selling)', standalonePrice: 1999, icon: '™️' },
+      { slug: 'marketplace-clearance', name: 'Amazon Brand Registry & Flipkart Marketplace Authorization Dossier', standalonePrice: 3999, icon: '📦' },
     ],
     deliverables: [
       '15-Digit GSTIN configured for online marketplace selling',
@@ -197,9 +213,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'The IEC code is lifetime with no annual renewal cost. Having it pre-configured allows you to source products from overseas suppliers or sell to international buyers anytime without delay.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-retail-storefront',
     slug: 'retailer-physical-storefront-pack',
     category: 'retail',
@@ -210,16 +226,16 @@ export const MASTER_PACKAGES: PackageItem[] = [
     icon: '🏪',
     targetAudience: 'Retail shops, consumer electronics, fashion boutiques, distributors, and physical commercial showrooms.',
     description: 'Establishes full local municipal and state tax legitimacy, preventing municipal labor inspection fines and enabling immediate business current account opening.',
-    standaloneTotal: 8496,
     packagePrice: 4499,
     advanceToken: 999,
-    savingsPercent: 47,
     sla: '3 - 7 Working Days',
     includedServices: [
       { slug: 'shop-and-establishment-license', name: 'Shop & Establishment (Gumasta License)', standalonePrice: 1999, icon: '🏬' },
       { slug: 'gst-registration', name: 'GST Registration & State Place of Business Filing', standalonePrice: 1499, icon: '🧾' },
       { slug: 'msme-udyam-registration', name: 'MSME Udyam Registration', standalonePrice: 999, icon: '🎖️' },
       { slug: 'business-registration-license', name: 'Sole Proprietorship Documentation Dossier', standalonePrice: 1999, icon: '🏪' },
+      { slug: 'commercial-signboard-guide', name: 'Commercial Premises Signboard Mandatory Compliance Guide', standalonePrice: 999, icon: '🪧' },
+      { slug: 'current-account-docket', name: 'Bank Current Account Opening Resolution Docket', standalonePrice: 999, icon: '🏛️' },
     ],
     deliverables: [
       'Municipal Shop & Establishment License (State Labor Board)',
@@ -234,9 +250,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'Once your Shop Act and GSTIN certificates are issued (typically 3–5 working days), banks immediately accept the documents for current account activation.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-annual-retainer',
     slug: 'annual-corporate-compliance-retainer',
     category: 'compliance',
@@ -247,10 +263,8 @@ export const MASTER_PACKAGES: PackageItem[] = [
     icon: '📊',
     targetAudience: 'Private Limited companies, LLPs, and growing enterprises looking to outsource complete secretarial and tax duties.',
     description: 'Eliminates late penalties and departmental scrutiny by assigning a dedicated Chartered Accountant desk to handle every recurring statutory obligation.',
-    standaloneTotal: 34988,
-    packagePrice: 19999,
+    packagePrice: 18999,
     advanceToken: 999,
-    savingsPercent: 43,
     sla: 'Year-Round Dedicated CA',
     includedServices: [
       { slug: 'gst-return-filing', name: '12 Months of GST Returns (Monthly GSTR-1 & 3B)', standalonePrice: 11988, icon: '📈' },
@@ -269,16 +283,16 @@ export const MASTER_PACKAGES: PackageItem[] = [
     faqs: [
       {
         q: 'Can this be paid monthly or annually?',
-        a: 'The annual plan of ₹19,999 offers the deepest discount (effective ₹1,666/month). Alternatively, you can book with the ₹999 advance and opt for quarterly installments.',
+        a: 'The annual plan of ₹18,999 offers the deepest discount. Alternatively, you can book with the ₹999 advance and opt for quarterly installments.',
       },
       {
         q: 'What if we receive a notice from the Income Tax or GST department?',
         a: 'Routine scrutiny notices regarding filings prepared by our team are drafted and answered at zero additional consultation fee under this retainer.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-global-vc',
     slug: 'global-vc-delaware-crossborder-suite',
     category: 'startup',
@@ -290,16 +304,15 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: false,
     targetAudience: 'Indian SaaS, AI, and export founders applying to Y Combinator, Techstars, or raising venture checks from global investors.',
     description: 'An integrated cross-border formation package combining US Delaware C-Corporation incorporation, IRS EIN tax registration, Indian entity linkage, Startup India DPIIT recognition, and 0% IGST export LUT filing.',
-    standaloneTotal: 34996,
-    packagePrice: 28999,
+    packagePrice: 24999,
     advanceToken: 999,
-    savingsPercent: 17,
     sla: '10 - 15 Working Days',
     includedServices: [
       { slug: 'us-delaware-company-registration', name: 'US Delaware C-Corp Incorporation & IRS EIN', standalonePrice: 24999, icon: '🗽' },
       { slug: 'startup-india-dpiit-recognition', name: 'Startup India DPIIT Tax Exemption Docket', standalonePrice: 3499, icon: '🚀' },
       { slug: 'gst-lut-filing', name: 'GST LUT Export Filing (0% IGST SaaS Export)', standalonePrice: 1499, icon: '✈️' },
       { slug: 'trademark-registration', name: 'Trademark Registration in Primary Class', standalonePrice: 1999, icon: '™️' },
+      { slug: 'us-bank-83b-docket', name: 'US Startup Bank Account Assistance (Mercury/Brex) & 83(b) Tax Election', standalonePrice: 2999, icon: '💳' },
     ],
     deliverables: [
       'Official Delaware Certificate of Incorporation filed with State Department',
@@ -319,9 +332,9 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'Our senior corporate advisors structure your Delaware parent entity and Indian operating subsidiary compliant with RBI ODI rules and transfer pricing provisions.',
       },
     ],
-  },
+  }),
 
-  {
+  definePackage({
     id: 'pkg-brand-fortress',
     slug: 'brand-fortress-ipr-protection-suite',
     category: 'industry',
@@ -333,10 +346,8 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: false,
     targetAudience: 'D2C brands, consumer products, mobile app developers, and tech companies with valuable brand equity.',
     description: 'Prevents copycats, domain squatting, and confusingly similar competitor filings by combining trademark filing, copyright protection over source assets, and continuous 52-week automated Gazette scanning.',
-    standaloneTotal: 12996,
-    packagePrice: 7999,
+    packagePrice: 7499,
     advanceToken: 999,
-    savingsPercent: 38,
     sla: '3 - 5 Working Days Initial Docket',
     includedServices: [
       { slug: 'trademark-registration', name: 'Trademark Registration in Primary Class (™)', standalonePrice: 1999, icon: '™️' },
@@ -361,5 +372,5 @@ export const MASTER_PACKAGES: PackageItem[] = [
         a: 'Our system immediately calculates the 4-month opposition deadline and pre-fills Form TM-O to contest the infringing mark before it can be registered.',
       },
     ],
-  },
+  }),
 ];

@@ -23,6 +23,7 @@ async function loadFinanceData() {
         },
       }),
       prisma.ledgerEntry.findMany({
+        where: { mode: { not: 'TEST_SIMULATION' } },
         orderBy: { createdAt: 'desc' },
         take: 200,
         include: {
@@ -35,6 +36,7 @@ async function loadFinanceData() {
         },
       }),
       prisma.ledgerEntry.aggregate({
+        where: { mode: { not: 'TEST_SIMULATION' } },
         _sum: { credit: true, debit: true },
       }),
       prisma.order.findMany({

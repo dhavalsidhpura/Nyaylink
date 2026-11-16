@@ -5,6 +5,23 @@ const nextConfig = {
   compress: true,
   swcMinify: true,
 
+  // Canonical redirects for SEO & historical route aliases
+  async redirects() {
+    return [
+      { source: '/services/proprietorship-setup', destination: '/services/business-registration-license', permanent: true },
+      { source: '/services/director-din-ekyc', destination: '/services/dir-3-kyc-director-filing', permanent: true },
+      { source: '/services/gst-nil-return', destination: '/services/gst-nil-return-filing', permanent: true },
+      { source: '/services/gstr-9-annual-return', destination: '/services/gstr-9-annual-filing', permanent: true },
+      { source: '/services/tds-tcs-return', destination: '/services/tds-return-filing', permanent: true },
+      { source: '/services/income-tax-return', destination: '/services/income-tax-return-itr', permanent: true },
+      { source: '/services/tax-planning', destination: '/services/virtual-cfo-services', permanent: true },
+      { source: '/services/project-report', destination: '/services/scale-your-business', permanent: true },
+      { source: '/services/corporate-compliance-governance', destination: '/services/mca-inc-20a-commencement-of-business', permanent: true },
+      { source: '/services/form-aoc-4-filing', destination: '/services/mca-inc-20a-commencement-of-business', permanent: true },
+      { source: '/services/patent-filing', destination: '/vakil', permanent: false },
+    ];
+  },
+
   // Server external packages and optimization in Next.js 14
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],

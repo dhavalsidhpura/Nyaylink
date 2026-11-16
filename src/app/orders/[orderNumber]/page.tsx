@@ -10,7 +10,7 @@ import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
 import WhatsAppNotificationCard from '@/components/WhatsAppNotificationCard';
 import GovernmentCredentialLocker from '@/components/GovernmentCredentialLocker';
-import StagingPaySimulateButton from './StagingPaySimulateButton';
+import StagingPaySimulateButton, { StagingOrderResetButton } from './StagingPaySimulateButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -349,6 +349,14 @@ export default async function OrderTrackingPage({ params }: Props) {
                       🧾 Tax invoice {inv.invoiceNo}
                     </Link>
                   ))}
+                </div>
+              )}
+              {user.email?.endsWith('.local') && (
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="text-[10px] uppercase tracking-wider font-extrabold text-amber-600 mb-1.5 flex items-center gap-1">
+                    <span>🧪</span> Sandbox QA Controls
+                  </div>
+                  <StagingOrderResetButton orderNumber={order.orderNumber} />
                 </div>
               )}
             </section>

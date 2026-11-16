@@ -94,7 +94,13 @@ async function createInvoice(tx: Prisma.TransactionClient, payment: PaymentWithT
  * Marks a gateway payment as captured. Idempotent: the browser callback and the webhook can both
  * call this for the same payment, in any order, any number of times — side effects run exactly once.
  */
-export async function capturePayment(gatewayOrderId: string, gatewayPaymentId: string) {
+export async function capturePayment(
+  gatewayOrderId: string,
+  gatewayPaymentId: string,
+  options?: { isSimulation?: boolean }
+) {
+  const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
+
   const result = await prisma.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({ where: { gatewayOrderId }, include: paymentInclude });
     if (!payment) throw new HttpError(404, 'Payment not found.');
@@ -122,7 +128,7 @@ export async function capturePayment(gatewayOrderId: string, gatewayPaymentId: s
         data: {
           orderId: order.id,
           status: nextStatus === order.status ? 'PAYMENT_RECEIVED' : nextStatus,
-          remarks: `Payment ${gatewayPaymentId} of ₹${num(payment.amount).toLocaleString('en-IN')} received (${payment.description}).`,
+          remarks: `${isSimulation ? '[TEST SIMULATION] ' : ''}Payment ${gatewayPaymentId} of ₹${num(payment.amount).toLocaleString('en-IN')} received (${payment.description}).`,
         },
       });
     }
@@ -152,9 +158,9 @@ export async function capturePayment(gatewayOrderId: string, gatewayPaymentId: s
       data: {
         txnNo: gatewayPaymentId,
         type: 'CLIENT_PAYMENT',
-        description: payment.description,
+        description: isSimulation ? `[TEST SIMULATION] ${payment.description}` : payment.description,
         credit: payment.amount,
-        mode: 'RAZORPAY',
+        mode: isSimulation ? 'TEST_SIMULATION' : 'RAZORPAY',
         orderId: payment.orderId,
       },
     });
@@ -165,40 +171,51 @@ export async function capturePayment(gatewayOrderId: string, gatewayPaymentId: s
 
   if (result.newlyCaptured) {
     const { payment } = result;
-    if (payment.order) {
-      await sendNotificationEmail({
-        to: payment.order.client.email,
-        subject: `Payment Confirmed [${payment.order.orderNumber}]`,
-        html: buildPaymentReceiptEmail(
-          payment.order.client.name,
-          payment.order.orderNumber,
-          num(payment.amount),
-          payment.order.service.title,
-          `/orders/${payment.order.orderNumber}`
-        ),
-      });
+    const isTestAccount =
+      isSimulation ||
+      payment.order?.client.email?.endsWith('.local') ||
+      payment.order?.client.email?.includes('demo') ||
+      payment.consultation?.client.email?.endsWith('.local') ||
+      payment.consultation?.client.email?.includes('demo');
 
-      if (payment.order.client.phone) {
-        await notifyOrderCreatedWhatsApp({
-          phone: payment.order.client.phone,
-          clientName: payment.order.client.name,
-          orderNumber: payment.order.orderNumber,
-          serviceTitle: payment.order.service.title,
-          amountPaid: num(payment.amount),
+    if (!isTestAccount) {
+      if (payment.order) {
+        await sendNotificationEmail({
+          to: payment.order.client.email,
+          subject: `Payment Confirmed [${payment.order.orderNumber}]`,
+          html: buildPaymentReceiptEmail(
+            payment.order.client.name,
+            payment.order.orderNumber,
+            num(payment.amount),
+            payment.order.service.title,
+            `/orders/${payment.order.orderNumber}`
+          ),
+        });
+
+        if (payment.order.client.phone) {
+          await notifyOrderCreatedWhatsApp({
+            phone: payment.order.client.phone,
+            clientName: payment.order.client.name,
+            orderNumber: payment.order.orderNumber,
+            serviceTitle: payment.order.service.title,
+            amountPaid: num(payment.amount),
+          });
+        }
+      } else if (payment.consultation && !result.slotLost) {
+        const c = payment.consultation;
+        await sendNotificationEmail({
+          to: c.client.email,
+          subject: `Consultation confirmed [${c.number}]`,
+          html: buildConsultationConfirmedEmail(c.client.name, c.lawyer.user.name, c.startsAt, c.number),
+        });
+        await sendNotificationEmail({
+          to: c.lawyer.user.email,
+          subject: `New consultation booked [${c.number}]`,
+          html: buildConsultationConfirmedEmail(c.lawyer.user.name, `${c.client.name} (client)`, c.startsAt, c.number),
         });
       }
-    } else if (payment.consultation && !result.slotLost) {
-      const c = payment.consultation;
-      await sendNotificationEmail({
-        to: c.client.email,
-        subject: `Consultation confirmed [${c.number}]`,
-        html: buildConsultationConfirmedEmail(c.client.name, c.lawyer.user.name, c.startsAt, c.number),
-      });
-      await sendNotificationEmail({
-        to: c.lawyer.user.email,
-        subject: `New consultation booked [${c.number}]`,
-        html: buildConsultationConfirmedEmail(c.lawyer.user.name, `${c.client.name} (client)`, c.startsAt, c.number),
-      });
+    } else {
+      console.log(`[staging] Suppressed outbound notifications for test account: ${payment.order?.client.email || payment.consultation?.client.email}`);
     }
   }
 

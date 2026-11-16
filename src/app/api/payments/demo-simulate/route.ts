@@ -54,7 +54,7 @@ export const POST = apiHandler(async (request: Request) => {
     });
   }
 
-  const result = await capturePayment(mockGatewayOrderId, mockGatewayPaymentId);
+  const result = await capturePayment(mockGatewayOrderId, mockGatewayPaymentId, { isSimulation: true });
 
   return NextResponse.json({
     success: true,

@@ -23,6 +23,28 @@ let isCatalogSynced = false;
 let publicServicesCache: { data: any[]; timestamp: number } | null = null;
 const CACHE_TTL_MS = 60 * 1000;
 
+export const SLUG_ALIASES: Record<string, string> = {
+  'proprietorship-setup': 'business-registration-license',
+  'director-din-ekyc': 'dir-3-kyc-director-filing',
+  'gst-nil-return': 'gst-nil-return-filing',
+  'gstr-9-annual-return': 'gstr-9-annual-filing',
+  'tds-tcs-return': 'tds-return-filing',
+  'income-tax-return': 'income-tax-return-itr',
+  'tax-planning': 'virtual-cfo-services',
+  'project-report': 'scale-your-business',
+  'corporate-compliance-governance': 'mca-inc-20a-commencement-of-business',
+  'form-aoc-4-filing': 'mca-inc-20a-commencement-of-business',
+  'appointment-removal-director': 'private-limited-company',
+  'registered-office-change': 'private-limited-company',
+  'change-company-name': 'private-limited-company',
+  'company-llp-winding-up': 'private-limited-company',
+  'patent-filing': 'copyright-registration',
+};
+
+export function resolveSlug(slug: string): string {
+  return SLUG_ALIASES[slug] || slug;
+}
+
 export function invalidateServiceCache() {
   publicServicesCache = null;
 }
@@ -199,29 +221,31 @@ export async function getPublicServices() {
 }
 
 export const getActiveService = cache(async (slug: string) => {
+  const targetSlug = resolveSlug(slug);
   try {
-    let service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
-    if (!service && MASTER_SERVICES.some((s) => s.slug === slug)) {
+    let service = await prisma.service.findUnique({ where: { slug: targetSlug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+    if (!service && MASTER_SERVICES.some((s) => s.slug === targetSlug)) {
       await syncCatalog().catch(() => {});
-      service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+      service = await prisma.service.findUnique({ where: { slug: targetSlug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
     }
     if (service) return service.isActive ? service : null;
   } catch (err: any) {
-    console.warn(`[catalog] Failed DB lookup for active service ${slug}:`, err?.message);
+    console.warn(`[catalog] Failed DB lookup for active service ${targetSlug}:`, err?.message);
   }
-  return buildStaticServiceFallback(slug);
+  return buildStaticServiceFallback(targetSlug);
 });
 
 export const getServiceBySlug = cache(async (slug: string) => {
+  const targetSlug = resolveSlug(slug);
   try {
-    let service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
-    if (!service && MASTER_SERVICES.some((s) => s.slug === slug)) {
+    let service = await prisma.service.findUnique({ where: { slug: targetSlug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+    if (!service && MASTER_SERVICES.some((s) => s.slug === targetSlug)) {
       await syncCatalog().catch(() => {});
-      service = await prisma.service.findUnique({ where: { slug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
+      service = await prisma.service.findUnique({ where: { slug: targetSlug }, include: { requirements: { orderBy: { sortOrder: 'asc' } } } });
     }
     if (service) return service;
   } catch (err: any) {
-    console.warn(`[catalog] Failed DB lookup for service ${slug}:`, err?.message);
+    console.warn(`[catalog] Failed DB lookup for service ${targetSlug}:`, err?.message);
   }
-  return buildStaticServiceFallback(slug);
+  return buildStaticServiceFallback(targetSlug);
 });

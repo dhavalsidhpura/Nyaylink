@@ -59,7 +59,7 @@ const PRESET_OPTIONS: PresetOption[] = [
     label: 'Consultant / Freelancer',
     icon: '💼',
     entity: 'Sole Proprietorship / Section 44ADA',
-    slug: 'proprietorship-setup',
+    slug: 'business-registration-license',
     summary: 'Lowest compliance cost for solo developers, designers, and marketing experts billing domestic or international clients (0% GST LUT export).',
     mandatoryDocs: ['PAN Card', 'Aadhaar Card', 'Bank Cheque'],
     advancePrice: 999,

@@ -15,19 +15,19 @@ const MENU_COMPANY_REG = {
       { name: 'Section 8 Company (NGO)', slug: 'section-8-company' },
       { name: 'Nidhi Company Registration', slug: 'nidhi-company-registration' },
       { name: 'Indian Subsidiary Registration', slug: 'indian-subsidiary-registration' },
-      { name: 'Proprietorship / Shop Act Setup', slug: 'proprietorship-setup' },
+      { name: 'Proprietorship / Shop Act Setup', slug: 'business-registration-license' },
     ],
   },
   column2: {
     title: 'Governance & Compliance',
     items: [
-      { name: 'Annual Corporate Governance', slug: 'corporate-compliance-governance' },
-      { name: 'Director DIN e-KYC Update', slug: 'director-din-ekyc' },
-      { name: 'Appointment / Removal of Director', slug: 'appointment-removal-director' },
-      { name: 'Registered Office Address Change', slug: 'registered-office-change' },
-      { name: 'Change Company Name', slug: 'change-company-name' },
-      { name: 'Form AOC-4 & MGT-7 Annual Filing', slug: 'form-aoc-4-filing' },
-      { name: 'Company / LLP Winding Up', slug: 'company-llp-winding-up' },
+      { name: 'Director DIR-3 KYC Annual Filing', slug: 'dir-3-kyc-director-filing' },
+      { name: 'MCA Form INC-20A Commencement', slug: 'mca-inc-20a-commencement-of-business' },
+      { name: 'Startup India DPIIT Recognition', slug: 'startup-india-dpiit-recognition' },
+      { name: 'MSME Udyam Registration', slug: 'msme-udyam-registration' },
+      { name: 'Shop & Establishment (Gumasta)', slug: 'shop-and-establishment-license' },
+      { name: 'ISO 9001/27001 Certification', slug: 'iso-certification' },
+      { name: 'Annual 360° Corporate Retainer', href: '/packages' },
     ],
   },
 };
@@ -50,7 +50,7 @@ const MENU_TRADEMARK = {
     title: 'Copyright & IPR Rights',
     items: [
       { name: 'Copyright Registration', slug: 'copyright-registration' },
-      { name: 'Patent Filing Assistance', slug: 'patent-filing' },
+      { name: 'Consult an IP Advocate', href: '/vakil' },
     ],
   },
 };
@@ -61,8 +61,8 @@ const MENU_TAX_GST = {
     items: [
       { name: 'GST Registration (New GSTIN)', slug: 'gst-registration' },
       { name: 'Monthly / Quarterly GST Return', slug: 'gst-return-filing' },
-      { name: 'GST Nil Return Filing', slug: 'gst-nil-return' },
-      { name: 'GSTR-9 Annual Return', slug: 'gstr-9-annual-return' },
+      { name: 'GST Nil Return Filing', slug: 'gst-nil-return-filing' },
+      { name: 'GSTR-9 Annual Return', slug: 'gstr-9-annual-filing' },
       { name: 'GST LUT Filing for Exporters', slug: 'gst-lut-filing' },
     ],
   },
@@ -70,10 +70,10 @@ const MENU_TAX_GST = {
     title: 'TDS & Direct Taxation',
     items: [
       { name: 'Virtual CFO (vCFO) Advisory', slug: 'virtual-cfo-services' },
-      { name: 'TDS Quarterly Return (26Q/24Q)', slug: 'tds-tcs-return' },
-      { name: 'Income Tax Return (ITR-1 to 7)', slug: 'income-tax-return' },
-      { name: 'Tax Planning & Advisory', slug: 'tax-planning' },
-      { name: 'Project Report for Bank Loans', slug: 'project-report' },
+      { name: 'TDS Quarterly Return (26Q/24Q)', slug: 'tds-return-filing' },
+      { name: 'Income Tax Return (ITR-1 to 7)', slug: 'income-tax-return-itr' },
+      { name: 'Online Bookkeeping & Accounting', slug: 'online-bookkeeping' },
+      { name: 'Scale Your Business & SOPs', slug: 'scale-your-business' },
     ],
   },
 };
