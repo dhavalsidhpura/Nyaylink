@@ -45,7 +45,8 @@ export type CrmData = Plain<Awaited<ReturnType<typeof loadCrmData>>>;
 
 export default async function AdminCrmPage() {
   const user = await getSessionUser();
-  if (!user || !isStaff(user.role)) redirect('/login?callbackUrl=/admin/crm');
+  if (!user) redirect('/login?callbackUrl=/admin/crm');
+  if (!isStaff(user.role)) redirect(`/unauthorized?from=${encodeURIComponent('/admin/crm')}&role=${user.role}`);
 
   const data = plain(await loadCrmData());
   return <CrmWorkspaceClient currentRole={user.role} currentUserId={user.id} {...data} />;

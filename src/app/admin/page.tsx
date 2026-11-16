@@ -68,7 +68,8 @@ export type AdminData = Plain<Awaited<ReturnType<typeof loadAdminData>>>;
 
 export default async function AdminOverviewPage() {
   const user = await getSessionUser();
-  if (!user || !isStaff(user.role)) redirect('/login?callbackUrl=/admin');
+  if (!user) redirect('/login?callbackUrl=/admin');
+  if (!isStaff(user.role)) redirect(`/unauthorized?from=${encodeURIComponent('/admin')}&role=${user.role}`);
 
   const data = plain(await loadAdminData(user.role));
   return <AdminWorkspaceClient role={user.role} {...data} />;

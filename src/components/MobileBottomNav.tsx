@@ -10,8 +10,14 @@ export default function MobileBottomNav() {
   // to maximize checkout conversion!
   const isServiceDetailPage = pathname?.startsWith('/services/') && pathname !== '/services';
 
-  if (isServiceDetailPage) {
-    return null; // ServiceDetailClient has its own dedicated 1-click ₹999 checkout bar
+  if (
+    isServiceDetailPage ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/ca') ||
+    pathname?.startsWith('/lawyer/dashboard') ||
+    pathname?.startsWith('/unauthorized')
+  ) {
+    return null;
   }
 
   const items = [

@@ -10,6 +10,7 @@ import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
 import WhatsAppNotificationCard from '@/components/WhatsAppNotificationCard';
 import GovernmentCredentialLocker from '@/components/GovernmentCredentialLocker';
+import StagingPaySimulateButton from './StagingPaySimulateButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -288,7 +289,12 @@ export default async function OrderTrackingPage({ params }: Props) {
                     {p.gstAmount > 0 ? ` incl. ${formatINR(p.gstAmount)} GST` : ' (government fee, no GST)'}
                   </span>
                 </div>
-                <PayNowButton paymentId={p.id} amount={p.amount} />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <PayNowButton paymentId={p.id} amount={p.amount} />
+                  {user.email?.endsWith('.local') && (
+                    <StagingPaySimulateButton paymentId={p.id} orderNumber={order.orderNumber} />
+                  )}
+                </div>
               </div>
             ))}
           </section>
@@ -296,15 +302,24 @@ export default async function OrderTrackingPage({ params }: Props) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {order.paymentStatus === 'UNPAID' && (
+              <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-900 flex items-start gap-3">
+                <span className="text-xl shrink-0">📄</span>
+                <div className="space-y-1">
+                  <strong className="block font-bold">Document Pre-Submission Enabled</strong>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    You can upload required documents now. Once your payment or ₹999 advance token is confirmed, your assigned CA desk will immediately initiate verification and statutory name reservation.
+                  </p>
+                </div>
+              </div>
+            )}
             <DocumentChecklist
               orderId={order.id}
               mode="client"
               requirements={order.service.requirements}
               documents={order.documents}
-              locked={closed || order.paymentStatus === 'UNPAID'}
-              lockedReason={
-                order.paymentStatus === 'UNPAID' ? 'Complete payment to start uploading documents.' : closed ? 'This application is closed.' : undefined
-              }
+              locked={closed}
+              lockedReason={closed ? 'This application is closed.' : undefined}
             />
             <OrderMessages orderNumber={order.orderNumber} mode="client" />
           </div>

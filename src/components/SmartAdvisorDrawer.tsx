@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface PresetOption {
   id: string;
@@ -80,6 +81,7 @@ const PRESET_OPTIONS: PresetOption[] = [
 ];
 
 export default function SmartAdvisorDrawer() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'advisor' | 'callback' | 'disclaimer'>('advisor');
   const [hasPrompted, setHasPrompted] = useState(false);
@@ -139,6 +141,15 @@ export default function SmartAdvisorDrawer() {
           p.summary.toLowerCase().includes(userQuery.toLowerCase())
       )
     : PRESET_OPTIONS;
+
+  if (
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/ca') ||
+    pathname?.startsWith('/lawyer/dashboard') ||
+    pathname?.startsWith('/unauthorized')
+  ) {
+    return null;
+  }
 
   return (
     <>

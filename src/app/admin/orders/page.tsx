@@ -22,7 +22,8 @@ export type AdminOrderRow = Plain<Awaited<ReturnType<typeof query>>[number]>;
 
 export default async function AdminOrdersPage() {
   const user = await getSessionUser();
-  if (!user || !isStaff(user.role)) redirect('/login?callbackUrl=/admin/orders');
+  if (!user) redirect('/login?callbackUrl=/admin/orders');
+  if (!isStaff(user.role)) redirect(`/unauthorized?from=${encodeURIComponent('/admin/orders')}&role=${user.role}`);
 
   let orders: any[] = [];
   try {

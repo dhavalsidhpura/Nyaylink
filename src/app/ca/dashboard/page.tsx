@@ -116,7 +116,7 @@ export default async function CADashboardPage() {
 
   // Restrict to authorized CA/CS and caseworker roles
   if (!ROLE_GROUPS.caseworkers.includes(user.role)) {
-    redirect('/dashboard');
+    redirect(`/unauthorized?from=${encodeURIComponent('/ca/dashboard')}&role=${user.role}`);
   }
 
   const data = plain(await loadCAData(user.id));

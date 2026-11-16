@@ -103,8 +103,11 @@ export type FinanceData = Plain<Awaited<ReturnType<typeof loadFinanceData>>>;
 
 export default async function AdminFinancePage() {
   const user = await getSessionUser();
-  if (!user || !ROLE_GROUPS.finance.includes(user.role)) {
+  if (!user) {
     redirect('/login?callbackUrl=/admin/finance');
+  }
+  if (!ROLE_GROUPS.finance.includes(user.role)) {
+    redirect(`/unauthorized?from=${encodeURIComponent('/admin/finance')}&role=${user.role}`);
   }
 
   const data = plain(await loadFinanceData());

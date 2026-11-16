@@ -13,7 +13,7 @@ export default async function AdminLawyersPage() {
   if (!user) redirect('/login?callbackUrl=/admin/lawyers');
   const canVerify = ROLE_GROUPS.ops.includes(user.role);
   const canPay = ROLE_GROUPS.finance.includes(user.role);
-  if (!canVerify && !canPay) redirect('/admin');
+  if (!canVerify && !canPay) redirect(`/unauthorized?from=${encodeURIComponent('/admin/lawyers')}&role=${user.role}`);
 
   let lawyers: any[] = [];
   let payable: any[] = [];
