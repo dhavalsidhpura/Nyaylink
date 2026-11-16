@@ -238,13 +238,14 @@ export async function recordRefund(gatewayPaymentId: string, refundId: string, a
     const fullRefund = amount >= num(payment.amount);
     if (fullRefund) await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
 
+    const isSimulation = gatewayPaymentId.startsWith('pay_demo_');
     await tx.ledgerEntry.create({
       data: {
         txnNo: refundId,
         type: 'REFUND',
-        description: `Refund against ${gatewayPaymentId}`,
+        description: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund against ${gatewayPaymentId}`,
         debit: amount,
-        mode: 'RAZORPAY',
+        mode: isSimulation ? 'TEST_SIMULATION' : 'RAZORPAY',
         orderId: payment.orderId,
       },
     });
