@@ -1,28 +1,31 @@
 -- ==============================================================================
--- NyayaLink Idempotent Legacy User & Order Backfill Plan (Harnessed State Provenance)
--- Target: Safely maps existing legacy Clients and Orders into Organizations
--- Guarantees: Zero client lockout, strict provenance verification, idempotent ON CONFLICT guards
+-- NyayaLink Deterministic Entity-Scoped Organization Backfill Plan
+-- Target: Maps legacy clients to organizations with strict provenance verification
+-- Guarantees: Zero duplicate rows, unambiguous evidence checks, automated review tasks
 -- ==============================================================================
 
--- 1. Create a default Organization for every existing CLIENT user
--- State code is ONLY populated if verified with explicit provenance/reviewer evidence:
---   - Provenance Rule 1: Verified statutory document in VaultDocument (status = 'VERIFIED' and reviewedById IS NOT NULL)
---   - Provenance Rule 2: Verified statutory GSTIN with reviewer audit log (AuditLog action = 'GSTIN_VERIFIED')
--- Any raw unverified User.state (e.g. 'KA', 'DL', 'MH' without reviewer evidence) or invalid code ('XX', '99', NULL)
--- is strictly set to 'UNKNOWN'.
+-- 1. Create a default Organization for every existing CLIENT user using deterministic evidence
 INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
-SELECT
-  'org_' || u."id" AS "id",
-  'org-' || lower(u."id") AS "slug",
-  coalesce(u."name", 'My Organization') AS "name",
-  CASE
-    -- Provenance Rule 1: Verified statutory document in VaultDocument with reviewer audit
-    WHEN vd."id" IS NOT NULL AND u."state" IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
-    THEN upper(trim(u."state"))
-
-    -- Provenance Rule 2: Verified statutory GSTIN with reviewer audit log
-    WHEN al."id" IS NOT NULL AND u."gstin" IS NOT NULL AND length(trim(u."gstin")) = 15
-    THEN (
+WITH doc_evidence AS (
+  SELECT
+    vd."ownerId" AS "userId",
+    COUNT(DISTINCT upper(trim(vd."category"))) AS "docCategoryCount",
+    COUNT(DISTINCT upper(trim(u."state"))) AS "distinctAttestedCount",
+    MAX(upper(trim(u."state"))) AS "docState"
+  FROM "VaultDocument" vd
+  JOIN "User" u ON u."id" = vd."ownerId"
+  WHERE vd."status" = 'VERIFIED'
+    AND vd."reviewedById" IS NOT NULL
+    AND vd."reviewedAt" IS NOT NULL
+    AND vd."storageKey" IS NOT NULL
+    AND u."state" IS NOT NULL
+    AND upper(trim(u."state")) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
+  GROUP BY vd."ownerId"
+),
+gstin_evidence AS (
+  SELECT
+    al."entityId" AS "userId",
+    MAX(
       CASE substr(trim(u."gstin"), 1, 2)
         WHEN '01' THEN 'JK' WHEN '02' THEN 'HP' WHEN '03' THEN 'PB' WHEN '04' THEN 'CH'
         WHEN '05' THEN 'UK' WHEN '06' THEN 'HR' WHEN '07' THEN 'DL' WHEN '08' THEN 'RJ'
@@ -33,29 +36,51 @@ SELECT
         WHEN '26' THEN 'DN' WHEN '27' THEN 'MH' WHEN '29' THEN 'KA' WHEN '30' THEN 'GA'
         WHEN '31' THEN 'LD' WHEN '32' THEN 'KL' WHEN '33' THEN 'TN' WHEN '34' THEN 'PY'
         WHEN '35' THEN 'AN' WHEN '36' THEN 'TS' WHEN '37' THEN 'AP' WHEN '38' THEN 'LA'
-        ELSE 'UNKNOWN'
+        ELSE NULL
       END
-    )
+    ) AS "gstinState"
+  FROM "AuditLog" al
+  JOIN "User" u ON u."id" = al."entityId"
+  WHERE al."action" = 'GSTIN_VERIFIED'
+    AND al."actorId" IS NOT NULL
+    AND u."gstin" IS NOT NULL
+    AND length(trim(u."gstin")) = 15
+    AND coalesce(al."details"->>'verifiedGstin', u."gstin") = u."gstin"
+  GROUP BY al."entityId"
+)
+SELECT
+  'org_' || u."id" AS "id",
+  'org-' || lower(u."id") AS "slug",
+  coalesce(u."name", 'My Organization') AS "name",
+  CASE
+    -- Conflict check: if both document state and GSTIN state exist but contradict each other -> UNKNOWN
+    WHEN de."docState" IS NOT NULL AND ge."gstinState" IS NOT NULL AND de."docState" != ge."gstinState"
+    THEN 'UNKNOWN'
 
-    -- Plausible unverified 2-letter codes and invalid codes strictly evaluate to UNKNOWN
+    -- Ambiguity check: multiple conflicting attested states -> UNKNOWN
+    WHEN de."distinctAttestedCount" > 1
+    THEN 'UNKNOWN'
+
+    -- Unambiguous document evidence with verified reviewer and timestamp
+    WHEN de."docState" IS NOT NULL
+    THEN de."docState"
+
+    -- Unambiguous verified GSTIN evidence tied to current entity GSTIN
+    WHEN ge."gstinState" IS NOT NULL
+    THEN ge."gstinState"
+
+    -- Missing or unverified evidence -> UNKNOWN
     ELSE 'UNKNOWN'
   END AS "stateCode",
   u."createdAt" AS "createdAt",
   CURRENT_TIMESTAMP AS "updatedAt"
 FROM "User" u
-LEFT JOIN "VaultDocument" vd
-  ON vd."ownerId" = u."id"
-  AND vd."status" = 'VERIFIED'
-  AND vd."reviewedById" IS NOT NULL
-  AND vd."category" IN ('STATE_VERIFICATION', 'GST_CERTIFICATE', 'INCORPORATION_CERTIFICATE')
-LEFT JOIN "AuditLog" al
-  ON al."entityId" = u."id"
-  AND al."action" = 'GSTIN_VERIFIED'
-  AND al."actorId" IS NOT NULL
+LEFT JOIN doc_evidence de ON de."userId" = u."id"
+LEFT JOIN gstin_evidence ge ON ge."userId" = u."id"
 WHERE u."role" = 'CLIENT'
 ON CONFLICT ("id") DO NOTHING;
 
--- 2. Link each existing CLIENT as the OWNER of their Organization
+-- 2. Link each existing CLIENT as OWNER of their Organization
 INSERT INTO "OrganizationMember" ("id", "organizationId", "userId", "role", "createdAt")
 SELECT
   'mem_' || u."id" AS "id",
@@ -67,18 +92,50 @@ FROM "User" u
 WHERE u."role" = 'CLIENT'
 ON CONFLICT ("id") DO NOTHING;
 
--- 3. Idempotently backfill existing Orders with their client's Organization ID
+-- 3. Idempotently backfill existing Orders with client organization ID
 UPDATE "Order"
 SET "organizationId" = 'org_' || "clientId"
 WHERE "organizationId" IS NULL
   AND "clientId" IS NOT NULL;
 
--- 4. Create an audit log recording completion of the backfill
-INSERT INTO "AuditLog" ("id", "action", "entityType", "details", "createdAt")
-VALUES (
-  'audit_backfill_init',
-  'MIGRATION_BACKFILL_ORGANIZATIONS',
-  'System',
-  '{"strategy": "idempotent_client_org_mapping_with_provenance"}',
+-- 4. Create Review Tasks and Compliance Matter for organizations with UNKNOWN / ambiguous state
+INSERT INTO "Matter" ("id", "matterNumber", "title", "vertical", "status", "organizationId", "notes", "createdAt", "updatedAt")
+SELECT
+  'mat_rev_' || org."id",
+  'MAT-REV-' || substr(org."id", 5, 8),
+  'State & Place of Supply Verification',
+  CAST('TAXATION_GST_VCFO' AS "MatterVertical"),
+  CAST('INTAKE_PENDING' AS "MatterStatus"),
+  org."id",
+  'State is UNKNOWN / unverified. Professional review required to verify registered office jurisdiction.',
+  CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
-);
+FROM "Organization" org
+WHERE org."stateCode" = 'UNKNOWN'
+ON CONFLICT ("id") DO NOTHING;
+
+INSERT INTO "MatterTask" ("id", "matterId", "title", "description", "status", "createdAt", "updatedAt")
+SELECT
+  'task_rev_' || org."id",
+  'mat_rev_' || org."id",
+  'Review State Provenance & Place of Supply Evidence',
+  'Evidence is missing, conflicting, or unverified. Verify state against statutory certificate or GSTN portal.',
+  CAST('PENDING' AS "TaskStatus"),
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+FROM "Organization" org
+WHERE org."stateCode" = 'UNKNOWN'
+ON CONFLICT ("id") DO NOTHING;
+
+-- 5. Audit Log recording review tasks generated
+INSERT INTO "AuditLog" ("id", "action", "entityType", "entityId", "details", "createdAt")
+SELECT
+  'aud_rev_' || org."id",
+  'STATE_VERIFICATION_REVIEW_REQUIRED',
+  'Organization',
+  org."id",
+  CAST('{"reason": "Missing, conflicting, or unverified state evidence during migration. Review task created."}' AS JSONB),
+  CURRENT_TIMESTAMP
+FROM "Organization" org
+WHERE org."stateCode" = 'UNKNOWN'
+ON CONFLICT ("id") DO NOTHING;

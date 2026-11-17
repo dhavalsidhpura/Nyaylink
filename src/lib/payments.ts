@@ -269,6 +269,23 @@ export async function recordRefund(
     if (!payment) throw new HttpError(404, 'Payment not found for refund.');
     if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
 
+    // Cumulative refund balance control
+    const priorRefunds = await tx.ledgerEntry.findMany({
+      where: {
+        type: 'REFUND',
+        description: { contains: gatewayPaymentId },
+      },
+    });
+    const cumulativePriorRefunded = priorRefunds.reduce((sum, entry) => sum + num(entry.debit), 0);
+    const remainingRefundable = Math.round((num(payment.amount) - cumulativePriorRefunded) * 100) / 100;
+
+    if (amount > remainingRefundable) {
+      throw new HttpError(
+        400,
+        `Refund Rejected: Requested refund of ₹${amount} exceeds remaining refundable balance of ₹${remainingRefundable} for payment ${gatewayPaymentId}.`
+      );
+    }
+
     const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
 
     // 1. Post immutable, balanced JournalEntry to Double-Entry General Ledger
@@ -301,7 +318,7 @@ export async function recordRefund(
     });
 
     // 3. Mark payment as REFUNDED if cumulative refunds equal or exceed original amount
-    const fullRefund = amount >= num(payment.amount);
+    const fullRefund = Math.round((cumulativePriorRefunded + amount) * 100) >= Math.round(num(payment.amount) * 100);
     if (fullRefund) {
       await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
     }

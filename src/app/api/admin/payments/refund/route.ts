@@ -33,9 +33,25 @@ export const POST = apiHandler(async (request: Request) => {
     throw new HttpError(409, 'Only captured payments can be refunded.');
   }
 
-  const refundAmount = amount ?? num(payment.amount);
-  if (refundAmount > num(payment.amount)) {
-    throw new HttpError(400, 'Refund exceeds the captured payment amount.');
+  const priorRefunds = await prisma.ledgerEntry.findMany({
+    where: {
+      type: 'REFUND',
+      description: { contains: payment.gatewayPaymentId },
+    },
+  });
+  const cumulativePriorRefunded = priorRefunds.reduce((sum, entry) => sum + num(entry.debit), 0);
+  const remainingRefundable = Math.round((num(payment.amount) - cumulativePriorRefunded) * 100) / 100;
+
+  if (remainingRefundable <= 0) {
+    throw new HttpError(400, 'Payment has already been fully refunded.');
+  }
+
+  const refundAmount = amount ?? remainingRefundable;
+  if (refundAmount > remainingRefundable) {
+    throw new HttpError(
+      400,
+      `Refund of ₹${refundAmount} exceeds remaining refundable balance of ₹${remainingRefundable}.`
+    );
   }
 
   const reference = payment.order?.orderNumber || payment.consultation?.number || payment.id;

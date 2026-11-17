@@ -108,35 +108,47 @@ describe('Pricing & GST Pure Math Engine', () => {
       const eligibility = checkStateSchemeEligibility(input as any, 'STARTUP_SUBSIDY');
       assert.strictEqual(eligibility.isVerified, false, `Eligibility must be unverified for ${input}`);
       assert.strictEqual(eligibility.eligible, false);
-      assert.match(eligibility.reason, /blocked|unverified|UNKNOWN/i);
+      assert.match(eligibility.reason, /not evaluated|professional review|blocked|unverified/i);
     }
   });
 
-  test('Verified state codes with provenance successfully drive statutory decisions across all 4 domains', () => {
-    const verifiedStates = ['MH', 'KA', 'DL', 'GJ'];
-
-    for (const code of verifiedStates) {
-      // 1. GST Calculation Allowed
-      const gst = splitGst(1800, code, 'MH');
-      assert.strictEqual(gst.total, 1800);
-      assert.strictEqual(typeof gst.intraState, 'boolean');
-
-      // 2. Stamp Duty Calculation Allowed
-      const stamp = getStateStampDuty(code);
-      assert.strictEqual(stamp.isVerified, true);
-      assert.ok(stamp.amount > 0, `Stamp duty for ${code} must be positive`);
-
-      // 3. Jurisdiction Assignment Allowed
+  test('Jurisdiction helper returns verified mapping ONLY for maintained gazette records, and unverified/requires review for unmaintained states', () => {
+    // 1. Maintained states with complete gazette source citations return VERIFIED_MAINTAINED
+    const maintainedStates = ['MH', 'DL', 'KA'];
+    for (const code of maintainedStates) {
       const jur = getStateJurisdiction(code);
       assert.strictEqual(jur.isVerified, true);
+      assert.strictEqual(jur.status, 'VERIFIED_MAINTAINED');
       assert.ok(jur.roc && jur.roc.length > 0);
       assert.ok(jur.ncltBench && jur.ncltBench.length > 0);
       assert.ok(jur.gstJurisdiction && jur.gstJurisdiction.length > 0);
+      assert.ok(jur.statutorySource && jur.statutorySource.length > 0);
+      assert.ok(jur.effectiveDate && jur.effectiveDate.length > 0);
+    }
 
-      // 4. Eligibility Determination Allowed
-      const elig = checkStateSchemeEligibility(code, 'STARTUP_SUBSIDY');
-      assert.strictEqual(elig.isVerified, true);
-      assert.strictEqual(elig.eligible, true);
+    // 2. Verified Indian states without complete maintained gazette mapping return UNVERIFIED_REQUIRES_REVIEW (zero generic fallbacks)
+    const unmaintainedStates = ['GJ', 'TN', 'WB', 'TS', 'GA'];
+    for (const code of unmaintainedStates) {
+      const jur = getStateJurisdiction(code);
+      assert.strictEqual(jur.isVerified, false, `State ${code} must not have generic fallback jurisdiction`);
+      assert.strictEqual(jur.status, 'UNVERIFIED_REQUIRES_REVIEW');
+      assert.strictEqual(jur.roc, null);
+      assert.strictEqual(jur.ncltBench, null);
+      assert.strictEqual(jur.gstJurisdiction, null);
+      assert.match(jur.reason, /requires review|no complete.*mapping/i);
+    }
+  });
+
+  test('checkStateSchemeEligibility() strictly returns not evaluated / professional review required and NEVER returns eligible: true solely for verified state', () => {
+    const statesToTest = ['MH', 'KA', 'DL', 'GJ', 'UNKNOWN', 'XX'];
+
+    for (const code of statesToTest) {
+      const result = checkStateSchemeEligibility(code, 'STARTUP_SUBSIDY');
+      assert.strictEqual(result.isVerified, false, `Eligibility must be unverified for ${code}`);
+      assert.strictEqual(result.eligible, false, `Eligibility must never be true without entity-specific legal audit`);
+      assert.strictEqual(result.status, 'NOT_EVALUATED_PROFESSIONAL_REVIEW_REQUIRED');
+      assert.match(result.reason, /not evaluated/i);
+      assert.match(result.reason, /professional review required/i);
     }
   });
 

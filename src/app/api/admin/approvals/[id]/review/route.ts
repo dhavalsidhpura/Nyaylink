@@ -61,15 +61,22 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
 
       const refundAmount = amount ? Number(amount) : num(payment.amount);
       const isSim = payment.gatewayPaymentId.startsWith('pay_demo_');
+      const idempotencyKey = `ref_${existing.id}`;
 
       let refundId: string;
       if (isSim) {
-        refundId = `ref_demo_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        refundId = `ref_demo_${existing.id}`;
       } else {
-        const rzRefund = await getRazorpay().payments.refund(payment.gatewayPaymentId, {
-          amount: Math.round(refundAmount * 100),
-          notes: { paymentId: payment.id, approvedBy: user.email },
-        });
+        const rzRefund = await (getRazorpay().payments.refund as any)(
+          payment.gatewayPaymentId,
+          {
+            amount: Math.round(refundAmount * 100),
+            notes: { paymentId: payment.id, approvedBy: user.email, approvalId: existing.id },
+          },
+          {
+            'X-Razorpay-Idempotency-Key': idempotencyKey,
+          }
+        );
         refundId = rzRefund.id;
       }
 

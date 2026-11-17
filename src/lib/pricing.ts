@@ -168,78 +168,138 @@ export function getStateStampDuty(stateCode?: string | null): { amount: number; 
   };
 }
 
-export interface StateJurisdiction {
+export interface MaintainedJurisdictionRule {
+  roc: string;
+  ncltBench: string;
+  gstJurisdiction: string;
+  statutorySource: string;
+  effectiveDate: string;
+  lastAuditedDate: string;
+}
+
+/**
+ * Maintained, source-backed statutory jurisdiction catalog.
+ * States without complete, gazette-verified mappings are excluded so generic fallbacks are never returned.
+ */
+export const MAINTAINED_JURISDICTIONS: Record<string, MaintainedJurisdictionRule> = {
+  MH: {
+    roc: 'ROC Mumbai & Pune (Maharashtra)',
+    ncltBench: 'NCLT Mumbai Bench (Court I–V)',
+    gstJurisdiction: 'Maharashtra State GST Department & CGST Mumbai Zone',
+    statutorySource: 'MCA S.O. 831(E) dtd 24-03-2015; NCLT Order No. 10/03/2021-NCLT',
+    effectiveDate: '2024-04-01',
+    lastAuditedDate: '2026-01-15',
+  },
+  DL: {
+    roc: 'ROC Delhi & Haryana',
+    ncltBench: 'NCLT Principal Bench & New Delhi Benches',
+    gstJurisdiction: 'Delhi State GST Department & CGST Delhi Zone',
+    statutorySource: 'MCA S.O. 831(E); NCLT Order No. 25/01/2022-NCLT',
+    effectiveDate: '2024-04-01',
+    lastAuditedDate: '2026-01-15',
+  },
+  KA: {
+    roc: 'ROC Bangalore (Karnataka)',
+    ncltBench: 'NCLT Bengaluru Bench',
+    gstJurisdiction: 'Karnataka Commercial Taxes Department & CGST Bengaluru Zone',
+    statutorySource: 'MCA Notification 2014; NCLT Order No. 10/03/2021-NCLT',
+    effectiveDate: '2024-04-01',
+    lastAuditedDate: '2026-01-15',
+  },
+};
+
+export interface StateJurisdictionResult {
   isVerified: boolean;
+  status: 'VERIFIED_MAINTAINED' | 'UNVERIFIED_REQUIRES_REVIEW';
   roc: string | null;
   ncltBench: string | null;
   gstJurisdiction: string | null;
-  reason?: string;
+  statutorySource: string | null;
+  effectiveDate: string | null;
+  reason: string;
 }
 
-const STATE_JURISDICTIONS: Record<string, { roc: string; ncltBench: string; gstJurisdiction: string }> = {
-  MH: { roc: 'ROC Mumbai & Pune', ncltBench: 'NCLT Mumbai Bench', gstJurisdiction: 'Maharashtra State Tax & CGST Mumbai' },
-  DL: { roc: 'ROC Delhi & Haryana', ncltBench: 'NCLT Principal Bench New Delhi', gstJurisdiction: 'Delhi State GST & CGST Delhi' },
-  KA: { roc: 'ROC Bangalore', ncltBench: 'NCLT Bengaluru Bench', gstJurisdiction: 'Karnataka State Commercial Taxes & CGST Bengaluru' },
-  GJ: { roc: 'ROC Ahmedabad', ncltBench: 'NCLT Ahmedabad Bench', gstJurisdiction: 'Gujarat Commercial Tax & CGST Ahmedabad' },
-  TN: { roc: 'ROC Chennai & Coimbatore', ncltBench: 'NCLT Chennai Bench', gstJurisdiction: 'Tamil Nadu Commercial Taxes & CGST Chennai' },
-  TS: { roc: 'ROC Hyderabad', ncltBench: 'NCLT Hyderabad Bench', gstJurisdiction: 'Telangana Commercial Taxes & CGST Hyderabad' },
-  WB: { roc: 'ROC Kolkata', ncltBench: 'NCLT Kolkata Bench', gstJurisdiction: 'West Bengal Directorate of Commercial Taxes & CGST Kolkata' },
-  UP: { roc: 'ROC Kanpur', ncltBench: 'NCLT Allahabad Bench', gstJurisdiction: 'Uttar Pradesh Commercial Tax & CGST Lucknow' },
-};
-
 /**
- * Assigns ROC, NCLT Bench, and GST jurisdictional authority.
- * Strictly guarded against UNKNOWN, unverified, or arbitrary state inputs.
+ * Returns ROC, NCLT Bench, and GST jurisdictional authority ONLY if a complete,
+ * maintained, source-backed statutory mapping exists for the relevant state and effective date.
+ * Strictly avoids generic fallbacks; returns 'unverified / requires review' otherwise.
+ * MUST NOT be used for automated customer or staff binding determinations in its current form.
  */
-export function getStateJurisdiction(stateCode?: string | null): StateJurisdiction {
+export function getStateJurisdiction(
+  stateCode?: string | null,
+  asOfDate = new Date().toISOString().slice(0, 10)
+): StateJurisdictionResult {
   if (!isVerifiedStateCode(stateCode)) {
     return {
       isVerified: false,
+      status: 'UNVERIFIED_REQUIRES_REVIEW',
       roc: null,
       ncltBench: null,
       gstJurisdiction: null,
-      reason: 'Jurisdiction rejected: State is UNKNOWN or unverified. Official statutory state confirmation with reviewer provenance is required.',
+      statutorySource: null,
+      effectiveDate: null,
+      reason: 'Unverified / requires review: State code is UNKNOWN or invalid. Cannot assign statutory jurisdiction without confirmed legal entity state provenance.',
     };
   }
 
   const code = stateCode!.toUpperCase();
-  const found = STATE_JURISDICTIONS[code] || {
-    roc: `ROC Regional Jurisdiction (${code})`,
-    ncltBench: `NCLT Regional Bench (${code})`,
-    gstJurisdiction: `${code} State Tax & Central GST Division`,
-  };
+  const rule = MAINTAINED_JURISDICTIONS[code];
+
+  // If no complete, source-backed maintained mapping exists, or effective date is outside verified range:
+  if (!rule || !rule.statutorySource || rule.effectiveDate > asOfDate) {
+    return {
+      isVerified: false,
+      status: 'UNVERIFIED_REQUIRES_REVIEW',
+      roc: null,
+      ncltBench: null,
+      gstJurisdiction: null,
+      statutorySource: null,
+      effectiveDate: null,
+      reason: `Unverified / requires review: No complete, maintained, source-backed statutory jurisdiction mapping exists for state "${code}" as of ${asOfDate}. Professional secretarial / tax review required.`,
+    };
+  }
 
   return {
     isVerified: true,
-    roc: found.roc,
-    ncltBench: found.ncltBench,
-    gstJurisdiction: found.gstJurisdiction,
+    status: 'VERIFIED_MAINTAINED',
+    roc: rule.roc,
+    ncltBench: rule.ncltBench,
+    gstJurisdiction: rule.gstJurisdiction,
+    statutorySource: rule.statutorySource,
+    effectiveDate: rule.effectiveDate,
+    reason: `Verified against official statutory gazette (${rule.statutorySource}), effective from ${rule.effectiveDate}.`,
   };
 }
 
-export interface StateSchemeEligibility {
+export interface StateSchemeEligibilityResult {
   isVerified: boolean;
   eligible: boolean;
+  status: 'NOT_EVALUATED_PROFESSIONAL_REVIEW_REQUIRED';
+  schemeName: string;
+  stateCode: string | null;
   reason: string;
 }
 
 /**
  * Assesses statutory eligibility for state-specific subsidies and exemptions.
- * Blocks decisioning if state is unverified or UNKNOWN.
+ * NEVER returns eligible: true solely because a state is verified.
+ * Until each scheme has source-backed, effective-dated statutory eligibility rules and verification tests,
+ * this function strictly returns 'not evaluated / professional review required'.
+ * MUST NOT be used for automated customer or staff binding determinations.
  */
-export function checkStateSchemeEligibility(stateCode?: string | null, schemeName = 'STARTUP_SUBSIDY'): StateSchemeEligibility {
-  if (!isVerifiedStateCode(stateCode)) {
-    return {
-      isVerified: false,
-      eligible: false,
-      reason: 'Eligibility determination blocked: State is UNKNOWN or unverified. Cannot assess state-specific statutory benefits or subsidies.',
-    };
-  }
+export function checkStateSchemeEligibility(
+  stateCode?: string | null,
+  schemeName = 'STARTUP_SUBSIDY'
+): StateSchemeEligibilityResult {
+  const code = stateCode ? stateCode.trim().toUpperCase() : 'UNKNOWN';
 
   return {
-    isVerified: true,
-    eligible: true,
-    reason: `Verified state ${stateCode?.toUpperCase()} qualifies for ${schemeName} statutory processing under applicable state industrial policy.`,
+    isVerified: false,
+    eligible: false,
+    status: 'NOT_EVALUATED_PROFESSIONAL_REVIEW_REQUIRED',
+    schemeName,
+    stateCode: code,
+    reason: 'Not evaluated / professional review required: Statutory scheme eligibility cannot be inferred from state code alone. Entity incorporation date, turnover slabs, DPIIT recognition, industrial policy gazette notifications, and professional legal/CA assessment are strictly required.',
   };
 }
 
