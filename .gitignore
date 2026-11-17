@@ -19,5 +19,8 @@ storage/
 # Scratch & test scripts
 test_api.py
 
+# Database backups & local snapshots
+backups/
+
 .vercel
 .env*
