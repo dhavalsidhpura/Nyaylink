@@ -296,9 +296,26 @@ model Payment {
   createdAt        DateTime             @default(now())
 
   invoice Invoice?
+  refunds PaymentRefund[]
 
   @@index([orderId])
   @@index([consultationId])
+}
+
+model PaymentRefund {
+  id              String   @id @default(cuid())
+  paymentId       String
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  refundRequestId String   @unique // Stable internal refund request ID, e.g. "ref_req_appr_..."
+  gatewayRefundId String?  @unique
+  amount          Decimal  @db.Decimal(12, 2)
+  status          String   @default("RESERVED") // RESERVED | SUCCEEDED | FAILED
+  reason          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([paymentId])
+  @@index([status])
 }
 
 model OrderStatusLog {

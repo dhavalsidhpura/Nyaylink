@@ -33,17 +33,18 @@ export const POST = apiHandler(async (request: Request) => {
     throw new HttpError(409, 'Only captured payments can be refunded.');
   }
 
-  const priorRefunds = await prisma.ledgerEntry.findMany({
+  // Structured query on PaymentRefund by paymentId
+  const priorRefunds = await prisma.paymentRefund.findMany({
     where: {
-      type: 'REFUND',
-      description: { contains: payment.gatewayPaymentId },
+      paymentId: payment.id,
+      status: { in: ['RESERVED', 'SUCCEEDED'] },
     },
   });
-  const cumulativePriorRefunded = priorRefunds.reduce((sum, entry) => sum + num(entry.debit), 0);
+  const cumulativePriorRefunded = priorRefunds.reduce((sum, entry) => sum + num(entry.amount), 0);
   const remainingRefundable = Math.round((num(payment.amount) - cumulativePriorRefunded) * 100) / 100;
 
   if (remainingRefundable <= 0) {
-    throw new HttpError(400, 'Payment has already been fully refunded.');
+    throw new HttpError(400, 'Payment has already been fully refunded or has pending reservations.');
   }
 
   const refundAmount = amount ?? remainingRefundable;
@@ -57,12 +58,16 @@ export const POST = apiHandler(async (request: Request) => {
   const reference = payment.order?.orderNumber || payment.consultation?.number || payment.id;
   const clientName = payment.order?.client.name || payment.consultation?.client.name || 'Client';
 
+  // Generate and persist a stable internal refund request ID for gateway idempotency
+  const refundRequestId = `ref_req_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
   const approval = await createApprovalRequest({
     type: 'REFUND',
     title: `Refund of ₹${refundAmount.toLocaleString('en-IN')} for ${reference} (${clientName})`,
     reason,
     payload: {
       paymentId: payment.id,
+      refundRequestId,
       amount: refundAmount,
       reason,
       gatewayPaymentId: payment.gatewayPaymentId,

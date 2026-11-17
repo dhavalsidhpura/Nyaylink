@@ -130,9 +130,12 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       INSERT INTO "User" ("id", "email", "name", "role", "state", "gstin") VALUES
         ('usr-1', 'client.alpha@startup.com', 'Alpha Founder', 'CLIENT', 'KA', NULL),
         ('usr-invalid', 'client.invalid@test.com', 'Invalid State User', 'CLIENT', 'XX', NULL),
-        ('usr-doc', 'client.verified.doc@mfg.com', 'Verified Doc Client', 'CLIENT', 'MH', NULL),
+        ('usr-doc', 'client.verified.doc@mfg.com', 'Verified Doc Client', 'CLIENT', NULL, NULL),
         ('usr-gstin', 'client.verified.gstin@tech.com', 'Verified GSTIN Client', 'CLIENT', NULL, '29AABCU9603R1ZM'),
-        ('usr-conflict', 'client.conflict@ventures.com', 'Conflicting Evidence Client', 'CLIENT', 'MH', '29AABCU9603R1ZM'),
+        ('usr-conflict', 'client.conflict@ventures.com', 'Conflicting Evidence Client', 'CLIENT', NULL, '29AABCU9603R1ZM'),
+        ('usr-no-field', 'client.nofield@test.com', 'Missing VerifiedGstin User', 'CLIENT', NULL, '29AABCU9603R1ZM'),
+        ('usr-multi-gstin', 'client.multi@ventures.com', 'Multi-GSTIN Client', 'CLIENT', NULL, '29AABCU9603R1ZM'),
+        ('usr-branch-gstin', 'client.branch@retail.com', 'Branch GSTIN Client', 'CLIENT', NULL, '29AABCU9603R1ZM'),
         ('usr-2', 'lead.ops@nyayalink.com', 'Lead Ops', 'OPS_MANAGER', 'MH', NULL);
 
       INSERT INTO "VaultDocument" ("id", "ownerId", "status", "category", "reviewedById", "reviewedAt", "storageKey") VALUES
@@ -154,7 +157,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
 
     const users = db.public.many('SELECT * FROM "User"');
     const orders = db.public.many('SELECT * FROM "Order"');
-    assert.equal(users.length, 6);
+    assert.equal(users.length, 9);
     assert.equal(orders.length, 1);
   });
 
@@ -183,7 +186,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     const payments = db.public.many('SELECT * FROM "Payment"');
     const ledgers = db.public.many('SELECT * FROM "LedgerEntry"');
 
-    assert.equal(users.length, 6, 'User records must be fully preserved');
+    assert.equal(users.length, 9, 'User records must be fully preserved');
     assert.equal(orders.length, 1, 'Order records must be fully preserved');
     assert.equal(payments.length, 1, 'Payment records must be fully preserved');
     assert.equal(ledgers.length, 1, 'Ledger records must be fully preserved');
@@ -236,11 +239,17 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
 
   // 4. Backfill existing legacy users and orders to organizations with strict state provenance
   it('Validates legacy user-to-organization backfill with state provenance, conflict detection, and review task generation', () => {
-    // Insert verified GSTIN audit log records before executing backfill
+    // Insert verified GSTIN and Document audit log records before executing backfill
     db.public.none(`
       INSERT INTO "AuditLog" ("id", "action", "entityType", "entityId", "actorId", "createdAt", "details") VALUES
-        ('aud-gstin-1', 'GSTIN_VERIFIED', 'User', 'usr-gstin', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM"}' AS JSONB)),
-        ('aud-conflict', 'GSTIN_VERIFIED', 'User', 'usr-conflict', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM"}' AS JSONB));
+        ('aud-doc-1', 'STATE_ATTESTATION_VERIFIED', 'User', 'usr-doc', 'usr-2', CURRENT_TIMESTAMP, CAST('{"documentId": "doc-1", "storageKey": "s3://vault/doc-1.pdf", "attestedStateCode": "MH", "scope": "REGISTERED_OFFICE"}' AS JSONB)),
+        ('aud-gstin-1', 'GSTIN_VERIFIED', 'User', 'usr-gstin', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM", "scope": "REGISTERED_OFFICE", "entityId": "ent-1"}' AS JSONB)),
+        ('aud-conflict-doc', 'STATE_ATTESTATION_VERIFIED', 'User', 'usr-conflict', 'usr-2', CURRENT_TIMESTAMP, CAST('{"documentId": "doc-conflict", "storageKey": "s3://vault/doc-conflict.pdf", "attestedStateCode": "MH", "scope": "REGISTERED_OFFICE"}' AS JSONB)),
+        ('aud-conflict-gstin', 'GSTIN_VERIFIED', 'User', 'usr-conflict', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM", "scope": "REGISTERED_OFFICE", "entityId": "ent-conflict"}' AS JSONB)),
+        ('aud-nofield', 'GSTIN_VERIFIED', 'User', 'usr-no-field', 'usr-2', CURRENT_TIMESTAMP, CAST('{"otherField": "value", "scope": "REGISTERED_OFFICE"}' AS JSONB)),
+        ('aud-multi-1', 'GSTIN_VERIFIED', 'User', 'usr-multi-gstin', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM", "scope": "REGISTERED_OFFICE", "entityId": "ent-ka"}' AS JSONB)),
+        ('aud-multi-2', 'GSTIN_VERIFIED', 'User', 'usr-multi-gstin', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "27AABCU9603R1ZM", "scope": "REGISTERED_OFFICE", "entityId": "ent-mh"}' AS JSONB)),
+        ('aud-branch', 'GSTIN_VERIFIED', 'User', 'usr-branch-gstin', 'usr-2', CURRENT_TIMESTAMP, CAST('{"verifiedGstin": "29AABCU9603R1ZM", "scope": "BRANCH", "entityId": "ent-branch"}' AS JSONB));
     `);
 
     // Read and execute prisma/backfill_organizations.sql
@@ -285,7 +294,34 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       'Conflicting state evidence (MH in doc vs KA in GSTIN) must strictly evaluate to UNKNOWN'
     );
 
-    // 4. Verify User with verified document reviewed by staff with timestamp & storageKey: evaluates to verified state 'MH'
+    // 4. Verify User with missing verifiedGstin field in audit log (no fallback allowed): MUST BE 'UNKNOWN'
+    const orgNoField = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-no-field\'');
+    assert.ok(orgNoField);
+    assert.equal(
+      orgNoField.stateCode,
+      'UNKNOWN',
+      'Missing verifiedGstin field in audit record must strictly evaluate to UNKNOWN without fallback'
+    );
+
+    // 5. Verify User with multiple verified GSTIN states (29-KA and 27-MH): MUST BE 'UNKNOWN'
+    const orgMulti = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-multi-gstin\'');
+    assert.ok(orgMulti);
+    assert.equal(
+      orgMulti.stateCode,
+      'UNKNOWN',
+      'Multiple verified GSTIN states must be detected as ambiguous and evaluate to UNKNOWN'
+    );
+
+    // 6. Verify User with branch-scoped GSTIN (not REGISTERED_OFFICE): MUST BE 'UNKNOWN'
+    const orgBranch = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-branch-gstin\'');
+    assert.ok(orgBranch);
+    assert.equal(
+      orgBranch.stateCode,
+      'UNKNOWN',
+      'Branch-scoped GSTIN cannot infer organization-wide state and must evaluate to UNKNOWN'
+    );
+
+    // 7. Verify User with verified document reviewed by staff with timestamp & storageKey: evaluates to verified state 'MH'
     const orgDoc = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-doc\'');
     assert.ok(orgDoc);
     assert.equal(
@@ -294,7 +330,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       'State backed by verified statutory VaultDocument reviewed by staff must evaluate to verified state "MH"'
     );
 
-    // 5. Verify User with verified GSTIN audit log: evaluates to mapped state 'KA' (GST Code 29)
+    // 8. Verify User with verified GSTIN audit log: evaluates to mapped state 'KA' (GST Code 29)
     const orgGstin = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-gstin\'');
     assert.ok(orgGstin);
     assert.equal(
@@ -303,15 +339,15 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       'State backed by verified GSTIN audit log (29...) must evaluate to verified state "KA"'
     );
 
-    // 6. Verify Review Tasks and Compliance Matters generated for UNKNOWN / Ambiguous / Conflicting Organizations
+    // 9. Verify Review Tasks and Compliance Matters generated for all 6 UNKNOWN / Ambiguous / Conflicting Organizations
     const reviewMatters = db.public.many('SELECT * FROM "Matter" WHERE "vertical" = \'TAXATION_GST_VCFO\'');
-    assert.equal(reviewMatters.length, 3, 'Must create review matters for all 3 unverified organizations (usr-1, usr-invalid, usr-conflict)');
+    assert.equal(reviewMatters.length, 6, 'Must create review matters for all 6 unverified organizations');
 
     const reviewTasks = db.public.many('SELECT * FROM "MatterTask" WHERE "title" = \'Review State Provenance & Place of Supply Evidence\'');
-    assert.equal(reviewTasks.length, 3, 'Must create staff review tasks for all 3 unverified organizations');
+    assert.equal(reviewTasks.length, 6, 'Must create staff review tasks for all 6 unverified organizations');
 
-    // 7. Assert that UNKNOWN state CANNOT drive GST, Stamp Duty, Jurisdiction, or Eligibility
-    for (const unverifiedOrg of [org1, orgInvalid, orgConflict]) {
+    // 10. Assert that UNKNOWN state CANNOT drive GST, Stamp Duty, Jurisdiction, or Eligibility
+    for (const unverifiedOrg of [org1, orgInvalid, orgConflict, orgNoField, orgMulti, orgBranch]) {
       const code = unverifiedOrg.stateCode; // 'UNKNOWN'
 
       // A. GST computation blocked
@@ -340,7 +376,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       assert.equal(eligibility.status, 'NOT_EVALUATED_PROFESSIONAL_REVIEW_REQUIRED');
     }
 
-    // 8. Assert verified state (MH) behavior
+    // 11. Assert verified state (MH) behavior
     assert.equal(splitGst(1800, orgDoc.stateCode, 'MH').total, 1800);
     assert.equal(getStateStampDuty(orgDoc.stateCode).isVerified, true);
     const jur = getStateJurisdiction(orgDoc.stateCode);
@@ -354,7 +390,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     assert.equal(docElig.eligible, false);
     assert.equal(docElig.status, 'NOT_EVALUATED_PROFESSIONAL_REVIEW_REQUIRED');
 
-    // 9. Verify backfilled Order linkage and Client Access Preservation
+    // 12. Verify backfilled Order linkage and Client Access Preservation
     const order = db.public.one('SELECT * FROM "Order" WHERE "id" = \'ord-1\'');
     assert.equal(order.organizationId, 'org_usr-1');
 
@@ -396,7 +432,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     const payments = db.public.many('SELECT * FROM "Payment"');
     const ledgers = db.public.many('SELECT * FROM "LedgerEntry"');
 
-    assert.equal(users.length, 6, 'Users intact after rollback');
+    assert.equal(users.length, 9, 'Users intact after rollback');
     assert.equal(orders.length, 1, 'Orders intact after rollback');
     assert.equal(payments.length, 1, 'Payments intact after rollback');
     assert.equal(ledgers.length, 1, 'Ledger intact after rollback');

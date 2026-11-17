@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { apiHandler, HttpError, requireRole, ROLE_GROUPS, clientIp } from '@/lib/authz';
 import { reviewApprovalRequest } from '@/lib/approvals';
-import { getRazorpay } from '@/lib/razorpay';
+import { executeGatewayRefund } from '@/lib/razorpay';
 import { recordRefund } from '@/lib/payments';
 import { invalidateServiceCache } from '@/lib/catalog';
 import { plain, num } from '@/lib/serialize';
@@ -53,7 +53,7 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
     const payload = existing.payload as Record<string, any>;
 
     if (existing.type === 'REFUND') {
-      const { paymentId, amount } = payload;
+      const { paymentId, amount, refundRequestId: payloadReqId, reason: refundReason } = payload;
       const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
       if (!payment || payment.status !== 'CAPTURED' || !payment.gatewayPaymentId) {
         throw new HttpError(409, 'Only captured payments can be refunded.');
@@ -61,29 +61,28 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
 
       const refundAmount = amount ? Number(amount) : num(payment.amount);
       const isSim = payment.gatewayPaymentId.startsWith('pay_demo_');
-      const idempotencyKey = `ref_${existing.id}`;
+      const refundRequestId = payloadReqId || `ref_req_appr_${existing.id}`;
 
-      let refundId: string;
-      if (isSim) {
-        refundId = `ref_demo_${existing.id}`;
-      } else {
-        const rzRefund = await (getRazorpay().payments.refund as any)(
-          payment.gatewayPaymentId,
-          {
-            amount: Math.round(refundAmount * 100),
-            notes: { paymentId: payment.id, approvedBy: user.email, approvalId: existing.id },
-          },
-          {
-            'X-Razorpay-Idempotency-Key': idempotencyKey,
-          }
-        );
-        refundId = rzRefund.id;
-      }
+      // Call executeGatewayRefund adapter passing documented X-Refund-Idempotency and identical payload
+      const gatewayRefund = await executeGatewayRefund(
+        payment.gatewayPaymentId,
+        {
+          amount: Math.round(refundAmount * 100),
+          notes: { paymentId: payment.id, approvedBy: user.email, approvalId: existing.id },
+          receipt: refundRequestId,
+        },
+        {
+          refundRequestId,
+          isSimulation: isSim,
+        }
+      );
 
-      await recordRefund(payment.gatewayPaymentId, refundId, refundAmount, {
+      await recordRefund(payment.gatewayPaymentId, gatewayRefund.id, refundAmount, {
         approverId: user.id,
         requesterId: existing.requesterId,
         isSimulation: isSim,
+        refundRequestId,
+        reason: refundReason || `Approved refund by ${user.email}`,
       });
     } else if (existing.type === 'PAYOUT_DISBURSEMENT') {
       const { professionalType, vendorName, amount, purpose, orderId } = payload;

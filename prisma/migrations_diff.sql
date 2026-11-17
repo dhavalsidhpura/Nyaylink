@@ -269,6 +269,21 @@ CREATE TABLE "AuditLog" (
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "PaymentRefund" (
+    "id" TEXT NOT NULL,
+    "paymentId" TEXT NOT NULL,
+    "refundRequestId" TEXT NOT NULL,
+    "gatewayRefundId" TEXT,
+    "amount" DECIMAL(12, 2) NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'RESERVED',
+    "reason" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PaymentRefund_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Organization_slug_key" ON "Organization"("slug");
 
@@ -352,6 +367,18 @@ CREATE INDEX "AuditLog_actorId_idx" ON "AuditLog"("actorId");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_createdAt_idx" ON "AuditLog"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PaymentRefund_refundRequestId_key" ON "PaymentRefund"("refundRequestId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PaymentRefund_gatewayRefundId_key" ON "PaymentRefund"("gatewayRefundId");
+
+-- CreateIndex
+CREATE INDEX "PaymentRefund_paymentId_idx" ON "PaymentRefund"("paymentId");
+
+-- CreateIndex
+CREATE INDEX "PaymentRefund_status_idx" ON "PaymentRefund"("status");
 
 -- CreateIndex
 CREATE INDEX "Order_organizationId_idx" ON "Order"("organizationId");
@@ -445,4 +472,7 @@ ALTER TABLE "ApprovalRequest" ADD CONSTRAINT "ApprovalRequest_reviewerId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentRefund" ADD CONSTRAINT "PaymentRefund_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

@@ -10,6 +10,7 @@ ALTER TABLE "Order" DROP COLUMN IF EXISTS "organizationId";
 ALTER TABLE "Order" DROP COLUMN IF EXISTS "quoteId";
 
 -- 2. Drop new additive ERP/CRM domain tables in reverse dependency order
+DROP TABLE IF EXISTS "PaymentRefund" CASCADE;
 DROP TABLE IF EXISTS "AuditLog" CASCADE;
 DROP TABLE IF EXISTS "ApprovalRequest" CASCADE;
 DROP TABLE IF EXISTS "JournalLine" CASCADE;

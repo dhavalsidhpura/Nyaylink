@@ -8,25 +8,29 @@
 INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
 WITH doc_evidence AS (
   SELECT
-    vd."ownerId" AS "userId",
-    COUNT(DISTINCT upper(trim(vd."category"))) AS "docCategoryCount",
-    COUNT(DISTINCT upper(trim(u."state"))) AS "distinctAttestedCount",
-    MAX(upper(trim(u."state"))) AS "docState"
-  FROM "VaultDocument" vd
-  JOIN "User" u ON u."id" = vd."ownerId"
-  WHERE vd."status" = 'VERIFIED'
-    AND vd."reviewedById" IS NOT NULL
-    AND vd."reviewedAt" IS NOT NULL
+    al."entityId" AS "userId",
+    COUNT(DISTINCT upper(trim(al."details"->>'attestedStateCode'))) AS "distinctAttestedCount",
+    MAX(upper(trim(al."details"->>'attestedStateCode'))) AS "docState"
+  FROM "AuditLog" al
+  JOIN "VaultDocument" vd ON vd."id" = al."details"->>'documentId'
+  WHERE al."action" = 'STATE_ATTESTATION_VERIFIED'
+    AND al."actorId" IS NOT NULL
+    AND vd."status" = 'VERIFIED'
     AND vd."storageKey" IS NOT NULL
-    AND u."state" IS NOT NULL
-    AND upper(trim(u."state")) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
-  GROUP BY vd."ownerId"
+    AND al."details"->>'attestedStateCode' IS NOT NULL
+    AND length(trim(al."details"->>'attestedStateCode')) = 2
+    AND upper(trim(al."details"->>'attestedStateCode')) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
+    AND al."details"->>'scope' = 'REGISTERED_OFFICE'
+    AND al."details"->>'storageKey' IS NOT NULL
+    AND al."details"->>'storageKey' = vd."storageKey"
+  GROUP BY al."entityId"
 ),
 gstin_evidence AS (
   SELECT
     al."entityId" AS "userId",
+    COUNT(DISTINCT substr(trim(al."details"->>'verifiedGstin'), 1, 2)) AS "distinctGstinStateCount",
     MAX(
-      CASE substr(trim(u."gstin"), 1, 2)
+      CASE substr(trim(al."details"->>'verifiedGstin'), 1, 2)
         WHEN '01' THEN 'JK' WHEN '02' THEN 'HP' WHEN '03' THEN 'PB' WHEN '04' THEN 'CH'
         WHEN '05' THEN 'UK' WHEN '06' THEN 'HR' WHEN '07' THEN 'DL' WHEN '08' THEN 'RJ'
         WHEN '09' THEN 'UP' WHEN '10' THEN 'BR' WHEN '11' THEN 'SK' WHEN '12' THEN 'AR'
@@ -38,14 +42,18 @@ gstin_evidence AS (
         WHEN '35' THEN 'AN' WHEN '36' THEN 'TS' WHEN '37' THEN 'AP' WHEN '38' THEN 'LA'
         ELSE NULL
       END
-    ) AS "gstinState"
+    ) AS "gstinState",
+    MAX(al."details"->>'scope') AS "gstinScope",
+    COUNT(DISTINCT al."details"->>'entityId') AS "distinctEntitiesCount",
+    COUNT(CASE WHEN al."details"->>'verifiedGstin' = u."gstin" THEN 1 END) AS "currentGstinMatchCount"
   FROM "AuditLog" al
   JOIN "User" u ON u."id" = al."entityId"
   WHERE al."action" = 'GSTIN_VERIFIED'
     AND al."actorId" IS NOT NULL
+    AND al."details"->>'verifiedGstin' IS NOT NULL
+    AND length(trim(al."details"->>'verifiedGstin')) = 15
     AND u."gstin" IS NOT NULL
     AND length(trim(u."gstin")) = 15
-    AND coalesce(al."details"->>'verifiedGstin', u."gstin") = u."gstin"
   GROUP BY al."entityId"
 )
 SELECT
@@ -53,20 +61,37 @@ SELECT
   'org-' || lower(u."id") AS "slug",
   coalesce(u."name", 'My Organization') AS "name",
   CASE
+    -- Ambiguity check: multiple conflicting attested states from documents -> UNKNOWN
+    WHEN de."distinctAttestedCount" > 1
+    THEN 'UNKNOWN'
+
+    -- Ambiguity check: multiple verified GSTIN states detected -> UNKNOWN
+    WHEN ge."distinctGstinStateCount" > 1
+    THEN 'UNKNOWN'
+
+    -- Audit record MUST explicitly verify the exact current GSTIN (no missing field, no fallback)
+    WHEN ge."userId" IS NOT NULL AND ge."currentGstinMatchCount" = 0
+    THEN 'UNKNOWN'
+
     -- Conflict check: if both document state and GSTIN state exist but contradict each other -> UNKNOWN
     WHEN de."docState" IS NOT NULL AND ge."gstinState" IS NOT NULL AND de."docState" != ge."gstinState"
     THEN 'UNKNOWN'
 
-    -- Ambiguity check: multiple conflicting attested states -> UNKNOWN
-    WHEN de."distinctAttestedCount" > 1
+    -- Multi-entity or branch registration without registered office scope cannot infer organization-wide state
+    WHEN ge."gstinState" IS NOT NULL AND (ge."distinctEntitiesCount" > 1 OR coalesce(ge."gstinScope", '') != 'REGISTERED_OFFICE')
+      AND de."docState" IS NULL
     THEN 'UNKNOWN'
 
-    -- Unambiguous document evidence with verified reviewer and timestamp
+    -- Unambiguous document evidence with verified reviewer, timestamp, storageKey, and REGISTERED_OFFICE scope
     WHEN de."docState" IS NOT NULL
     THEN de."docState"
 
-    -- Unambiguous verified GSTIN evidence tied to current entity GSTIN
+    -- Unambiguous single verified GSTIN tied to registered office scope and current GSTIN
     WHEN ge."gstinState" IS NOT NULL
+      AND ge."distinctGstinStateCount" = 1
+      AND ge."currentGstinMatchCount" > 0
+      AND ge."gstinScope" = 'REGISTERED_OFFICE'
+      AND ge."distinctEntitiesCount" <= 1
     THEN ge."gstinState"
 
     -- Missing or unverified evidence -> UNKNOWN

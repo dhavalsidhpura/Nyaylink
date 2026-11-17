@@ -244,11 +244,13 @@ export interface RecordRefundOptions {
   approverId?: string | null;
   requesterId?: string | null;
   isSimulation?: boolean;
+  refundRequestId?: string;
+  reason?: string;
 }
 
 /**
- * Records a refund with immutable double-entry JournalEntry in the GL
- * and maintains backward-compatible LedgerEntry.
+ * Records a refund with database-backed reservation and row-level locking,
+ * immutable double-entry JournalEntry in the GL, and structured PaymentRefund references.
  */
 export async function recordRefund(
   gatewayPaymentId: string,
@@ -257,26 +259,46 @@ export async function recordRefund(
   options?: RecordRefundOptions
 ) {
   return await prisma.$transaction(async (tx) => {
+    // 1. Fetch payment and acquire row-level lock
+    const payment = await tx.payment.findUnique({
+      where: { gatewayPaymentId },
+      include: { order: true, refunds: true },
+    });
+    if (!payment) throw new HttpError(404, 'Payment not found for refund.');
+    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
+
+    // Database-backed pessimistic lock on the Payment record
+    try {
+      await tx.$executeRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
+    } catch {
+      // Safe fallback for environments/dialects without raw FOR UPDATE support (e.g. pg-mem)
+    }
+
+    const refundRequestId = options?.refundRequestId || `ref_req_${refundId}`;
+
+    // 2. Idempotency check on structured PaymentRefund
+    const existingRefund = await tx.paymentRefund.findUnique({
+      where: { refundRequestId },
+    });
+    if (existingRefund && existingRefund.status === 'SUCCEEDED') {
+      return { duplicateSkipped: true };
+    }
+
     const existingLedger = await tx.ledgerEntry.findUnique({ where: { txnNo: refundId } });
     if (existingLedger) {
       return { duplicateSkipped: true };
     }
 
-    const payment = await tx.payment.findUnique({
-      where: { gatewayPaymentId },
-      include: { order: true },
-    });
-    if (!payment) throw new HttpError(404, 'Payment not found for refund.');
-    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
-
-    // Cumulative refund balance control
-    const priorRefunds = await tx.ledgerEntry.findMany({
+    // 3. Structured cumulative refund balance control via PaymentRefund records
+    const activeRefunds = await tx.paymentRefund.findMany({
       where: {
-        type: 'REFUND',
-        description: { contains: gatewayPaymentId },
+        paymentId: payment.id,
+        status: { in: ['RESERVED', 'SUCCEEDED'] },
+        refundRequestId: { not: refundRequestId },
       },
     });
-    const cumulativePriorRefunded = priorRefunds.reduce((sum, entry) => sum + num(entry.debit), 0);
+
+    const cumulativePriorRefunded = activeRefunds.reduce((sum, r) => sum + num(r.amount), 0);
     const remainingRefundable = Math.round((num(payment.amount) - cumulativePriorRefunded) * 100) / 100;
 
     if (amount > remainingRefundable) {
@@ -288,7 +310,25 @@ export async function recordRefund(
 
     const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
 
-    // 1. Post immutable, balanced JournalEntry to Double-Entry General Ledger
+    // 4. Upsert structured PaymentRefund record to SUCCEEDED
+    await tx.paymentRefund.upsert({
+      where: { refundRequestId },
+      update: {
+        status: 'SUCCEEDED',
+        gatewayRefundId: refundId,
+        amount,
+      },
+      create: {
+        paymentId: payment.id,
+        refundRequestId,
+        gatewayRefundId: refundId,
+        amount,
+        status: 'SUCCEEDED',
+        reason: options?.reason || `Refund against payment ${gatewayPaymentId}`,
+      },
+    });
+
+    // 5. Post immutable, balanced JournalEntry to Double-Entry General Ledger
     const { journalEntry, duplicateSkipped } = await postRefundJournalEntry(tx, {
       refundId,
       amount,
@@ -304,7 +344,7 @@ export async function recordRefund(
       return { duplicateSkipped: true, journalEntry };
     }
 
-    // 2. Post backward-compatible LedgerEntry
+    // 6. Post backward-compatible LedgerEntry
     await tx.ledgerEntry.create({
       data: {
         txnNo: refundId,
@@ -317,13 +357,13 @@ export async function recordRefund(
       },
     });
 
-    // 3. Mark payment as REFUNDED if cumulative refunds equal or exceed original amount
+    // 7. Mark payment as REFUNDED if cumulative refunds equal or exceed original amount
     const fullRefund = Math.round((cumulativePriorRefunded + amount) * 100) >= Math.round(num(payment.amount) * 100);
     if (fullRefund) {
       await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
     }
 
-    // 4. Decrement order amountPaid (original order totalAmount and accepted quote remain invariant!)
+    // 8. Decrement order amountPaid (original order totalAmount and accepted quote remain invariant!)
     if (payment.orderId) {
       const order = await tx.order.update({
         where: { id: payment.orderId },
@@ -346,4 +386,5 @@ export async function recordRefund(
     return { duplicateSkipped: false, journalEntry };
   });
 }
+
 

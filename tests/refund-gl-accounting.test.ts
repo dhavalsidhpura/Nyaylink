@@ -7,6 +7,7 @@ import {
   type PostRefundJournalParams,
   type JournalLineInput,
 } from '../src/lib/gl';
+import { executeGatewayRefund } from '../src/lib/razorpay';
 
 interface InMemoryAccount {
   id: string;
@@ -37,6 +38,17 @@ interface InMemoryJournalEntry {
   createdById?: string | null;
   approvedById?: string | null;
   lines: InMemoryJournalLine[];
+}
+
+interface InMemoryPaymentRefund {
+  id: string;
+  paymentId: string;
+  refundRequestId: string;
+  gatewayRefundId?: string;
+  amount: number;
+  status: 'RESERVED' | 'SUCCEEDED' | 'FAILED';
+  reason?: string;
+  createdAt: Date;
 }
 
 interface InMemoryPayment {
@@ -72,7 +84,8 @@ interface InMemoryGatewayCall {
 
 /**
  * Isolated Staging In-Memory Double-Entry GL Ledger Engine.
- * Replicates production prisma transaction semantics without live provider calls.
+ * Replicates production prisma transaction semantics, structured PaymentRefund models,
+ * and database-backed row-level locking (SELECT FOR UPDATE) without live provider calls.
  */
 class DoubleEntryGLEngine {
   accounts: Map<string, InMemoryAccount> = new Map();
@@ -81,7 +94,9 @@ class DoubleEntryGLEngine {
   orders: Map<string, InMemoryOrder> = new Map();
   quotes: Map<string, InMemoryQuote> = new Map();
   payments: Map<string, InMemoryPayment> = new Map();
+  paymentRefunds: Map<string, InMemoryPaymentRefund> = new Map();
   gatewayCalls: Map<string, InMemoryGatewayCall> = new Map();
+  rowLocks: Map<string, Promise<void>> = new Map();
 
   constructor() {
     // Seed default chart of accounts
@@ -103,6 +118,22 @@ class DoubleEntryGLEngine {
       name: DEFAULT_COA.OPERATING_BANK.name,
       type: DEFAULT_COA.OPERATING_BANK.type,
     });
+  }
+
+  // Simulates database row-level lock acquisition (SELECT FOR UPDATE)
+  private async acquireRowLock(key: string): Promise<() => void> {
+    while (this.rowLocks.has(key)) {
+      await this.rowLocks.get(key);
+    }
+    let release!: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      release = () => {
+        this.rowLocks.delete(key);
+        resolve();
+      };
+    });
+    this.rowLocks.set(key, lockPromise);
+    return release;
   }
 
   postRefundJournal(params: PostRefundJournalParams) {
@@ -175,89 +206,131 @@ class DoubleEntryGLEngine {
     return { journalEntry: entry, duplicateSkipped: false };
   }
 
-  executeRefundLifecycle(params: {
+  async executeRefundLifecycle(params: {
     gatewayPaymentId: string;
     refundId: string;
     amount: number;
     requesterId: string;
     approverId: string;
+    refundRequestId?: string;
     idempotencyKey?: string;
     simulatedProviderFailure?: boolean;
     simulatedTimeout?: boolean;
   }) {
-    // Step 1: Payment validation
-    const payment = this.payments.get(params.gatewayPaymentId);
-    if (!payment) throw new HttpError(404, 'Payment not found for refund.');
-    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
+    // Acquire row-level write lock on the payment record (simulates SELECT ... FOR UPDATE)
+    const releaseLock = await this.acquireRowLock(params.gatewayPaymentId);
 
-    // Step 2: Cumulative Refund Amount & Remaining Balance Control
-    const cumulativePriorRefunded = payment.refundedAmount;
-    const remainingRefundable = Math.round((payment.amount - cumulativePriorRefunded) * 100) / 100;
-    if (params.amount > remainingRefundable) {
-      throw new HttpError(
-        400,
-        `Refund Rejected: Requested refund of ₹${params.amount} exceeds remaining refundable balance of ₹${remainingRefundable} for payment ${params.gatewayPaymentId}.`
+    try {
+      // Step 1: Payment validation
+      const payment = this.payments.get(params.gatewayPaymentId);
+      if (!payment) throw new HttpError(404, 'Payment not found for refund.');
+      if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
+
+      const refundRequestId = params.refundRequestId || params.idempotencyKey || `req_${params.refundId}`;
+
+      // Step 2: Structured PaymentRefund idempotency check
+      const existingRefund = Array.from(this.paymentRefunds.values()).find(
+        (r) => r.refundRequestId === refundRequestId
       );
-    }
+      if (existingRefund && existingRefund.status === 'SUCCEEDED') {
+        const je = this.journalEntries.find((j) => j.referenceId === existingRefund.gatewayRefundId);
+        return { duplicateSkipped: true, journalEntry: je };
+      }
 
-    // Step 3: Gateway Execution & Idempotency Mechanism Simulation
-    const idKey = params.idempotencyKey || params.refundId;
-    const existingCall = this.gatewayCalls.get(idKey);
+      // Step 3: Structured Cumulative Balance Calculation (strictly via paymentId relation, no text matching)
+      const activeRefunds = Array.from(this.paymentRefunds.values()).filter(
+        (r) =>
+          r.paymentId === payment.id &&
+          (r.status === 'RESERVED' || r.status === 'SUCCEEDED') &&
+          r.refundRequestId !== refundRequestId
+      );
+      const cumulativePriorRefunded = activeRefunds.reduce((sum, r) => sum + r.amount, 0);
+      const remainingRefundable = Math.round((payment.amount - cumulativePriorRefunded) * 100) / 100;
 
-    if (existingCall && existingCall.status === 'SUCCESS') {
-      // Gateway recognizes idempotency key: reuses existing refund without re-debiting
-      params.refundId = existingCall.refundId;
-    } else if (params.simulatedProviderFailure) {
-      throw new HttpError(502, 'Provider Gateway Refund Failure: GATEWAY_INSUFFICIENT_FUNDS');
-    } else if (params.simulatedTimeout) {
-      // Record in-flight call at provider then timeout
-      this.gatewayCalls.set(idKey, {
-        idempotencyKey: idKey,
+      if (params.amount > remainingRefundable) {
+        throw new HttpError(
+          400,
+          `Refund Rejected: Requested refund of ₹${params.amount} exceeds remaining refundable balance of ₹${remainingRefundable} for payment ${params.gatewayPaymentId}.`
+        );
+      }
+
+      // Step 4: Database-backed Reservation
+      const reservationId = existingRefund ? existingRefund.id : `pref_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      this.paymentRefunds.set(reservationId, {
+        id: reservationId,
+        paymentId: payment.id,
+        refundRequestId,
+        amount: params.amount,
+        status: 'RESERVED',
+        createdAt: new Date(),
+      });
+
+      // Small async tick to simulate network I/O while holding the row lock
+      await new Promise((r) => setTimeout(r, 10));
+
+      // Step 5: Gateway Execution Simulation with X-Refund-Idempotency
+      const idKey = refundRequestId;
+      const existingCall = this.gatewayCalls.get(idKey);
+
+      if (existingCall && existingCall.status === 'SUCCESS') {
+        params.refundId = existingCall.refundId;
+      } else if (params.simulatedProviderFailure) {
+        this.paymentRefunds.get(reservationId)!.status = 'FAILED';
+        throw new HttpError(502, 'Provider Gateway Refund Failure: GATEWAY_INSUFFICIENT_FUNDS');
+      } else if (params.simulatedTimeout) {
+        this.gatewayCalls.set(idKey, {
+          idempotencyKey: idKey,
+          refundId: params.refundId,
+          amount: params.amount,
+          status: 'TIMEOUT',
+        });
+        throw new HttpError(504, 'Provider Gateway Refund Timeout: ETIMEDOUT (retry with idempotency key)');
+      } else {
+        this.gatewayCalls.set(idKey, {
+          idempotencyKey: idKey,
+          refundId: params.refundId,
+          amount: params.amount,
+          status: 'SUCCESS',
+        });
+      }
+
+      // Step 6: Mark reservation SUCCEEDED
+      const pref = this.paymentRefunds.get(reservationId)!;
+      pref.status = 'SUCCEEDED';
+      pref.gatewayRefundId = params.refundId;
+
+      // Step 7: GL Double-Entry Posting
+      const order = this.orders.get(payment.orderId);
+      const glResult = this.postRefundJournal({
         refundId: params.refundId,
         amount: params.amount,
-        status: 'TIMEOUT',
+        gatewayPaymentId: params.gatewayPaymentId,
+        orderNumber: order?.orderNumber,
+        isSimulation: true,
+        requesterId: params.requesterId,
+        approverId: params.approverId,
+        memo: `[TEST SIMULATION] Refund against ${params.gatewayPaymentId}`,
       });
-      throw new HttpError(504, 'Provider Gateway Refund Timeout: ETIMEDOUT (retry with idempotency key)');
-    } else {
-      // Record successful gateway refund
-      this.gatewayCalls.set(idKey, {
-        idempotencyKey: idKey,
-        refundId: params.refundId,
-        amount: params.amount,
-        status: 'SUCCESS',
-      });
+
+      if (glResult.duplicateSkipped) {
+        return { duplicateSkipped: true, journalEntry: glResult.journalEntry };
+      }
+
+      // Step 8: Update payment and order
+      payment.refundedAmount += params.amount;
+      if (Math.round(payment.refundedAmount * 100) >= Math.round(payment.amount * 100)) {
+        payment.status = 'REFUNDED';
+      }
+
+      if (order) {
+        order.amountPaid -= params.amount;
+        order.paymentStatus = order.amountPaid <= 0 ? 'REFUNDED' : 'PARTIALLY_PAID';
+      }
+
+      return { duplicateSkipped: false, journalEntry: glResult.journalEntry };
+    } finally {
+      releaseLock();
     }
-
-    // Step 4: GL Double-Entry Posting
-    const order = this.orders.get(payment.orderId);
-    const glResult = this.postRefundJournal({
-      refundId: params.refundId,
-      amount: params.amount,
-      gatewayPaymentId: params.gatewayPaymentId,
-      orderNumber: order?.orderNumber,
-      isSimulation: true,
-      requesterId: params.requesterId,
-      approverId: params.approverId,
-      memo: `[TEST SIMULATION] Refund against ${params.gatewayPaymentId}`,
-    });
-
-    if (glResult.duplicateSkipped) {
-      return { duplicateSkipped: true, journalEntry: glResult.journalEntry };
-    }
-
-    // Step 5: Update payment record
-    payment.refundedAmount += params.amount;
-    if (Math.round(payment.refundedAmount * 100) >= Math.round(payment.amount * 100)) {
-      payment.status = 'REFUNDED';
-    }
-
-    // Step 6: Update order balance (Contract price totalAmount remains strictly invariant)
-    if (order) {
-      order.amountPaid -= params.amount;
-      order.paymentStatus = order.amountPaid <= 0 ? 'REFUNDED' : 'PARTIALLY_PAID';
-    }
-
-    return { duplicateSkipped: false, journalEntry: glResult.journalEntry };
   }
 }
 
@@ -299,10 +372,10 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
   }
 
   // Path 1: Full Refund
-  it('1. Full Refund Path: creates balanced JournalEntry, updates payment/order, preserves contract price', () => {
+  it('1. Full Refund Path: creates balanced JournalEntry, updates payment/order, preserves contract price', async () => {
     const { engine, order, quote, payment } = setupScenario();
 
-    const result = engine.executeRefundLifecycle({
+    const result = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_full_001',
       amount: 8999,
@@ -311,7 +384,7 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     });
 
     assert.equal(result.duplicateSkipped, false);
-    const je = result.journalEntry;
+    const je = result.journalEntry!;
 
     // GL Verification
     assert.equal(je.status, 'POSTED');
@@ -351,11 +424,11 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
   });
 
   // Path 2A: Several Partial Refunds
-  it('2A. Several Partial Refunds: tracks cumulative balance across multiple partial refunds', () => {
+  it('2A. Several Partial Refunds: tracks cumulative balance across multiple partial refunds', async () => {
     const { engine, order, quote, payment } = setupScenario();
 
     // Partial Refund 1: ₹2,000
-    const refund1 = engine.executeRefundLifecycle({
+    const refund1 = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_part_1',
       amount: 2000,
@@ -370,7 +443,7 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(order.paymentStatus, 'PARTIALLY_PAID');
 
     // Partial Refund 2: ₹3,000
-    const refund2 = engine.executeRefundLifecycle({
+    const refund2 = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_part_2',
       amount: 3000,
@@ -392,11 +465,11 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
   });
 
   // Path 2B: Exact Final Refund
-  it('2B. Exact Final Refund: final partial refund exactly exhausting balance marks payment & order REFUNDED', () => {
+  it('2B. Exact Final Refund: final partial refund exactly exhausting balance marks payment & order REFUNDED', async () => {
     const { engine, order, quote, payment } = setupScenario();
 
     // Step 1: Refund ₹5,000
-    engine.executeRefundLifecycle({
+    await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_prior_5000',
       amount: 5000,
@@ -406,7 +479,7 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(payment.status, 'CAPTURED');
 
     // Step 2: Refund exact remainder ₹3,999
-    const finalRefund = engine.executeRefundLifecycle({
+    const finalRefund = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_final_3999',
       amount: 3999,
@@ -426,11 +499,11 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
   });
 
   // Path 2C: Over-Refund Attempt Rejection
-  it('2C. Over-Refund Attempt Rejection: rejects refund exceeding remaining refundable balance with zero GL mutation', () => {
+  it('2C. Over-Refund Attempt Rejection: rejects refund exceeding remaining refundable balance with zero GL mutation', async () => {
     const { engine, order, quote, payment } = setupScenario();
 
     // Step 1: Prior refund of ₹6,000 (Remaining refundable balance: ₹2,999)
-    engine.executeRefundLifecycle({
+    await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_prior_6000',
       amount: 6000,
@@ -442,9 +515,9 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     const glLinesBefore = engine.journalLines.length;
 
     // Step 2: Attempt to refund ₹3,000 (exceeds remaining ₹2,999 by ₹1)
-    assert.throws(
-      () =>
-        engine.executeRefundLifecycle({
+    await assert.rejects(
+      async () =>
+        await engine.executeRefundLifecycle({
           gatewayPaymentId: payment.gatewayPaymentId,
           refundId: 'rfnd_sim_over_attempt',
           amount: 3000,
@@ -468,14 +541,120 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(quote.total, 8999);
   });
 
-  // Path 3: Concurrent / Retried Refund
-  it('3. Duplicate / Retried Refund Path: skips idempotently without duplicate journal entries or balance drift', () => {
+  // Path 2D: Simultaneous Distinct Partial Refunds with Row-Level Locking (Exceeding Balance)
+  it('2D. Simultaneous Distinct Partial Refunds: row locking prevents race condition and over-refund', async () => {
+    const { engine, order, payment } = setupScenario();
+
+    // Two distinct partial refund requests arrive simultaneously:
+    // Thread 1: ₹5,000
+    // Thread 2: ₹4,500
+    // Sum = ₹9,500 > Captured Amount ₹8,999
+    const req1 = engine.executeRefundLifecycle({
+      gatewayPaymentId: payment.gatewayPaymentId,
+      refundId: 'rfnd_sim_race_1',
+      refundRequestId: 'req_race_1',
+      amount: 5000,
+      requesterId: MAKER_ID,
+      approverId: CHECKER_ID,
+    });
+
+    const req2 = engine.executeRefundLifecycle({
+      gatewayPaymentId: payment.gatewayPaymentId,
+      refundId: 'rfnd_sim_race_2',
+      refundRequestId: 'req_race_2',
+      amount: 4500,
+      requesterId: MAKER_ID,
+      approverId: CHECKER_ID,
+    });
+
+    const [res1, res2] = await Promise.allSettled([req1, req2]);
+
+    // Exactly one must succeed, and the other must be rejected with 400 (exceeds balance)
+    const fulfilled = [res1, res2].filter((r) => r.status === 'fulfilled');
+    const rejected = [res1, res2].filter((r) => r.status === 'rejected');
+
+    assert.equal(fulfilled.length, 1, 'Exactly one concurrent refund request must succeed');
+    assert.equal(rejected.length, 1, 'The competing over-refund request must be rejected');
+
+    const rejectionErr = (rejected[0] as PromiseRejectedResult).reason;
+    assert.equal(rejectionErr.status, 400);
+    assert.match(rejectionErr.message, /Refund Rejected: Requested refund/);
+
+    // Assert total cumulative refunded never exceeds captured balance
+    assert.equal(payment.refundedAmount, 5000);
+    assert.equal(order.amountPaid, 3999);
+    assert.equal(engine.journalEntries.length, 1);
+  });
+
+  // Path 2E: Simultaneous Distinct Partial Refunds within Captured Balance
+  it('2E. Simultaneous Distinct Partial Refunds: both succeed when sum <= captured balance', async () => {
+    const { engine, order, payment } = setupScenario();
+
+    // Two distinct requests arriving concurrently:
+    // Thread 1: ₹2,000
+    // Thread 2: ₹3,000
+    // Total = ₹5,000 <= ₹8,999
+    const req1 = engine.executeRefundLifecycle({
+      gatewayPaymentId: payment.gatewayPaymentId,
+      refundId: 'rfnd_sim_concurrent_1',
+      refundRequestId: 'req_concurrent_1',
+      amount: 2000,
+      requesterId: MAKER_ID,
+      approverId: CHECKER_ID,
+    });
+
+    const req2 = engine.executeRefundLifecycle({
+      gatewayPaymentId: payment.gatewayPaymentId,
+      refundId: 'rfnd_sim_concurrent_2',
+      refundRequestId: 'req_concurrent_2',
+      amount: 3000,
+      requesterId: MAKER_ID,
+      approverId: CHECKER_ID,
+    });
+
+    const [res1, res2] = await Promise.all([req1, req2]);
+    assert.equal(res1.duplicateSkipped, false);
+    assert.equal(res2.duplicateSkipped, false);
+
+    assert.equal(payment.refundedAmount, 5000);
+    assert.equal(payment.status, 'CAPTURED');
+    assert.equal(order.amountPaid, 3999);
+    assert.equal(engine.journalEntries.length, 2, 'Two distinct GL entries posted');
+  });
+
+  // Path 2F: Structured Refund-to-Payment Reference Verification
+  it('2F. Structured Refund References: verifies foreign key link on PaymentRefund without text matching', async () => {
+    const { engine, payment } = setupScenario();
+
+    await engine.executeRefundLifecycle({
+      gatewayPaymentId: payment.gatewayPaymentId,
+      refundId: 'rfnd_structured_001',
+      refundRequestId: 'req_structured_001',
+      amount: 1500,
+      requesterId: MAKER_ID,
+      approverId: CHECKER_ID,
+    });
+
+    const refunds = Array.from(engine.paymentRefunds.values());
+    assert.equal(refunds.length, 1);
+    const pref = refunds[0];
+
+    assert.equal(pref.paymentId, payment.id, 'Refund must have direct structured paymentId relation');
+    assert.equal(pref.refundRequestId, 'req_structured_001', 'Must store stable internal refundRequestId');
+    assert.equal(pref.gatewayRefundId, 'rfnd_structured_001');
+    assert.equal(pref.status, 'SUCCEEDED');
+    assert.equal(pref.amount, 1500);
+  });
+
+  // Path 3: Duplicate / Retried Refund
+  it('3. Duplicate / Retried Refund Path: skips idempotently without duplicate journal entries or balance drift', async () => {
     const { engine, order, payment } = setupScenario();
 
     // First execution
-    const firstRun = engine.executeRefundLifecycle({
+    const firstRun = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_retry_003',
+      refundRequestId: 'req_sim_retry_003',
       amount: 3500,
       requesterId: MAKER_ID,
       approverId: CHECKER_ID,
@@ -484,10 +663,11 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(engine.journalEntries.length, 1);
     assert.equal(order.amountPaid, 5499);
 
-    // Duplicate retry with the same provider refund ID
-    const retryRun = engine.executeRefundLifecycle({
+    // Duplicate retry with the same provider refund ID and refundRequestId
+    const retryRun = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId: 'rfnd_sim_retry_003',
+      refundRequestId: 'req_sim_retry_003',
       amount: 3500,
       requesterId: MAKER_ID,
       approverId: CHECKER_ID,
@@ -501,15 +681,15 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
   });
 
   // Path 4: Provider Timeout & Idempotent Retry Behavior
-  it('4. Provider Timeout & Idempotent Retry: simulates timeout on call 1 and successful idempotent recovery on retry', () => {
+  it('4. Provider Timeout & Idempotent Retry: simulates timeout on call 1 and successful idempotent recovery on retry', async () => {
     const { engine, order, payment } = setupScenario();
     const idempotencyKey = 'idemp_key_timeout_004';
     const refundId = 'rfnd_timeout_retry_004';
 
     // Call 1: Gateway experiences network timeout (e.g. ETIMEDOUT / 504)
-    assert.throws(
-      () =>
-        engine.executeRefundLifecycle({
+    await assert.rejects(
+      async () =>
+        await engine.executeRefundLifecycle({
           gatewayPaymentId: payment.gatewayPaymentId,
           refundId,
           idempotencyKey,
@@ -530,7 +710,7 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(payment.refundedAmount, 0);
 
     // Call 2: Retry with the exact same idempotency key
-    const retryResult = engine.executeRefundLifecycle({
+    const retryResult = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId,
       idempotencyKey,
@@ -547,7 +727,7 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(order.paymentStatus, 'PARTIALLY_PAID');
 
     // Call 3: Repeated retry after success returns duplicateSkipped
-    const secondRetry = engine.executeRefundLifecycle({
+    const secondRetry = await engine.executeRefundLifecycle({
       gatewayPaymentId: payment.gatewayPaymentId,
       refundId,
       idempotencyKey,
@@ -560,8 +740,89 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(payment.refundedAmount, 2500);
   });
 
-  // Path 5: Rejected Refund Request
-  it('5. Rejected Refund Request Path: transitions approval to REJECTED with zero GL entries or mutations', () => {
+  // Path 5: Actual Razorpay Adapter X-Refund-Idempotency Header & Payload Verification
+  it('5. Razorpay Adapter: verifies X-Refund-Idempotency header, stable internal request ID, and identical retries', async () => {
+    const interceptedRequests: Array<{ url: string; headers: Record<string, string>; body: any }> = [];
+
+    // Temporarily intercept global fetch to inspect outbound request without making live calls
+    const originalFetch = global.fetch;
+    (global as any).fetch = async (url: string, init: any) => {
+      interceptedRequests.push({
+        url,
+        headers: init.headers,
+        body: JSON.parse(init.body),
+      });
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'rfnd_rzp_mock_123',
+          entity: 'refund',
+          amount: 500000,
+          currency: 'INR',
+          payment_id: 'pay_live_captured_mock',
+          status: 'processed',
+          receipt: 'ref_req_stable_001',
+          created_at: Math.floor(Date.now() / 1000),
+        }),
+      };
+    };
+
+    try {
+      process.env.RAZORPAY_KEY_ID = 'rzp_test_mock_key';
+      process.env.RAZORPAY_KEY_SECRET = 'rzp_test_mock_secret';
+
+      const stableRefundRequestId = 'ref_req_stable_001';
+      const payload = {
+        amount: 500000, // ₹5,000 in paise
+        speed: 'normal' as const,
+        notes: { reason: 'Client cancelled consultation' },
+        receipt: stableRefundRequestId,
+      };
+
+      // Call 1
+      const res1 = await executeGatewayRefund('pay_live_captured_mock', payload, {
+        refundRequestId: stableRefundRequestId,
+        isSimulation: false,
+      });
+
+      assert.equal(res1.id, 'rfnd_rzp_mock_123');
+      assert.equal(interceptedRequests.length, 1);
+
+      const req1 = interceptedRequests[0];
+      assert.match(req1.url, /api\.razorpay\.com\/v1\/payments\/pay_live_captured_mock\/refund/);
+      assert.equal(
+        req1.headers['X-Refund-Idempotency'],
+        stableRefundRequestId,
+        'Adapter must send documented X-Refund-Idempotency header'
+      );
+      assert.equal(req1.body.amount, 500000);
+      assert.equal(req1.body.receipt, stableRefundRequestId);
+
+      // Call 2: Retry with identical payload and same stable key
+      const res2 = await executeGatewayRefund('pay_live_captured_mock', payload, {
+        refundRequestId: stableRefundRequestId,
+        isSimulation: false,
+      });
+
+      assert.equal(res2.id, 'rfnd_rzp_mock_123');
+      assert.equal(interceptedRequests.length, 2);
+
+      const req2 = interceptedRequests[1];
+      assert.equal(
+        req2.headers['X-Refund-Idempotency'],
+        stableRefundRequestId,
+        'Retries must use the identical X-Refund-Idempotency key'
+      );
+      assert.deepEqual(req2.body, req1.body, 'Retries must send identical payload body');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  // Path 6: Rejected Refund Request
+  it('6. Rejected Refund Request Path: transitions approval to REJECTED with zero GL entries or mutations', () => {
     const { engine, order, payment } = setupScenario();
 
     // Maker submits approval request
@@ -594,14 +855,14 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(order.paymentStatus, 'PAID');
   });
 
-  // Path 6: Failed Provider Refund
-  it('6. Failed Provider Refund Path: aborts transaction with zero GL entries or balance mutations', () => {
+  // Path 7: Failed Provider Refund
+  it('7. Failed Provider Refund Path: aborts transaction with zero GL entries or balance mutations', async () => {
     const { engine, order, payment } = setupScenario();
 
     // Provider gateway call simulates failure
-    assert.throws(
-      () =>
-        engine.executeRefundLifecycle({
+    await assert.rejects(
+      async () =>
+        await engine.executeRefundLifecycle({
           gatewayPaymentId: payment.gatewayPaymentId,
           refundId: 'rfnd_sim_failed_005',
           amount: 8999,
