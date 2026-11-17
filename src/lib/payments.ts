@@ -248,48 +248,64 @@ export interface RecordRefundOptions {
   reason?: string;
 }
 
+export interface ReserveRefundOptions {
+  refundRequestId: string;
+  reason?: string;
+  isSimulation?: boolean;
+}
+
+export interface FinalizeRefundOptions {
+  refundRequestId: string;
+  approverId?: string;
+  requesterId?: string;
+  isSimulation?: boolean;
+  reason?: string;
+}
+
 /**
- * Records a refund with database-backed reservation and row-level locking,
- * immutable double-entry JournalEntry in the GL, and structured PaymentRefund references.
+ * Step 1: Acquires payment-row lock and creates durable RESERVED refund record
+ * in one database transaction before any gateway call.
+ * Ensures concurrent requests include all reserved and successful refunds in the balance check.
  */
-export async function recordRefund(
+export async function reserveRefund(
   gatewayPaymentId: string,
-  refundId: string,
   amount: number,
-  options?: RecordRefundOptions
+  options: ReserveRefundOptions
 ) {
+  const { refundRequestId, reason } = options;
+  if (!refundRequestId || !refundRequestId.trim()) {
+    throw new HttpError(400, 'refundRequestId is required for reservation idempotency.');
+  }
+
   return await prisma.$transaction(async (tx) => {
-    // 1. Fetch payment and acquire row-level lock
     const payment = await tx.payment.findUnique({
       where: { gatewayPaymentId },
       include: { order: true, refunds: true },
     });
     if (!payment) throw new HttpError(404, 'Payment not found for refund.');
-    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
+    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Payment is already fully refunded.');
 
-    // Database-backed pessimistic lock on the Payment record
+    // Database-backed pessimistic row lock on the Payment record
     try {
       await tx.$executeRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
     } catch {
       // Safe fallback for environments/dialects without raw FOR UPDATE support (e.g. pg-mem)
     }
 
-    const refundRequestId = options?.refundRequestId || `ref_req_${refundId}`;
-
-    // 2. Idempotency check on structured PaymentRefund
-    const existingRefund = await tx.paymentRefund.findUnique({
+    // 1. Idempotency check: see if this exact refundRequestId was already handled
+    const existing = await tx.paymentRefund.findUnique({
       where: { refundRequestId },
     });
-    if (existingRefund && existingRefund.status === 'SUCCEEDED') {
-      return { duplicateSkipped: true };
+    if (existing) {
+      if (existing.status === 'SUCCEEDED') {
+        return { alreadySucceeded: true, alreadyReserved: false, refund: existing, payment };
+      }
+      if (existing.status === 'RESERVED') {
+        return { alreadySucceeded: false, alreadyReserved: true, refund: existing, payment };
+      }
     }
 
-    const existingLedger = await tx.ledgerEntry.findUnique({ where: { txnNo: refundId } });
-    if (existingLedger) {
-      return { duplicateSkipped: true };
-    }
-
-    // 3. Structured cumulative refund balance control via PaymentRefund records
+    // 2. Balance check across ALL RESERVED and SUCCEEDED refunds
     const activeRefunds = await tx.paymentRefund.findMany({
       where: {
         paymentId: payment.id,
@@ -298,8 +314,8 @@ export async function recordRefund(
       },
     });
 
-    const cumulativePriorRefunded = activeRefunds.reduce((sum, r) => sum + num(r.amount), 0);
-    const remainingRefundable = Math.round((num(payment.amount) - cumulativePriorRefunded) * 100) / 100;
+    const cumulativePrior = activeRefunds.reduce((sum, r) => sum + num(r.amount), 0);
+    const remainingRefundable = Math.round((num(payment.amount) - cumulativePrior) * 100) / 100;
 
     if (amount > remainingRefundable) {
       throw new HttpError(
@@ -308,46 +324,93 @@ export async function recordRefund(
       );
     }
 
-    const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
+    // 3. Create durable RESERVED refund record in the database
+    const refund = await tx.paymentRefund.create({
+      data: {
+        paymentId: payment.id,
+        refundRequestId,
+        amount,
+        status: 'RESERVED',
+        reason: reason || `Refund reservation against payment ${gatewayPaymentId}`,
+      },
+    });
 
-    // 4. Upsert structured PaymentRefund record to SUCCEEDED
-    await tx.paymentRefund.upsert({
+    return { alreadySucceeded: false, alreadyReserved: false, refund, payment };
+  });
+}
+
+/**
+ * Step 2: Finalizes the refund only after confirmed provider result in a second database transaction.
+ * Marks PaymentRefund as SUCCEEDED and posts balanced JournalEntry to Double-Entry GL.
+ */
+export async function finalizeRefund(
+  gatewayPaymentId: string,
+  gatewayRefundId: string,
+  amount: number,
+  options: FinalizeRefundOptions
+) {
+  const { refundRequestId, approverId, requesterId } = options;
+
+  return await prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { gatewayPaymentId },
+      include: { order: true },
+    });
+    if (!payment) throw new HttpError(404, 'Payment not found for refund finalization.');
+
+    // Database-backed pessimistic row lock on the Payment record
+    try {
+      await tx.$executeRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
+    } catch {}
+
+    const existingRefund = await tx.paymentRefund.findUnique({
+      where: { refundRequestId },
+    });
+
+    if (existingRefund && existingRefund.status === 'SUCCEEDED') {
+      return { duplicateSkipped: true, refund: existingRefund };
+    }
+
+    const isSimulation = Boolean(options.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
+
+    // 1. Mark PaymentRefund as SUCCEEDED with confirmed gateway refund ID
+    const refund = await tx.paymentRefund.upsert({
       where: { refundRequestId },
       update: {
         status: 'SUCCEEDED',
-        gatewayRefundId: refundId,
+        gatewayRefundId,
         amount,
       },
       create: {
         paymentId: payment.id,
         refundRequestId,
-        gatewayRefundId: refundId,
+        gatewayRefundId,
         amount,
         status: 'SUCCEEDED',
-        reason: options?.reason || `Refund against payment ${gatewayPaymentId}`,
+        reason: options.reason || `Refund against payment ${gatewayPaymentId}`,
       },
     });
 
-    // 5. Post immutable, balanced JournalEntry to Double-Entry General Ledger
+    // 2. Post immutable, balanced JournalEntry to Double-Entry General Ledger
     const { journalEntry, duplicateSkipped } = await postRefundJournalEntry(tx, {
-      refundId,
+      refundId: gatewayRefundId,
       amount,
       gatewayPaymentId,
       orderNumber: payment.order?.orderNumber,
       isSimulation,
-      requesterId: options?.requesterId,
-      approverId: options?.approverId,
+      requesterId,
+      approverId,
       memo: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund against ${gatewayPaymentId}`,
     });
 
     if (duplicateSkipped) {
-      return { duplicateSkipped: true, journalEntry };
+      return { duplicateSkipped: true, journalEntry, refund };
     }
 
-    // 6. Post backward-compatible LedgerEntry
+    // 3. Post backward-compatible LedgerEntry
     await tx.ledgerEntry.create({
       data: {
-        txnNo: refundId,
+        txnNo: gatewayRefundId,
         type: 'REFUND',
         description: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund against ${gatewayPaymentId}`,
         debit: amount,
@@ -357,13 +420,17 @@ export async function recordRefund(
       },
     });
 
-    // 7. Mark payment as REFUNDED if cumulative refunds equal or exceed original amount
-    const fullRefund = Math.round((cumulativePriorRefunded + amount) * 100) >= Math.round(num(payment.amount) * 100);
+    // 4. Mark payment as REFUNDED if cumulative succeeded refunds equal or exceed original amount
+    const allSucceeded = await tx.paymentRefund.findMany({
+      where: { paymentId: payment.id, status: 'SUCCEEDED' },
+    });
+    const cumulativeSucceeded = allSucceeded.reduce((sum, r) => sum + num(r.amount), 0);
+    const fullRefund = Math.round(cumulativeSucceeded * 100) >= Math.round(num(payment.amount) * 100);
     if (fullRefund) {
       await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
     }
 
-    // 8. Decrement order amountPaid (original order totalAmount and accepted quote remain invariant!)
+    // 5. Decrement order amountPaid (original order totalAmount and accepted quote remain invariant!)
     if (payment.orderId) {
       const order = await tx.order.update({
         where: { id: payment.orderId },
@@ -378,12 +445,44 @@ export async function recordRefund(
         data: {
           orderId: order.id,
           status: 'REFUND_PROCESSED',
-          remarks: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund of ₹${amount.toLocaleString('en-IN')} processed (Ref: ${refundId}).`,
+          remarks: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund of ₹${amount.toLocaleString('en-IN')} processed (Ref: ${gatewayRefundId}).`,
         },
       });
     }
 
-    return { duplicateSkipped: false, journalEntry };
+    return { duplicateSkipped: false, journalEntry, refund };
+  });
+}
+
+/**
+ * Combined helper for backward compatibility and synchronous flows:
+ * reserves refund, records provider execution, and finalizes accounting.
+ */
+export async function recordRefund(
+  gatewayPaymentId: string,
+  refundId: string,
+  amount: number,
+  options?: RecordRefundOptions
+) {
+  const refundRequestId = options?.refundRequestId || `ref_req_${refundId}`;
+  const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
+
+  const reservation = await reserveRefund(gatewayPaymentId, amount, {
+    refundRequestId,
+    reason: options?.reason,
+    isSimulation,
+  });
+
+  if (reservation.alreadySucceeded) {
+    return { duplicateSkipped: true };
+  }
+
+  return await finalizeRefund(gatewayPaymentId, refundId, amount, {
+    refundRequestId,
+    approverId: options?.approverId,
+    requesterId: options?.requesterId,
+    isSimulation,
+    reason: options?.reason,
   });
 }
 

@@ -143,6 +143,7 @@ model User {
   requestedApprovals ApprovalRequest[]   @relation("ApprovalRequester")
   reviewedApprovals  ApprovalRequest[]    @relation("ApprovalReviewer")
   auditLogs          AuditLog[]
+  reviewedEvidences  StatutoryEvidence[]  @relation("EvidenceReviewer")
 }
 
 model OtpCode {
@@ -305,7 +306,7 @@ model Payment {
 model PaymentRefund {
   id              String   @id @default(cuid())
   paymentId       String
-  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Restrict)
   refundRequestId String   @unique // Stable internal refund request ID, e.g. "ref_req_appr_..."
   gatewayRefundId String?  @unique
   amount          Decimal  @db.Decimal(12, 2)
@@ -402,15 +403,42 @@ model VaultDocument {
   owner          User      @relation("DocumentOwner", fields: [ownerId], references: [id])
   orderId        String?
   order          Order?    @relation(fields: [orderId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   reviewedById   String?
   reviewedBy     User?     @relation("DocumentReviewer", fields: [reviewedById], references: [id])
   reviewedAt     DateTime?
   uploadedAt     DateTime  @default(now())
 
-  accessLogs DocumentAccessLog[]
+  accessLogs        DocumentAccessLog[]
+  statutoryEvidence StatutoryEvidence?
 
   @@index([orderId])
   @@index([ownerId])
+  @@index([organizationId])
+}
+
+model StatutoryEvidence {
+  id                String        @id @default(cuid())
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  legalEntityId     String?
+  legalEntity       LegalEntity?  @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  documentId        String        @unique
+  document          VaultDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  attestedStateCode String?       // Valid statutory 2-letter state code e.g. "MH", "KA"
+  verifiedGstin     String?       // Valid 15-character statutory GSTIN
+  scope             String        @default("REGISTERED_OFFICE") // REGISTERED_OFFICE | BRANCH
+  isCurrent         Boolean       @default(true)
+  reviewerId        String
+  reviewer          User          @relation("EvidenceReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  reviewedAt        DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([legalEntityId])
+  @@index([reviewerId])
 }
 
 model DocumentAccessLog {
@@ -565,10 +593,12 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members     OrganizationMember[]
-  entities    LegalEntity[]
-  orders      Order[]
-  matters     Matter[]
+  members            OrganizationMember[]
+  entities           LegalEntity[]
+  orders             Order[]
+  matters            Matter[]
+  vaultDocuments     VaultDocument[]
+  statutoryEvidences StatutoryEvidence[]
 }
 
 model OrganizationMember {
@@ -598,8 +628,9 @@ model LegalEntity {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  orders           Order[]
-  matters          Matter[]
+  orders             Order[]
+  matters            Matter[]
+  statutoryEvidences StatutoryEvidence[]
 
   @@index([organizationId])
 }

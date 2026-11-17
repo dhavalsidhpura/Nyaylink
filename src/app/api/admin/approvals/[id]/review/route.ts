@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { apiHandler, HttpError, requireRole, ROLE_GROUPS, clientIp } from '@/lib/authz';
 import { reviewApprovalRequest } from '@/lib/approvals';
 import { executeGatewayRefund } from '@/lib/razorpay';
-import { recordRefund } from '@/lib/payments';
+import { reserveRefund, finalizeRefund } from '@/lib/payments';
 import { invalidateServiceCache } from '@/lib/catalog';
 import { plain, num } from '@/lib/serialize';
 
@@ -63,7 +63,18 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
       const isSim = payment.gatewayPaymentId.startsWith('pay_demo_');
       const refundRequestId = payloadReqId || `ref_req_appr_${existing.id}`;
 
-      // Call executeGatewayRefund adapter passing documented X-Refund-Idempotency and identical payload
+      // 1. Acquire payment-row lock and create durable RESERVED record in DB before any gateway call
+      const reservation = await reserveRefund(payment.gatewayPaymentId, refundAmount, {
+        refundRequestId,
+        reason: refundReason || `Approved refund by ${user.email}`,
+        isSimulation: isSim,
+      });
+
+      if (reservation.alreadySucceeded) {
+        return { success: true, approval: existing };
+      }
+
+      // 2. Call executeGatewayRefund adapter passing documented X-Refund-Idempotency and identical payload
       const gatewayRefund = await executeGatewayRefund(
         payment.gatewayPaymentId,
         {
@@ -77,7 +88,8 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
         }
       );
 
-      await recordRefund(payment.gatewayPaymentId, gatewayRefund.id, refundAmount, {
+      // 3. Mark successful in database only after confirmed provider result
+      await finalizeRefund(payment.gatewayPaymentId, gatewayRefund.id, refundAmount, {
         approverId: user.id,
         requesterId: existing.requesterId,
         isSimulation: isSim,

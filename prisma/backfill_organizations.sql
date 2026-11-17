@@ -8,29 +8,29 @@
 INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
 WITH doc_evidence AS (
   SELECT
-    al."entityId" AS "userId",
-    COUNT(DISTINCT upper(trim(al."details"->>'attestedStateCode'))) AS "distinctAttestedCount",
-    MAX(upper(trim(al."details"->>'attestedStateCode'))) AS "docState"
-  FROM "AuditLog" al
-  JOIN "VaultDocument" vd ON vd."id" = al."details"->>'documentId'
-  WHERE al."action" = 'STATE_ATTESTATION_VERIFIED'
-    AND al."actorId" IS NOT NULL
-    AND vd."status" = 'VERIFIED'
+    vd."ownerId" AS "userId",
+    COUNT(DISTINCT upper(trim(se."attestedStateCode"))) AS "distinctAttestedCount",
+    MAX(upper(trim(se."attestedStateCode"))) AS "docState"
+  FROM "StatutoryEvidence" se
+  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
+  JOIN "User" rev ON rev."id" = se."reviewerId"
+  JOIN "User" u ON u."id" = vd."ownerId"
+  WHERE vd."status" = 'VERIFIED'
     AND vd."storageKey" IS NOT NULL
-    AND al."details"->>'attestedStateCode' IS NOT NULL
-    AND length(trim(al."details"->>'attestedStateCode')) = 2
-    AND upper(trim(al."details"->>'attestedStateCode')) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
-    AND al."details"->>'scope' = 'REGISTERED_OFFICE'
-    AND al."details"->>'storageKey' IS NOT NULL
-    AND al."details"->>'storageKey' = vd."storageKey"
-  GROUP BY al."entityId"
+    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
+    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
+    AND se."attestedStateCode" IS NOT NULL
+    AND length(trim(se."attestedStateCode")) = 2
+    AND upper(trim(se."attestedStateCode")) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
+    AND se."scope" = 'REGISTERED_OFFICE'
+  GROUP BY vd."ownerId"
 ),
 gstin_evidence AS (
   SELECT
-    al."entityId" AS "userId",
-    COUNT(DISTINCT substr(trim(al."details"->>'verifiedGstin'), 1, 2)) AS "distinctGstinStateCount",
+    vd."ownerId" AS "userId",
+    COUNT(DISTINCT substr(trim(se."verifiedGstin"), 1, 2)) AS "distinctGstinStateCount",
     MAX(
-      CASE substr(trim(al."details"->>'verifiedGstin'), 1, 2)
+      CASE substr(trim(se."verifiedGstin"), 1, 2)
         WHEN '01' THEN 'JK' WHEN '02' THEN 'HP' WHEN '03' THEN 'PB' WHEN '04' THEN 'CH'
         WHEN '05' THEN 'UK' WHEN '06' THEN 'HR' WHEN '07' THEN 'DL' WHEN '08' THEN 'RJ'
         WHEN '09' THEN 'UP' WHEN '10' THEN 'BR' WHEN '11' THEN 'SK' WHEN '12' THEN 'AR'
@@ -43,18 +43,21 @@ gstin_evidence AS (
         ELSE NULL
       END
     ) AS "gstinState",
-    MAX(al."details"->>'scope') AS "gstinScope",
-    COUNT(DISTINCT al."details"->>'entityId') AS "distinctEntitiesCount",
-    COUNT(CASE WHEN al."details"->>'verifiedGstin' = u."gstin" THEN 1 END) AS "currentGstinMatchCount"
-  FROM "AuditLog" al
-  JOIN "User" u ON u."id" = al."entityId"
-  WHERE al."action" = 'GSTIN_VERIFIED'
-    AND al."actorId" IS NOT NULL
-    AND al."details"->>'verifiedGstin' IS NOT NULL
-    AND length(trim(al."details"->>'verifiedGstin')) = 15
+    MAX(se."scope") AS "gstinScope",
+    COUNT(DISTINCT se."legalEntityId") AS "distinctEntitiesCount",
+    COUNT(CASE WHEN se."verifiedGstin" = u."gstin" AND se."isCurrent" = true THEN 1 END) AS "currentGstinMatchCount"
+  FROM "StatutoryEvidence" se
+  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
+  JOIN "User" rev ON rev."id" = se."reviewerId"
+  JOIN "User" u ON u."id" = vd."ownerId"
+  WHERE vd."status" = 'VERIFIED'
+    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
+    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
+    AND se."verifiedGstin" IS NOT NULL
+    AND length(trim(se."verifiedGstin")) = 15
     AND u."gstin" IS NOT NULL
     AND length(trim(u."gstin")) = 15
-  GROUP BY al."entityId"
+  GROUP BY vd."ownerId"
 )
 SELECT
   'org_' || u."id" AS "id",
@@ -123,7 +126,18 @@ SET "organizationId" = 'org_' || "clientId"
 WHERE "organizationId" IS NULL
   AND "clientId" IS NOT NULL;
 
--- 4. Create Review Tasks and Compliance Matter for organizations with UNKNOWN / ambiguous state
+-- 4. Idempotently link VaultDocuments and StatutoryEvidence to client organizations
+UPDATE "VaultDocument"
+SET "organizationId" = 'org_' || "ownerId"
+WHERE "organizationId" IS NULL;
+
+UPDATE "StatutoryEvidence"
+SET "organizationId" = 'org_' || vd."ownerId"
+FROM "VaultDocument" vd
+WHERE "StatutoryEvidence"."documentId" = vd."id"
+  AND "StatutoryEvidence"."organizationId" IS NULL;
+
+-- 5. Create Review Tasks and Compliance Matter for organizations with UNKNOWN / ambiguous state
 INSERT INTO "Matter" ("id", "matterNumber", "title", "vertical", "status", "organizationId", "notes", "createdAt", "updatedAt")
 SELECT
   'mat_rev_' || org."id",

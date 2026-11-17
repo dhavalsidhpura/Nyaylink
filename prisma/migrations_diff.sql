@@ -269,6 +269,27 @@ CREATE TABLE "AuditLog" (
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
+-- AlterTable
+ALTER TABLE "VaultDocument" ADD COLUMN "organizationId" TEXT;
+
+-- CreateTable
+CREATE TABLE "StatutoryEvidence" (
+    "id" TEXT NOT NULL,
+    "organizationId" TEXT,
+    "legalEntityId" TEXT,
+    "documentId" TEXT NOT NULL,
+    "attestedStateCode" TEXT,
+    "verifiedGstin" TEXT,
+    "scope" TEXT NOT NULL DEFAULT 'REGISTERED_OFFICE',
+    "isCurrent" BOOLEAN NOT NULL DEFAULT true,
+    "reviewerId" TEXT NOT NULL,
+    "reviewedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "StatutoryEvidence_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateTable
 CREATE TABLE "PaymentRefund" (
     "id" TEXT NOT NULL,
@@ -381,6 +402,21 @@ CREATE INDEX "PaymentRefund_paymentId_idx" ON "PaymentRefund"("paymentId");
 CREATE INDEX "PaymentRefund_status_idx" ON "PaymentRefund"("status");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "StatutoryEvidence_documentId_key" ON "StatutoryEvidence"("documentId");
+
+-- CreateIndex
+CREATE INDEX "StatutoryEvidence_organizationId_idx" ON "StatutoryEvidence"("organizationId");
+
+-- CreateIndex
+CREATE INDEX "StatutoryEvidence_legalEntityId_idx" ON "StatutoryEvidence"("legalEntityId");
+
+-- CreateIndex
+CREATE INDEX "StatutoryEvidence_reviewerId_idx" ON "StatutoryEvidence"("reviewerId");
+
+-- CreateIndex
+CREATE INDEX "VaultDocument_organizationId_idx" ON "VaultDocument"("organizationId");
+
+-- CreateIndex
 CREATE INDEX "Order_organizationId_idx" ON "Order"("organizationId");
 
 -- CreateIndex
@@ -474,5 +510,20 @@ ALTER TABLE "ApprovalRequest" ADD CONSTRAINT "ApprovalRequest_reviewerId_fkey" F
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PaymentRefund" ADD CONSTRAINT "PaymentRefund_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "VaultDocument" ADD CONSTRAINT "VaultDocument_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_legalEntityId_fkey" FOREIGN KEY ("legalEntityId") REFERENCES "LegalEntity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "VaultDocument"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentRefund" ADD CONSTRAINT "PaymentRefund_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

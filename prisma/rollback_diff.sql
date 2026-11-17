@@ -4,12 +4,14 @@
 -- Zero Impact on Legacy Tables: Users, Services, Orders (legacy cols), Payments, Ledger
 -- ==============================================================================
 
--- 1. Remove additive foreign key columns from legacy Order table
+-- 1. Remove additive foreign key columns from legacy tables
 ALTER TABLE "Order" DROP COLUMN IF EXISTS "legalEntityId";
 ALTER TABLE "Order" DROP COLUMN IF EXISTS "organizationId";
 ALTER TABLE "Order" DROP COLUMN IF EXISTS "quoteId";
+ALTER TABLE "VaultDocument" DROP COLUMN IF EXISTS "organizationId";
 
 -- 2. Drop new additive ERP/CRM domain tables in reverse dependency order
+DROP TABLE IF EXISTS "StatutoryEvidence" CASCADE;
 DROP TABLE IF EXISTS "PaymentRefund" CASCADE;
 DROP TABLE IF EXISTS "AuditLog" CASCADE;
 DROP TABLE IF EXISTS "ApprovalRequest" CASCADE;
