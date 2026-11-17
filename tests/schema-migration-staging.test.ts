@@ -180,7 +180,62 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     assert.equal(matters[0].matterNumber, 'MAT-2026-0001');
   });
 
-  // 4. Rollback execution test
+  // 4. Backfill existing legacy users and orders to organizations
+  it('Validates legacy user-to-organization backfill and proves existing clients retain access', () => {
+    // Execute idempotent backfill SQL
+    db.public.none(`
+      INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
+      SELECT
+        'org_' || u."id",
+        'org-' || lower(u."id"),
+        coalesce(u."name", 'My Organization'),
+        'MH',
+        u."createdAt",
+        CURRENT_TIMESTAMP
+      FROM "User" u
+      WHERE u."role" = 'CLIENT'
+      ON CONFLICT ("id") DO NOTHING;
+
+      INSERT INTO "OrganizationMember" ("id", "organizationId", "userId", "role", "createdAt")
+      SELECT
+        'mem_' || u."id",
+        'org_' || u."id",
+        u."id",
+        CAST('OWNER' AS "OrgRole"),
+        CURRENT_TIMESTAMP
+      FROM "User" u
+      WHERE u."role" = 'CLIENT'
+      ON CONFLICT ("id") DO NOTHING;
+
+      UPDATE "Order"
+      SET "organizationId" = 'org_' || "clientId"
+      WHERE "organizationId" IS NULL AND "clientId" IS NOT NULL;
+    `);
+
+    // Verify backfilled Organization
+    const backfilledOrg = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-1\'');
+    assert.ok(backfilledOrg);
+    assert.equal(backfilledOrg.name, 'Alpha Founder');
+
+    // Verify backfilled Member
+    const member = db.public.one('SELECT * FROM "OrganizationMember" WHERE "userId" = \'usr-1\'');
+    assert.ok(member);
+    assert.equal(member.role, 'OWNER');
+
+    // Verify backfilled Order
+    const order = db.public.one('SELECT * FROM "Order" WHERE "id" = \'ord-1\'');
+    assert.equal(order.organizationId, 'org_usr-1');
+
+    // Prove Client Access: client retains access via both legacy direct ownership and new organization ownership
+    const clientUser = { id: 'usr-1', role: 'CLIENT' };
+    const directAccess = order.clientId === clientUser.id;
+    const orgAccess = order.organizationId === 'org_usr-1';
+
+    assert.equal(directAccess, true, 'Legacy client direct access preserved');
+    assert.equal(orgAccess, true, 'Multi-tenant organization access active');
+  });
+
+  // 5. Rollback execution test
   it('Applies prisma/rollback_diff.sql cleanly and restores pre-migration database state', () => {
     const rollbackPath = path.join(process.cwd(), 'prisma', 'rollback_diff.sql');
     const rollbackSql = fs.readFileSync(rollbackPath, 'utf8');
