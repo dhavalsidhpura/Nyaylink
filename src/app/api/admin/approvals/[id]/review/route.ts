@@ -71,7 +71,12 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
       });
 
       if (reservation.alreadySucceeded) {
-        return { success: true, approval: existing };
+        return NextResponse.json({
+          success: true,
+          action,
+          approval: plain(existing),
+          message: 'Refund was already finalized.',
+        });
       }
 
       // 2. Call executeGatewayRefund adapter passing documented X-Refund-Idempotency and identical payload

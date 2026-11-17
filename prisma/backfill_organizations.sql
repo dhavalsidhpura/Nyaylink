@@ -6,59 +6,6 @@
 
 -- 1. Create a default Organization for every existing CLIENT user using deterministic evidence
 INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
-WITH doc_evidence AS (
-  SELECT
-    vd."ownerId" AS "userId",
-    COUNT(DISTINCT upper(trim(se."attestedStateCode"))) AS "distinctAttestedCount",
-    MAX(upper(trim(se."attestedStateCode"))) AS "docState"
-  FROM "StatutoryEvidence" se
-  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
-  JOIN "User" rev ON rev."id" = se."reviewerId"
-  JOIN "User" u ON u."id" = vd."ownerId"
-  WHERE vd."status" = 'VERIFIED'
-    AND vd."storageKey" IS NOT NULL
-    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
-    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
-    AND se."attestedStateCode" IS NOT NULL
-    AND length(trim(se."attestedStateCode")) = 2
-    AND upper(trim(se."attestedStateCode")) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
-    AND se."scope" = 'REGISTERED_OFFICE'
-  GROUP BY vd."ownerId"
-),
-gstin_evidence AS (
-  SELECT
-    vd."ownerId" AS "userId",
-    COUNT(DISTINCT substr(trim(se."verifiedGstin"), 1, 2)) AS "distinctGstinStateCount",
-    MAX(
-      CASE substr(trim(se."verifiedGstin"), 1, 2)
-        WHEN '01' THEN 'JK' WHEN '02' THEN 'HP' WHEN '03' THEN 'PB' WHEN '04' THEN 'CH'
-        WHEN '05' THEN 'UK' WHEN '06' THEN 'HR' WHEN '07' THEN 'DL' WHEN '08' THEN 'RJ'
-        WHEN '09' THEN 'UP' WHEN '10' THEN 'BR' WHEN '11' THEN 'SK' WHEN '12' THEN 'AR'
-        WHEN '13' THEN 'NL' WHEN '14' THEN 'MN' WHEN '15' THEN 'MZ' WHEN '16' THEN 'TR'
-        WHEN '17' THEN 'ML' WHEN '18' THEN 'AS' WHEN '19' THEN 'WB' WHEN '20' THEN 'JH'
-        WHEN '21' THEN 'OD' WHEN '22' THEN 'CG' WHEN '23' THEN 'MP' WHEN '24' THEN 'GJ'
-        WHEN '26' THEN 'DN' WHEN '27' THEN 'MH' WHEN '29' THEN 'KA' WHEN '30' THEN 'GA'
-        WHEN '31' THEN 'LD' WHEN '32' THEN 'KL' WHEN '33' THEN 'TN' WHEN '34' THEN 'PY'
-        WHEN '35' THEN 'AN' WHEN '36' THEN 'TS' WHEN '37' THEN 'AP' WHEN '38' THEN 'LA'
-        ELSE NULL
-      END
-    ) AS "gstinState",
-    MAX(se."scope") AS "gstinScope",
-    COUNT(DISTINCT se."legalEntityId") AS "distinctEntitiesCount",
-    COUNT(CASE WHEN se."verifiedGstin" = u."gstin" AND se."isCurrent" = true THEN 1 END) AS "currentGstinMatchCount"
-  FROM "StatutoryEvidence" se
-  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
-  JOIN "User" rev ON rev."id" = se."reviewerId"
-  JOIN "User" u ON u."id" = vd."ownerId"
-  WHERE vd."status" = 'VERIFIED'
-    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
-    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
-    AND se."verifiedGstin" IS NOT NULL
-    AND length(trim(se."verifiedGstin")) = 15
-    AND u."gstin" IS NOT NULL
-    AND length(trim(u."gstin")) = 15
-  GROUP BY vd."ownerId"
-)
 SELECT
   'org_' || u."id" AS "id",
   'org-' || lower(u."id") AS "slug",
@@ -103,10 +50,63 @@ SELECT
   u."createdAt" AS "createdAt",
   CURRENT_TIMESTAMP AS "updatedAt"
 FROM "User" u
-LEFT JOIN doc_evidence de ON de."userId" = u."id"
-LEFT JOIN gstin_evidence ge ON ge."userId" = u."id"
+LEFT JOIN (
+  SELECT
+    vd."ownerId" AS "userId",
+    COUNT(DISTINCT upper(trim(se."attestedStateCode"))) AS "distinctAttestedCount",
+    MAX(upper(trim(se."attestedStateCode"))) AS "docState"
+  FROM "StatutoryEvidence" se
+  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
+  JOIN "User" rev ON rev."id" = se."reviewerId"
+  JOIN "User" u ON u."id" = vd."ownerId"
+  WHERE vd."status" = 'VERIFIED'
+    AND vd."storageKey" IS NOT NULL
+    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
+    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
+    AND se."attestedStateCode" IS NOT NULL
+    AND length(trim(se."attestedStateCode")) = 2
+    AND upper(trim(se."attestedStateCode")) IN ('AN','AP','AR','AS','BR','CH','CG','DN','DL','GA','GJ','HR','HP','JK','JH','KA','KL','LA','LD','MP','MH','MN','ML','MZ','NL','OD','PY','PB','RJ','SK','TN','TS','TR','UP','UK','WB')
+    AND se."scope" = 'REGISTERED_OFFICE'
+  GROUP BY vd."ownerId"
+) de ON de."userId" = u."id"
+LEFT JOIN (
+  SELECT
+    vd."ownerId" AS "userId",
+    COUNT(DISTINCT substr(trim(se."verifiedGstin"), 1, 2)) AS "distinctGstinStateCount",
+    MAX(
+      CASE substr(trim(se."verifiedGstin"), 1, 2)
+        WHEN '01' THEN 'JK' WHEN '02' THEN 'HP' WHEN '03' THEN 'PB' WHEN '04' THEN 'CH'
+        WHEN '05' THEN 'UK' WHEN '06' THEN 'HR' WHEN '07' THEN 'DL' WHEN '08' THEN 'RJ'
+        WHEN '09' THEN 'UP' WHEN '10' THEN 'BR' WHEN '11' THEN 'SK' WHEN '12' THEN 'AR'
+        WHEN '13' THEN 'NL' WHEN '14' THEN 'MN' WHEN '15' THEN 'MZ' WHEN '16' THEN 'TR'
+        WHEN '17' THEN 'ML' WHEN '18' THEN 'AS' WHEN '19' THEN 'WB' WHEN '20' THEN 'JH'
+        WHEN '21' THEN 'OD' WHEN '22' THEN 'CG' WHEN '23' THEN 'MP' WHEN '24' THEN 'GJ'
+        WHEN '26' THEN 'DN' WHEN '27' THEN 'MH' WHEN '29' THEN 'KA' WHEN '30' THEN 'GA'
+        WHEN '31' THEN 'LD' WHEN '32' THEN 'KL' WHEN '33' THEN 'TN' WHEN '34' THEN 'PY'
+        WHEN '35' THEN 'AN' WHEN '36' THEN 'TS' WHEN '37' THEN 'AP' WHEN '38' THEN 'LA'
+        ELSE NULL
+      END
+    ) AS "gstinState",
+    MAX(se."scope") AS "gstinScope",
+    COUNT(DISTINCT se."legalEntityId") AS "distinctEntitiesCount",
+    COUNT(CASE WHEN se."verifiedGstin" = u."gstin" AND se."isCurrent" = true THEN 1 END) AS "currentGstinMatchCount"
+  FROM "StatutoryEvidence" se
+  JOIN "VaultDocument" vd ON vd."id" = se."documentId"
+  JOIN "User" rev ON rev."id" = se."reviewerId"
+  JOIN "User" u ON u."id" = vd."ownerId"
+  WHERE vd."status" = 'VERIFIED'
+    AND (se."organizationId" IS NULL OR se."organizationId" = 'org_' || u."id")
+    AND rev."role" IN ('SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC')
+    AND se."verifiedGstin" IS NOT NULL
+    AND length(trim(se."verifiedGstin")) = 15
+    AND u."gstin" IS NOT NULL
+    AND length(trim(u."gstin")) = 15
+  GROUP BY vd."ownerId"
+) ge ON ge."userId" = u."id"
 WHERE u."role" = 'CLIENT'
-ON CONFLICT ("id") DO NOTHING;
+ON CONFLICT ("id") DO UPDATE SET
+  "stateCode" = EXCLUDED."stateCode",
+  "updatedAt" = EXCLUDED."updatedAt";
 
 -- 2. Link each existing CLIENT as OWNER of their Organization
 INSERT INTO "OrganizationMember" ("id", "organizationId", "userId", "role", "createdAt")
@@ -130,12 +130,6 @@ WHERE "organizationId" IS NULL
 UPDATE "VaultDocument"
 SET "organizationId" = 'org_' || "ownerId"
 WHERE "organizationId" IS NULL;
-
-UPDATE "StatutoryEvidence"
-SET "organizationId" = 'org_' || vd."ownerId"
-FROM "VaultDocument" vd
-WHERE "StatutoryEvidence"."documentId" = vd."id"
-  AND "StatutoryEvidence"."organizationId" IS NULL;
 
 -- 5. Create Review Tasks and Compliance Matter for organizations with UNKNOWN / ambiguous state
 INSERT INTO "Matter" ("id", "matterNumber", "title", "vertical", "status", "organizationId", "notes", "createdAt", "updatedAt")
@@ -166,7 +160,7 @@ FROM "Organization" org
 WHERE org."stateCode" = 'UNKNOWN'
 ON CONFLICT ("id") DO NOTHING;
 
--- 5. Audit Log recording review tasks generated
+-- 6. Audit Log recording review tasks generated
 INSERT INTO "AuditLog" ("id", "action", "entityType", "entityId", "details", "createdAt")
 SELECT
   'aud_rev_' || org."id",

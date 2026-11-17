@@ -256,8 +256,8 @@ export interface ReserveRefundOptions {
 
 export interface FinalizeRefundOptions {
   refundRequestId: string;
-  approverId?: string;
-  requesterId?: string;
+  approverId?: string | null;
+  requesterId?: string | null;
   isSimulation?: boolean;
   reason?: string;
 }
@@ -285,9 +285,9 @@ export async function reserveRefund(
     if (!payment) throw new HttpError(404, 'Payment not found for refund.');
     if (payment.status === 'REFUNDED') throw new HttpError(409, 'Payment is already fully refunded.');
 
-    // Database-backed pessimistic row lock on the Payment record
+    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock
     try {
-      await tx.$executeRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
+      await tx.$queryRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
     } catch {
       // Safe fallback for environments/dialects without raw FOR UPDATE support (e.g. pg-mem)
     }
@@ -358,9 +358,9 @@ export async function finalizeRefund(
     });
     if (!payment) throw new HttpError(404, 'Payment not found for refund finalization.');
 
-    // Database-backed pessimistic row lock on the Payment record
+    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock
     try {
-      await tx.$executeRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
+      await tx.$queryRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
     } catch {}
 
     const existingRefund = await tx.paymentRefund.findUnique({

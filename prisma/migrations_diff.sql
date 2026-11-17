@@ -275,7 +275,7 @@ ALTER TABLE "VaultDocument" ADD COLUMN "organizationId" TEXT;
 -- CreateTable
 CREATE TABLE "StatutoryEvidence" (
     "id" TEXT NOT NULL,
-    "organizationId" TEXT,
+    "organizationId" TEXT NOT NULL,
     "legalEntityId" TEXT,
     "documentId" TEXT NOT NULL,
     "attestedStateCode" TEXT,
@@ -287,6 +287,7 @@ CREATE TABLE "StatutoryEvidence" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    CONSTRAINT "StatutoryEvidence_scope_check" CHECK ("scope" IN ('REGISTERED_OFFICE', 'BRANCH')),
     CONSTRAINT "StatutoryEvidence_pkey" PRIMARY KEY ("id")
 );
 
@@ -405,6 +406,9 @@ CREATE INDEX "PaymentRefund_status_idx" ON "PaymentRefund"("status");
 CREATE UNIQUE INDEX "StatutoryEvidence_documentId_key" ON "StatutoryEvidence"("documentId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "LegalEntity_id_organizationId_key" ON "LegalEntity"("id", "organizationId");
+
+-- CreateIndex
 CREATE INDEX "StatutoryEvidence_organizationId_idx" ON "StatutoryEvidence"("organizationId");
 
 -- CreateIndex
@@ -513,10 +517,10 @@ ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("acto
 ALTER TABLE "VaultDocument" ADD CONSTRAINT "VaultDocument_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_legalEntityId_fkey" FOREIGN KEY ("legalEntityId") REFERENCES "LegalEntity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_legalEntity_tenant_fkey" FOREIGN KEY ("legalEntityId", "organizationId") REFERENCES "LegalEntity"("id", "organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "VaultDocument"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
