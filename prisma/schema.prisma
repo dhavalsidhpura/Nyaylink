@@ -413,6 +413,7 @@ model VaultDocument {
   accessLogs        DocumentAccessLog[]
   statutoryEvidence StatutoryEvidence?
 
+  @@unique([id, organizationId])
   @@index([orderId])
   @@index([ownerId])
   @@index([organizationId])
@@ -425,7 +426,7 @@ model StatutoryEvidence {
   legalEntityId     String?
   legalEntity       LegalEntity?  @relation(fields: [legalEntityId, organizationId], references: [id, organizationId], onDelete: Restrict)
   documentId        String        @unique
-  document          VaultDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  document          VaultDocument @relation(fields: [documentId, organizationId], references: [id, organizationId], onDelete: Restrict)
   attestedStateCode String?       // Valid statutory 2-letter state code e.g. "MH", "KA"
   verifiedGstin     String?       // Valid 15-character statutory GSTIN
   scope             String        @default("REGISTERED_OFFICE") // REGISTERED_OFFICE | BRANCH
@@ -436,6 +437,7 @@ model StatutoryEvidence {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
+  @@unique([documentId, organizationId])
   @@index([organizationId])
   @@index([legalEntityId])
   @@index([reviewerId])

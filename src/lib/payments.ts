@@ -252,6 +252,7 @@ export interface ReserveRefundOptions {
   refundRequestId: string;
   reason?: string;
   isSimulation?: boolean;
+  testBypassLock?: boolean;
 }
 
 export interface FinalizeRefundOptions {
@@ -260,6 +261,7 @@ export interface FinalizeRefundOptions {
   requesterId?: string | null;
   isSimulation?: boolean;
   reason?: string;
+  testBypassLock?: boolean;
 }
 
 /**
@@ -285,11 +287,15 @@ export async function reserveRefund(
     if (!payment) throw new HttpError(404, 'Payment not found for refund.');
     if (payment.status === 'REFUNDED') throw new HttpError(409, 'Payment is already fully refunded.');
 
-    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock
-    try {
+    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock (Fail Closed)
+    const isTestEnvironment = process.env.NODE_ENV === 'test';
+    if (options?.testBypassLock && !isTestEnvironment) {
+      throw new HttpError(500, 'Security Violation: testBypassLock cannot be enabled outside test environments.');
+    }
+
+    if (!options?.testBypassLock) {
+      // Must acquire row lock. Any error in query execution or lock acquisition fails closed immediately.
       await tx.$queryRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
-    } catch {
-      // Safe fallback for environments/dialects without raw FOR UPDATE support (e.g. pg-mem)
     }
 
     // 1. Idempotency check: see if this exact refundRequestId was already handled
@@ -358,10 +364,16 @@ export async function finalizeRefund(
     });
     if (!payment) throw new HttpError(404, 'Payment not found for refund finalization.');
 
-    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock
-    try {
+    // Parameterized Prisma $queryRaw query for SELECT ... FOR UPDATE pessimistic row lock (Fail Closed)
+    const isTestEnvironment = process.env.NODE_ENV === 'test';
+    if (options.testBypassLock && !isTestEnvironment) {
+      throw new HttpError(500, 'Security Violation: testBypassLock cannot be enabled outside test environments.');
+    }
+
+    if (!options.testBypassLock) {
+      // Must acquire row lock. Any error in query execution or lock acquisition fails closed immediately.
       await tx.$queryRaw`SELECT 1 FROM "Payment" WHERE "id" = ${payment.id} FOR UPDATE`;
-    } catch {}
+    }
 
     const existingRefund = await tx.paymentRefund.findUnique({
       where: { refundRequestId },

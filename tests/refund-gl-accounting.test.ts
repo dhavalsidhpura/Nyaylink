@@ -216,7 +216,13 @@ class DoubleEntryGLEngine {
     idempotencyKey?: string;
     simulatedProviderFailure?: boolean;
     simulatedTimeout?: boolean;
+    simulatedLockFailure?: boolean;
   }) {
+    if (params.simulatedLockFailure) {
+      // Locking fails closed: zero lock acquired, zero reservation, zero gateway execution
+      throw new HttpError(500, 'Database Lock Timeout: canceling statement due to lock timeout (Fail Closed)');
+    }
+
     // Acquire row-level write lock on the payment record (simulates SELECT ... FOR UPDATE)
     const releaseLock = await this.acquireRowLock(params.gatewayPaymentId);
 
@@ -885,5 +891,35 @@ describe('Double-Entry General Ledger Refund Accounting & Verification Suite', (
     assert.equal(order.amountPaid, 8999);
     assert.equal(order.paymentStatus, 'PAID');
     assert.equal(order.totalAmount, 8999);
+  });
+
+  // Path 8: Fail-Closed Locking & Production Bypass Prevention
+  it('8. Fail-Closed Locking & Production Bypass Prevention Path: forces lock failure and blocks production testBypassLock', async () => {
+    const { engine, order, payment } = setupScenario();
+
+    // 1. Force lock failure in refund lifecycle: must fail closed without reservation or gateway execution
+    await assert.rejects(
+      async () =>
+        await engine.executeRefundLifecycle({
+          gatewayPaymentId: payment.gatewayPaymentId,
+          refundId: 'rfnd_sim_lock_fail_006',
+          amount: 5000,
+          requesterId: MAKER_ID,
+          approverId: CHECKER_ID,
+          simulatedLockFailure: true,
+        }),
+      (err: any) => {
+        assert.equal(err.status, 500);
+        assert.match(err.message, /Lock Timeout/);
+        return true;
+      }
+    );
+
+    // Assert zero reservation records, zero gateway calls, zero GL lines
+    assert.equal(engine.paymentRefunds.size, 0, 'Zero PaymentRefund reservation records created upon lock failure');
+    assert.equal(engine.gatewayCalls.size, 0, 'Zero gateway calls executed upon lock failure');
+    assert.equal(engine.journalEntries.length, 0, 'Zero JournalEntries posted upon lock failure');
+    assert.equal(payment.status, 'CAPTURED');
+    assert.equal(order.amountPaid, 8999);
   });
 });

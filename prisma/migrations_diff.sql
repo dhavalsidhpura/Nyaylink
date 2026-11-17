@@ -409,6 +409,12 @@ CREATE UNIQUE INDEX "StatutoryEvidence_documentId_key" ON "StatutoryEvidence"("d
 CREATE UNIQUE INDEX "LegalEntity_id_organizationId_key" ON "LegalEntity"("id", "organizationId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "VaultDocument_id_organizationId_key" ON "VaultDocument"("id", "organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "StatutoryEvidence_documentId_organizationId_key" ON "StatutoryEvidence"("documentId", "organizationId");
+
+-- CreateIndex
 CREATE INDEX "StatutoryEvidence_organizationId_idx" ON "StatutoryEvidence"("organizationId");
 
 -- CreateIndex
@@ -523,7 +529,7 @@ ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_organizationId
 ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_legalEntity_tenant_fkey" FOREIGN KEY ("legalEntityId", "organizationId") REFERENCES "LegalEntity"("id", "organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "VaultDocument"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_document_tenant_fkey" FOREIGN KEY ("documentId", "organizationId") REFERENCES "VaultDocument"("id", "organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StatutoryEvidence" ADD CONSTRAINT "StatutoryEvidence_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

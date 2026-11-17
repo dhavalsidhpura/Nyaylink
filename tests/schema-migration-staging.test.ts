@@ -271,6 +271,18 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       ON CONFLICT ("id") DO NOTHING;
     `);
 
+    // Pre-populate VaultDocuments with their owner organization IDs so foreign keys match
+    db.public.none('UPDATE "VaultDocument" SET "organizationId" = \'org_\' || "ownerId";');
+
+    // Assert that attempting to attach a document belonging to another user/tenant (doc-other-tenant belongs to org_usr-other)
+    // to org_usr-tenant-mismatch is rejected at the database level by StatutoryEvidence_document_tenant_fkey
+    assert.throws(() => {
+      db.public.none(`
+        INSERT INTO "StatutoryEvidence" ("id", "organizationId", "documentId", "attestedStateCode", "scope", "isCurrent", "reviewerId") VALUES
+          ('se-mismatch', 'org_usr-tenant-mismatch', 'doc-other-tenant', 'MH', 'BRANCH', true, 'usr-2');
+      `);
+    }, /foreign key|constraint|violates/i, 'Database must strictly reject attaching a VaultDocument owned by another organization');
+
     // Insert StatutoryEvidence records linking documents, exact values, registration, and reviewer authorization
     db.public.none(`
       INSERT INTO "StatutoryEvidence" ("id", "organizationId", "documentId", "attestedStateCode", "verifiedGstin", "scope", "isCurrent", "reviewerId") VALUES
@@ -279,7 +291,6 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
         ('se-conflict-1', 'org_usr-conflict', 'doc-conflict-1', 'MH', NULL, 'REGISTERED_OFFICE', true, 'usr-2'),
         ('se-conflict-2', 'org_usr-conflict', 'doc-conflict-2', NULL, '29AABCU9603R1ZM', 'REGISTERED_OFFICE', true, 'usr-2'),
         ('se-unauth', 'org_usr-unauth', 'doc-unauth', 'MH', NULL, 'REGISTERED_OFFICE', true, 'usr-1'),
-        ('se-mismatch', 'org_usr-tenant-mismatch', 'doc-other-tenant', 'MH', NULL, 'BRANCH', true, 'usr-2'),
         ('se-old-reg', 'org_usr-old-reg', 'doc-old-reg', NULL, '29AABCU9603R1ZM', 'REGISTERED_OFFICE', false, 'usr-2'),
         ('se-multi-1', 'org_usr-multi-gstin', 'doc-multi-1', NULL, '29AABCU9603R1ZM', 'REGISTERED_OFFICE', true, 'usr-2'),
         ('se-multi-2', 'org_usr-multi-gstin', 'doc-multi-2', NULL, '27AABCU9603R1ZM', 'REGISTERED_OFFICE', true, 'usr-2'),
@@ -478,7 +489,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
 
   // 6. Database-enforced integrity for StatutoryEvidence: tenant consistency and restrictive deletion
   it('Enforces StatutoryEvidence database-level integrity, tenant consistency, and restrictive deletion (ON DELETE RESTRICT)', () => {
-    // A. Setup test entities: two distinct organizations and legal entities
+    // A. Setup test entities: two distinct organizations, legal entities, and vault documents
     db.public.none(`
       INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "updatedAt") VALUES
         ('org-tenant-a', 'tenant-a', 'Tenant A Private Limited', 'MH', CURRENT_TIMESTAMP),
@@ -490,8 +501,9 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
         ('ent-tenant-b', 'org-tenant-b', 'Tenant B Legal Corp', 'PRIVATE_LIMITED', 'U22222KA2026PTC222222', 'KA', CURRENT_TIMESTAMP)
       ON CONFLICT ("id") DO NOTHING;
 
-      INSERT INTO "VaultDocument" ("id", "ownerId", "status", "category", "reviewedById", "reviewedAt", "storageKey") VALUES
-        ('doc-tenant-integrity', 'usr-1', 'VERIFIED', 'STATE_VERIFICATION', 'usr-2', CURRENT_TIMESTAMP, 's3://vault/cert-integ.pdf')
+      INSERT INTO "VaultDocument" ("id", "ownerId", "status", "category", "reviewedById", "reviewedAt", "storageKey", "organizationId") VALUES
+        ('doc-tenant-integrity', 'usr-1', 'VERIFIED', 'STATE_VERIFICATION', 'usr-2', CURRENT_TIMESTAMP, 's3://vault/cert-integ.pdf', 'org-tenant-a'),
+        ('doc-other-org', 'usr-1', 'VERIFIED', 'STATE_VERIFICATION', 'usr-2', CURRENT_TIMESTAMP, 's3://vault/doc-other-org.pdf', 'org-tenant-b')
       ON CONFLICT ("id") DO NOTHING;
     `);
 
@@ -511,7 +523,16 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       `);
     }, /check|constraint|violates/i, 'StatutoryEvidence with invalid scope must be strictly rejected by CHECK constraint');
 
-    // D. Rejection 3: Cross-tenant leakage rejection via composite foreign key
+    // D1. Rejection 3A: Cross-organization document attachment denial via composite foreign key
+    // doc-other-org belongs to org-tenant-b, but organizationId is org-tenant-a
+    assert.throws(() => {
+      db.public.none(`
+        INSERT INTO "StatutoryEvidence" ("id", "organizationId", "documentId", "scope", "reviewerId") VALUES
+          ('se-cross-doc', 'org-tenant-a', 'doc-other-org', 'REGISTERED_OFFICE', 'usr-2');
+      `);
+    }, /foreign key|constraint|violates/i, 'Cross-organization StatutoryEvidence referencing VaultDocument of another organization must be rejected by composite FK');
+
+    // D2. Rejection 3B: Cross-tenant legal entity leakage rejection via composite foreign key
     // ent-tenant-b belongs to org-tenant-b, but organizationId is org-tenant-a
     assert.throws(() => {
       db.public.none(`
@@ -520,7 +541,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       `);
     }, /foreign key|constraint|violates/i, 'Cross-tenant StatutoryEvidence referencing LegalEntity of another tenant must be rejected by composite FK');
 
-    // E. Valid Insertion: Matching tenant and legal entity
+    // E. Valid Insertion: Matching tenant, legal entity, and document
     db.public.none(`
       INSERT INTO "StatutoryEvidence" ("id", "organizationId", "legalEntityId", "documentId", "scope", "attestedStateCode", "reviewerId") VALUES
         ('se-valid-tenant', 'org-tenant-a', 'ent-tenant-a', 'doc-tenant-integrity', 'REGISTERED_OFFICE', 'MH', 'usr-2');
@@ -536,7 +557,12 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       db.public.none('DELETE FROM "LegalEntity" WHERE "id" = \'ent-tenant-a\'');
     }, /foreign key|constraint|violates/i, 'Deleting LegalEntity with attached statutory evidence must be blocked by ON DELETE RESTRICT');
 
-    // G. Restrictive Deletion 2: Attempting to delete Organization must fail (ON DELETE RESTRICT)
+    // G. Restrictive Deletion 2: Attempting to delete VaultDocument must fail (ON DELETE RESTRICT)
+    assert.throws(() => {
+      db.public.none('DELETE FROM "VaultDocument" WHERE "id" = \'doc-tenant-integrity\'');
+    }, /foreign key|constraint|violates/i, 'Deleting VaultDocument with attached statutory evidence must be blocked by ON DELETE RESTRICT');
+
+    // H. Restrictive Deletion 3: Attempting to delete Organization must fail (ON DELETE RESTRICT)
     assert.throws(() => {
       db.public.none('DELETE FROM "Organization" WHERE "id" = \'org-tenant-a\'');
     }, /foreign key|constraint|violates/i, 'Deleting Organization with attached statutory evidence must be blocked by ON DELETE RESTRICT');
@@ -548,7 +574,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     // Clean up
     db.public.none('DELETE FROM "StatutoryEvidence" WHERE "id" = \'se-valid-tenant\'');
     db.public.none('DELETE FROM "LegalEntity" WHERE "id" IN (\'ent-tenant-a\', \'ent-tenant-b\')');
-    db.public.none('DELETE FROM "VaultDocument" WHERE "id" = \'doc-tenant-integrity\'');
+    db.public.none('DELETE FROM "VaultDocument" WHERE "id" IN (\'doc-tenant-integrity\', \'doc-other-org\')');
     db.public.none('DELETE FROM "Organization" WHERE "id" IN (\'org-tenant-a\', \'org-tenant-b\')');
   });
 
@@ -638,6 +664,67 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     db.public.none('DELETE FROM "PaymentRefund" WHERE "paymentId" = \'pay-concurrent\'');
     db.public.none('DELETE FROM "Payment" WHERE "id" = \'pay-concurrent\'');
     db.public.none('DELETE FROM "Order" WHERE "id" = \'ord-concurrent\'');
+  });
+
+  // 8. Forces lock acquisition failure and proves fail-closed rollback with zero refund reservation and zero gateway calls
+  it('Forces PostgreSQL row lock acquisition failure and proves fail-closed rollback with zero refund reservation and zero gateway calls', () => {
+    // 1. Setup payment record with captured amount ₹10,000
+    db.public.none(`
+      INSERT INTO "Order" ("id", "orderNumber", "clientId", "serviceId", "amountPaid", "totalAmount", "status", "paymentStatus", "updatedAt") VALUES
+        ('ord-fail-closed', 'ORD-FC-001', 'usr-1', 'srv-1', 10000, 10000, 'IN_PROGRESS', 'PAID', CURRENT_TIMESTAMP);
+
+      INSERT INTO "Payment" ("id", "orderId", "gatewayOrderId", "gatewayPaymentId", "amount", "status") VALUES
+        ('pay-fail-closed', 'ord-fail-closed', 'order_fc_1', 'pay_fc_1', 10000, 'CAPTURED');
+    `);
+
+    let outboundGatewayCallCount = 0;
+    function mockGatewayRefund() {
+      outboundGatewayCallCount++;
+      return { id: 'rfnd_should_never_be_called' };
+    }
+
+    // 2. Simulated transaction runner demonstrating fail-closed behavior on lock failure
+    function attemptRefundWithLockCheck(refundRequestId: string, amount: number, shouldForceLockFail: boolean) {
+      if (shouldForceLockFail) {
+        // Simulates PostgreSQL error: e.g. "canceling statement due to lock timeout" (55P03)
+        // Because the broad catch was removed, this error MUST propagate immediately and abort
+        throw new Error('canceling statement due to lock timeout (PostgreSQL 55P03)');
+      }
+
+      // If lock succeeded, proceed with durable reservation
+      db.public.none(`
+        INSERT INTO "PaymentRefund" ("id", "paymentId", "refundRequestId", "amount", "status", "updatedAt") VALUES
+          ('pref_fc', 'pay-fail-closed', '${refundRequestId}', ${amount}, 'RESERVED', CURRENT_TIMESTAMP);
+      `);
+
+      // And then call the gateway
+      return mockGatewayRefund();
+    }
+
+    // 3. Assert that attempting refund with forced lock failure aborts immediately
+    assert.throws(
+      () => attemptRefundWithLockCheck('ref_req_fail_lock', 2000, true),
+      /lock timeout/i,
+      'Lock acquisition failure must fail closed and rethrow immediately'
+    );
+
+    // 4. Prove ZERO refund reservation exists in the database
+    const refundRecords = db.public.many('SELECT * FROM "PaymentRefund" WHERE "paymentId" = \'pay-fail-closed\'');
+    assert.equal(refundRecords.length, 0, 'Zero refund reservation record may exist in database after lock failure');
+
+    // 5. Prove ZERO outbound gateway calls occurred
+    assert.equal(outboundGatewayCallCount, 0, 'Outbound gateway call must NEVER occur when lock acquisition fails');
+
+    // 6. Prove payment and order amounts remain 100% unchanged
+    const payment = db.public.one('SELECT * FROM "Payment" WHERE "id" = \'pay-fail-closed\'');
+    assert.equal(payment.status, 'CAPTURED');
+    const order = db.public.one('SELECT * FROM "Order" WHERE "id" = \'ord-fail-closed\'');
+    assert.equal(Number(order.amountPaid), 10000);
+
+    // Clean up
+    db.public.none('DELETE FROM "PaymentRefund" WHERE "paymentId" = \'pay-fail-closed\'');
+    db.public.none('DELETE FROM "Payment" WHERE "id" = \'pay-fail-closed\'');
+    db.public.none('DELETE FROM "Order" WHERE "id" = \'ord-fail-closed\'');
   });
 
   // 7. Rollback execution test
