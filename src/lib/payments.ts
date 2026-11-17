@@ -11,6 +11,17 @@ import { notifyOrderCreatedWhatsApp } from '@/lib/whatsapp';
 // SAC for the platform facilitation fee on consultations — confirm with your CA.
 const CONSULTATION_SAC = '998599';
 
+/**
+ * Checks whether demo reset is permitted in the current runtime environment.
+ * Strictly blocked in live production environments.
+ */
+export function isDemoResetAllowed(): boolean {
+  if (process.env.APP_ENV === 'production') return false;
+  if (process.env.VERCEL_ENV === 'production') return false;
+  if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_STAGING_RESET) return false;
+  return true;
+}
+
 const paymentInclude = {
   order: { include: { client: true, service: true } },
   consultation: { include: { client: true, lawyer: { include: { user: true } } } },
@@ -175,8 +186,10 @@ export async function capturePayment(
       isSimulation ||
       payment.order?.client.email?.endsWith('.local') ||
       payment.order?.client.email?.includes('demo') ||
+      payment.order?.client.email?.includes('test') ||
       payment.consultation?.client.email?.endsWith('.local') ||
-      payment.consultation?.client.email?.includes('demo');
+      payment.consultation?.client.email?.includes('demo') ||
+      payment.consultation?.client.email?.includes('test');
 
     if (!isTestAccount) {
       if (payment.order) {

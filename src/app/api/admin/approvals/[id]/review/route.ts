@@ -22,9 +22,19 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
   const existing = await prisma.approvalRequest.findUnique({ where: { id: params.id } });
   if (!existing) throw new HttpError(404, 'Approval request not found.');
 
-  if (existing.type === 'REFUND' || existing.type === 'MANUAL_LEDGER_ADJUSTMENT') {
+  if (
+    existing.type === 'REFUND' ||
+    existing.type === 'MANUAL_LEDGER_ADJUSTMENT' ||
+    existing.type === 'PAYOUT_DISBURSEMENT'
+  ) {
     if (!ROLE_GROUPS.finance.includes(user.role)) {
       throw new HttpError(403, 'Only Finance Officers or Super Admin can review financial approval requests.');
+    }
+  }
+
+  if (existing.type === 'CATALOG_PRICE_CHANGE') {
+    if (!['SUPER_ADMIN', 'CA_CS_LEAD', 'OPS_MANAGER'].includes(user.role)) {
+      throw new HttpError(403, 'Only Super Admin or Compliance / Ops Leads can review catalog changes.');
     }
   }
 
@@ -64,6 +74,20 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
       }
 
       await recordRefund(payment.gatewayPaymentId, refundId, refundAmount);
+    } else if (existing.type === 'PAYOUT_DISBURSEMENT') {
+      const { professionalType, vendorName, amount, purpose, orderId } = payload;
+      const txnType = professionalType === 'LAWYER' ? 'LAWYER_PAYOUT' : 'CA_PAYOUT';
+      await prisma.ledgerEntry.create({
+        data: {
+          txnNo: `TXN-PO-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: txnType,
+          description: `[APPROVED PAYOUT by ${user.email}] To ${vendorName || 'Professional'}: ${purpose || 'Disbursement'}`,
+          debit: Number(amount),
+          credit: 0,
+          mode: 'BANK_TRANSFER',
+          orderId: orderId || null,
+        },
+      });
     } else if (existing.type === 'CATALOG_PRICE_CHANGE') {
       const { slug, professionalFee, govtFee, govtFeeNote, sla } = payload;
       await prisma.service.update({
