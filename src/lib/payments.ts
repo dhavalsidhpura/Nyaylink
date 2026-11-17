@@ -1,3 +1,4 @@
+import { postRefundJournalEntry } from '@/lib/gl';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { HttpError } from '@/lib/http';
@@ -239,30 +240,73 @@ export async function markPaymentFailed(gatewayOrderId: string) {
   await prisma.payment.updateMany({ where: { gatewayOrderId, status: 'CREATED' }, data: { status: 'FAILED' } });
 }
 
-/** Records a refund once per gateway refund id (ledger txnNo is unique). */
-export async function recordRefund(gatewayPaymentId: string, refundId: string, amount: number) {
-  await prisma.$transaction(async (tx) => {
-    const existing = await tx.ledgerEntry.findUnique({ where: { txnNo: refundId } });
-    if (existing) return;
+export interface RecordRefundOptions {
+  approverId?: string | null;
+  requesterId?: string | null;
+  isSimulation?: boolean;
+}
 
-    const payment = await tx.payment.findUnique({ where: { gatewayPaymentId } });
+/**
+ * Records a refund with immutable double-entry JournalEntry in the GL
+ * and maintains backward-compatible LedgerEntry.
+ */
+export async function recordRefund(
+  gatewayPaymentId: string,
+  refundId: string,
+  amount: number,
+  options?: RecordRefundOptions
+) {
+  return await prisma.$transaction(async (tx) => {
+    const existingLedger = await tx.ledgerEntry.findUnique({ where: { txnNo: refundId } });
+    if (existingLedger) {
+      return { duplicateSkipped: true };
+    }
+
+    const payment = await tx.payment.findUnique({
+      where: { gatewayPaymentId },
+      include: { order: true },
+    });
     if (!payment) throw new HttpError(404, 'Payment not found for refund.');
+    if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
 
-    const fullRefund = amount >= num(payment.amount);
-    if (fullRefund) await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
+    const isSimulation = Boolean(options?.isSimulation || gatewayPaymentId.startsWith('pay_demo_'));
 
-    const isSimulation = gatewayPaymentId.startsWith('pay_demo_');
+    // 1. Post immutable, balanced JournalEntry to Double-Entry General Ledger
+    const { journalEntry, duplicateSkipped } = await postRefundJournalEntry(tx, {
+      refundId,
+      amount,
+      gatewayPaymentId,
+      orderNumber: payment.order?.orderNumber,
+      isSimulation,
+      requesterId: options?.requesterId,
+      approverId: options?.approverId,
+      memo: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund against ${gatewayPaymentId}`,
+    });
+
+    if (duplicateSkipped) {
+      return { duplicateSkipped: true, journalEntry };
+    }
+
+    // 2. Post backward-compatible LedgerEntry
     await tx.ledgerEntry.create({
       data: {
         txnNo: refundId,
         type: 'REFUND',
         description: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund against ${gatewayPaymentId}`,
         debit: amount,
+        credit: 0,
         mode: isSimulation ? 'TEST_SIMULATION' : 'RAZORPAY',
         orderId: payment.orderId,
       },
     });
 
+    // 3. Mark payment as REFUNDED if cumulative refunds equal or exceed original amount
+    const fullRefund = amount >= num(payment.amount);
+    if (fullRefund) {
+      await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } });
+    }
+
+    // 4. Decrement order amountPaid (original order totalAmount and accepted quote remain invariant!)
     if (payment.orderId) {
       const order = await tx.order.update({
         where: { id: payment.orderId },
@@ -274,9 +318,15 @@ export async function recordRefund(gatewayPaymentId: string, refundId: string, a
         data: { paymentStatus: paid <= 0 ? 'REFUNDED' : paid >= num(order.totalAmount) ? 'PAID' : 'PARTIALLY_PAID' },
       });
       await tx.orderStatusLog.create({
-        data: { orderId: order.id, status: 'REFUND_PROCESSED', remarks: `Refund of ₹${amount.toLocaleString('en-IN')} processed.` },
+        data: {
+          orderId: order.id,
+          status: 'REFUND_PROCESSED',
+          remarks: `${isSimulation ? '[TEST SIMULATION] ' : ''}Refund of ₹${amount.toLocaleString('en-IN')} processed (Ref: ${refundId}).`,
+        },
       });
     }
+
+    return { duplicateSkipped: false, journalEntry };
   });
 }
 

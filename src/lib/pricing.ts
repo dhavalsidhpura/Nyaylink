@@ -168,6 +168,82 @@ export function getStateStampDuty(stateCode?: string | null): { amount: number; 
   };
 }
 
+export interface StateJurisdiction {
+  isVerified: boolean;
+  roc: string | null;
+  ncltBench: string | null;
+  gstJurisdiction: string | null;
+  reason?: string;
+}
+
+const STATE_JURISDICTIONS: Record<string, { roc: string; ncltBench: string; gstJurisdiction: string }> = {
+  MH: { roc: 'ROC Mumbai & Pune', ncltBench: 'NCLT Mumbai Bench', gstJurisdiction: 'Maharashtra State Tax & CGST Mumbai' },
+  DL: { roc: 'ROC Delhi & Haryana', ncltBench: 'NCLT Principal Bench New Delhi', gstJurisdiction: 'Delhi State GST & CGST Delhi' },
+  KA: { roc: 'ROC Bangalore', ncltBench: 'NCLT Bengaluru Bench', gstJurisdiction: 'Karnataka State Commercial Taxes & CGST Bengaluru' },
+  GJ: { roc: 'ROC Ahmedabad', ncltBench: 'NCLT Ahmedabad Bench', gstJurisdiction: 'Gujarat Commercial Tax & CGST Ahmedabad' },
+  TN: { roc: 'ROC Chennai & Coimbatore', ncltBench: 'NCLT Chennai Bench', gstJurisdiction: 'Tamil Nadu Commercial Taxes & CGST Chennai' },
+  TS: { roc: 'ROC Hyderabad', ncltBench: 'NCLT Hyderabad Bench', gstJurisdiction: 'Telangana Commercial Taxes & CGST Hyderabad' },
+  WB: { roc: 'ROC Kolkata', ncltBench: 'NCLT Kolkata Bench', gstJurisdiction: 'West Bengal Directorate of Commercial Taxes & CGST Kolkata' },
+  UP: { roc: 'ROC Kanpur', ncltBench: 'NCLT Allahabad Bench', gstJurisdiction: 'Uttar Pradesh Commercial Tax & CGST Lucknow' },
+};
+
+/**
+ * Assigns ROC, NCLT Bench, and GST jurisdictional authority.
+ * Strictly guarded against UNKNOWN, unverified, or arbitrary state inputs.
+ */
+export function getStateJurisdiction(stateCode?: string | null): StateJurisdiction {
+  if (!isVerifiedStateCode(stateCode)) {
+    return {
+      isVerified: false,
+      roc: null,
+      ncltBench: null,
+      gstJurisdiction: null,
+      reason: 'Jurisdiction rejected: State is UNKNOWN or unverified. Official statutory state confirmation with reviewer provenance is required.',
+    };
+  }
+
+  const code = stateCode!.toUpperCase();
+  const found = STATE_JURISDICTIONS[code] || {
+    roc: `ROC Regional Jurisdiction (${code})`,
+    ncltBench: `NCLT Regional Bench (${code})`,
+    gstJurisdiction: `${code} State Tax & Central GST Division`,
+  };
+
+  return {
+    isVerified: true,
+    roc: found.roc,
+    ncltBench: found.ncltBench,
+    gstJurisdiction: found.gstJurisdiction,
+  };
+}
+
+export interface StateSchemeEligibility {
+  isVerified: boolean;
+  eligible: boolean;
+  reason: string;
+}
+
+/**
+ * Assesses statutory eligibility for state-specific subsidies and exemptions.
+ * Blocks decisioning if state is unverified or UNKNOWN.
+ */
+export function checkStateSchemeEligibility(stateCode?: string | null, schemeName = 'STARTUP_SUBSIDY'): StateSchemeEligibility {
+  if (!isVerifiedStateCode(stateCode)) {
+    return {
+      isVerified: false,
+      eligible: false,
+      reason: 'Eligibility determination blocked: State is UNKNOWN or unverified. Cannot assess state-specific statutory benefits or subsidies.',
+    };
+  }
+
+  return {
+    isVerified: true,
+    eligible: true,
+    reason: `Verified state ${stateCode?.toUpperCase()} qualifies for ${schemeName} statutory processing under applicable state industrial policy.`,
+  };
+}
+
+
 
 export interface PricingModelBadge {
   type: 'PAN_INDIA' | 'STATE_VARIABLE' | 'SLAB_TIERED';

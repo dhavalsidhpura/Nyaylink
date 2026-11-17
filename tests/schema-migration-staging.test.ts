@@ -2,10 +2,38 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { newDb } from 'pg-mem';
+import { newDb, DataType } from 'pg-mem';
+import {
+  splitGst,
+  getStateStampDuty,
+  getStateJurisdiction,
+  checkStateSchemeEligibility,
+} from '../src/lib/pricing';
 
 describe('Disposable Staging Database Schema Migration & Rollback Suite', () => {
   const db = newDb();
+
+  // Register SQL functions for in-memory parser
+  db.public.registerFunction({
+    name: 'trim',
+    args: [DataType.text],
+    returns: DataType.text,
+    implementation: (x) => (x ? x.trim() : x),
+  });
+
+  db.public.registerFunction({
+    name: 'length',
+    args: [DataType.text],
+    returns: DataType.integer,
+    implementation: (x) => (x ? x.length : 0),
+  });
+
+  db.public.registerFunction({
+    name: 'substr',
+    args: [DataType.text, DataType.integer, DataType.integer],
+    returns: DataType.text,
+    implementation: (str, start, len) => (str ? str.substring(start - 1, start - 1 + len) : ''),
+  });
 
   // 1. Initialize baseline legacy production schema
   it('Initializes baseline legacy schema with existing production data', () => {
@@ -20,8 +48,19 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
         "email" TEXT UNIQUE,
         "name" TEXT,
         "role" "Role" DEFAULT 'CLIENT',
+        "state" TEXT,
+        "gstin" TEXT,
         "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE "VaultDocument" (
+        "id" TEXT PRIMARY KEY,
+        "ownerId" TEXT REFERENCES "User"("id"),
+        "status" TEXT DEFAULT 'PENDING_REVIEW',
+        "category" TEXT,
+        "reviewedById" TEXT,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE "Lead" (
@@ -79,11 +118,21 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
       );
     `);
 
-    // Insert pre-migration production data
+    // Insert pre-migration production data including provenance test cases:
+    // 1. usr-1: Plausible unverified 2-letter state 'KA' (no reviewer document/audit)
+    // 2. usr-invalid: Invalid state code 'XX'
+    // 3. usr-doc: Client with verified statutory document reviewed by staff
+    // 4. usr-gstin: Client with verified statutory GSTIN prefix '29'
     db.public.none(`
-      INSERT INTO "User" ("id", "email", "name", "role") VALUES
-        ('usr-1', 'client.alpha@startup.com', 'Alpha Founder', 'CLIENT'),
-        ('usr-2', 'lead.ops@nyayalink.com', 'Lead Ops', 'OPS_MANAGER');
+      INSERT INTO "User" ("id", "email", "name", "role", "state", "gstin") VALUES
+        ('usr-1', 'client.alpha@startup.com', 'Alpha Founder', 'CLIENT', 'KA', NULL),
+        ('usr-invalid', 'client.invalid@test.com', 'Invalid State User', 'CLIENT', 'XX', NULL),
+        ('usr-doc', 'client.verified.doc@mfg.com', 'Verified Doc Client', 'CLIENT', 'MH', NULL),
+        ('usr-gstin', 'client.verified.gstin@tech.com', 'Verified GSTIN Client', 'CLIENT', NULL, '29AABCU9603R1ZM'),
+        ('usr-2', 'lead.ops@nyayalink.com', 'Lead Ops', 'OPS_MANAGER', 'MH', NULL);
+
+      INSERT INTO "VaultDocument" ("id", "ownerId", "status", "category", "reviewedById") VALUES
+        ('doc-1', 'usr-doc', 'VERIFIED', 'STATE_VERIFICATION', 'usr-2');
 
       INSERT INTO "Service" ("id", "slug", "title", "professionalFee", "govtFee", "sla", "sacCode") VALUES
         ('srv-1', 'private-limited-company', 'Private Limited Company Incorporation', 1999, 1000, '7-10 Days', '998311');
@@ -100,7 +149,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
 
     const users = db.public.many('SELECT * FROM "User"');
     const orders = db.public.many('SELECT * FROM "Order"');
-    assert.equal(users.length, 2);
+    assert.equal(users.length, 5);
     assert.equal(orders.length, 1);
   });
 
@@ -129,7 +178,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     const payments = db.public.many('SELECT * FROM "Payment"');
     const ledgers = db.public.many('SELECT * FROM "LedgerEntry"');
 
-    assert.equal(users.length, 2, 'User records must be fully preserved');
+    assert.equal(users.length, 5, 'User records must be fully preserved');
     assert.equal(orders.length, 1, 'Order records must be fully preserved');
     assert.equal(payments.length, 1, 'Payment records must be fully preserved');
     assert.equal(ledgers.length, 1, 'Ledger records must be fully preserved');
@@ -180,54 +229,105 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     assert.equal(matters[0].matterNumber, 'MAT-2026-0001');
   });
 
-  // 4. Backfill existing legacy users and orders to organizations
-  it('Validates legacy user-to-organization backfill and proves existing clients retain access', () => {
-    // Execute idempotent backfill SQL
+  // 4. Backfill existing legacy users and orders to organizations with strict state provenance
+  it('Validates legacy user-to-organization backfill with state provenance and proves unverified state cannot drive decisions', () => {
+    // Insert verified GSTIN audit log record before executing backfill
     db.public.none(`
-      INSERT INTO "Organization" ("id", "slug", "name", "stateCode", "createdAt", "updatedAt")
-      SELECT
-        'org_' || u."id",
-        'org-' || lower(u."id"),
-        coalesce(u."name", 'My Organization'),
-        'UNKNOWN',
-        u."createdAt",
-        CURRENT_TIMESTAMP
-      FROM "User" u
-      WHERE u."role" = 'CLIENT'
-      ON CONFLICT ("id") DO NOTHING;
-
-      INSERT INTO "OrganizationMember" ("id", "organizationId", "userId", "role", "createdAt")
-      SELECT
-        'mem_' || u."id",
-        'org_' || u."id",
-        u."id",
-        CAST('OWNER' AS "OrgRole"),
-        CURRENT_TIMESTAMP
-      FROM "User" u
-      WHERE u."role" = 'CLIENT'
-      ON CONFLICT ("id") DO NOTHING;
-
-      UPDATE "Order"
-      SET "organizationId" = 'org_' || "clientId"
-      WHERE "organizationId" IS NULL AND "clientId" IS NOT NULL;
+      INSERT INTO "AuditLog" ("id", "action", "entityType", "entityId", "actorId", "createdAt") VALUES
+        ('aud-gstin-1', 'GSTIN_VERIFIED', 'User', 'usr-gstin', 'usr-2', CURRENT_TIMESTAMP);
     `);
 
-    // Verify backfilled Organization
-    const backfilledOrg = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-1\'');
-    assert.ok(backfilledOrg);
-    assert.equal(backfilledOrg.name, 'Alpha Founder');
-    assert.equal(backfilledOrg.stateCode, 'UNKNOWN', 'Default stateCode must be UNKNOWN and never hardcoded to MH');
+    // Read and execute prisma/backfill_organizations.sql
+    const backfillPath = path.join(process.cwd(), 'prisma', 'backfill_organizations.sql');
+    const backfillSql = fs.readFileSync(backfillPath, 'utf8');
 
-    // Verify backfilled Member
-    const member = db.public.one('SELECT * FROM "OrganizationMember" WHERE "userId" = \'usr-1\'');
-    assert.ok(member);
-    assert.equal(member.role, 'OWNER');
+    const cleanBackfill = backfillSql
+      .replace(/--.*$/gm, '')
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
-    // Verify backfilled Order
+    for (const stmt of cleanBackfill) {
+      db.public.none(stmt);
+    }
+
+    // 1. Verify User 1 with plausible unverified 2-letter state 'KA': MUST BE 'UNKNOWN'
+    const org1 = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-1\'');
+    assert.ok(org1);
+    assert.equal(org1.name, 'Alpha Founder');
+    assert.equal(
+      org1.stateCode,
+      'UNKNOWN',
+      'Plausible unverified state "KA" with zero reviewer evidence must strictly evaluate to UNKNOWN'
+    );
+
+    // 2. Verify User with invalid state 'XX': MUST BE 'UNKNOWN'
+    const orgInvalid = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-invalid\'');
+    assert.ok(orgInvalid);
+    assert.equal(
+      orgInvalid.stateCode,
+      'UNKNOWN',
+      'Invalid state "XX" must strictly evaluate to UNKNOWN'
+    );
+
+    // 3. Verify User with verified document reviewed by staff: evaluates to verified state 'MH'
+    const orgDoc = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-doc\'');
+    assert.ok(orgDoc);
+    assert.equal(
+      orgDoc.stateCode,
+      'MH',
+      'State backed by verified statutory VaultDocument reviewed by staff must evaluate to verified state "MH"'
+    );
+
+    // 4. Verify User with verified GSTIN audit log: evaluates to mapped state 'KA' (GST Code 29)
+    const orgGstin = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-gstin\'');
+    assert.ok(orgGstin);
+    assert.equal(
+      orgGstin.stateCode,
+      'KA',
+      'State backed by verified GSTIN audit log (29...) must evaluate to verified state "KA"'
+    );
+
+    // 5. Assert that UNKNOWN state from org_usr-1 & org_usr-invalid CANNOT drive GST, Stamp Duty, Jurisdiction, or Eligibility
+    for (const unverifiedOrg of [org1, orgInvalid]) {
+      const code = unverifiedOrg.stateCode; // 'UNKNOWN'
+
+      // A. GST computation blocked
+      assert.throws(
+        () => splitGst(1800, code, 'MH'),
+        /Place of supply is unverified/i,
+        'UNKNOWN state must reject GST computation'
+      );
+
+      // B. Stamp Duty calculation blocked
+      const stamp = getStateStampDuty(code);
+      assert.equal(stamp.isVerified, false);
+      assert.equal(stamp.amount, 0);
+      assert.match(stamp.breakdown, /UNKNOWN|unverified/i);
+
+      // C. Jurisdiction determination blocked
+      const jurisdiction = getStateJurisdiction(code);
+      assert.equal(jurisdiction.isVerified, false);
+      assert.equal(jurisdiction.roc, null);
+      assert.match(jurisdiction.reason || '', /rejected|unverified|UNKNOWN/i);
+
+      // D. Scheme eligibility evaluation blocked
+      const eligibility = checkStateSchemeEligibility(code, 'STARTUP_SUBSIDY');
+      assert.equal(eligibility.isVerified, false);
+      assert.equal(eligibility.eligible, false);
+      assert.match(eligibility.reason, /blocked|unverified|UNKNOWN/i);
+    }
+
+    // 6. Assert verified states (MH, KA) CAN drive statutory decisions
+    assert.equal(splitGst(1800, orgDoc.stateCode, 'MH').total, 1800);
+    assert.equal(getStateStampDuty(orgDoc.stateCode).isVerified, true);
+    assert.equal(getStateJurisdiction(orgDoc.stateCode).isVerified, true);
+    assert.equal(checkStateSchemeEligibility(orgDoc.stateCode).isVerified, true);
+
+    // 7. Verify backfilled Order linkage and Client Access Preservation
     const order = db.public.one('SELECT * FROM "Order" WHERE "id" = \'ord-1\'');
     assert.equal(order.organizationId, 'org_usr-1');
 
-    // Prove Client Access: client retains access via both legacy direct ownership and new organization ownership
     const clientUser = { id: 'usr-1', role: 'CLIENT' };
     const directAccess = order.clientId === clientUser.id;
     const orgAccess = order.organizationId === 'org_usr-1';
@@ -266,7 +366,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     const payments = db.public.many('SELECT * FROM "Payment"');
     const ledgers = db.public.many('SELECT * FROM "LedgerEntry"');
 
-    assert.equal(users.length, 2, 'Users intact after rollback');
+    assert.equal(users.length, 5, 'Users intact after rollback');
     assert.equal(orders.length, 1, 'Orders intact after rollback');
     assert.equal(payments.length, 1, 'Payments intact after rollback');
     assert.equal(ledgers.length, 1, 'Ledger intact after rollback');

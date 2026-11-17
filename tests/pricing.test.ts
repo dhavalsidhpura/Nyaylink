@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
-import { computeQuote, splitGst, computeConsultationQuote, getStateStampDuty } from '../src/lib/pricing.ts';
+import { computeQuote, splitGst, computeConsultationQuote, getStateStampDuty, getStateJurisdiction, checkStateSchemeEligibility } from '../src/lib/pricing.ts';
 import { MASTER_PACKAGES } from '../src/data/packages.ts';
 import { MASTER_SERVICES } from '../src/data/services.ts';
 
@@ -79,6 +79,67 @@ describe('Pricing & GST Pure Math Engine', () => {
     assert.strictEqual(unknown.amount, 0);
     assert.match(unknown.breakdown, /State is UNKNOWN\/unverified/);
   });
+  test('Plausible unverified and invalid state codes strictly blocked across GST, Stamp Duty, Jurisdiction, and Eligibility', () => {
+    const unverifiedInputs = ['UNKNOWN', 'UNVERIFIED', 'XX', '99', 'ZZ', '', null, undefined];
+
+    for (const input of unverifiedInputs) {
+      // 1. GST Calculation Blocked
+      assert.throws(
+        () => splitGst(1259.82, input as any, 'MH'),
+        /Place of supply is unverified/i,
+        `GST split must be strictly rejected for input: ${input}`
+      );
+
+      // 2. Stamp Duty Calculation Blocked
+      const stamp = getStateStampDuty(input as any);
+      assert.strictEqual(stamp.isVerified, false, `Stamp duty must be unverified for ${input}`);
+      assert.strictEqual(stamp.amount, 0, `Stamp duty amount must be 0 for ${input}`);
+      assert.match(stamp.breakdown, /UNKNOWN|unverified/i);
+
+      // 3. Jurisdiction Assignment Blocked
+      const jurisdiction = getStateJurisdiction(input as any);
+      assert.strictEqual(jurisdiction.isVerified, false, `Jurisdiction must be unverified for ${input}`);
+      assert.strictEqual(jurisdiction.roc, null);
+      assert.strictEqual(jurisdiction.ncltBench, null);
+      assert.strictEqual(jurisdiction.gstJurisdiction, null);
+      assert.match(jurisdiction.reason || '', /rejected|unverified|UNKNOWN/i);
+
+      // 4. Scheme Eligibility Blocked
+      const eligibility = checkStateSchemeEligibility(input as any, 'STARTUP_SUBSIDY');
+      assert.strictEqual(eligibility.isVerified, false, `Eligibility must be unverified for ${input}`);
+      assert.strictEqual(eligibility.eligible, false);
+      assert.match(eligibility.reason, /blocked|unverified|UNKNOWN/i);
+    }
+  });
+
+  test('Verified state codes with provenance successfully drive statutory decisions across all 4 domains', () => {
+    const verifiedStates = ['MH', 'KA', 'DL', 'GJ'];
+
+    for (const code of verifiedStates) {
+      // 1. GST Calculation Allowed
+      const gst = splitGst(1800, code, 'MH');
+      assert.strictEqual(gst.total, 1800);
+      assert.strictEqual(typeof gst.intraState, 'boolean');
+
+      // 2. Stamp Duty Calculation Allowed
+      const stamp = getStateStampDuty(code);
+      assert.strictEqual(stamp.isVerified, true);
+      assert.ok(stamp.amount > 0, `Stamp duty for ${code} must be positive`);
+
+      // 3. Jurisdiction Assignment Allowed
+      const jur = getStateJurisdiction(code);
+      assert.strictEqual(jur.isVerified, true);
+      assert.ok(jur.roc && jur.roc.length > 0);
+      assert.ok(jur.ncltBench && jur.ncltBench.length > 0);
+      assert.ok(jur.gstJurisdiction && jur.gstJurisdiction.length > 0);
+
+      // 4. Eligibility Determination Allowed
+      const elig = checkStateSchemeEligibility(code, 'STARTUP_SUBSIDY');
+      assert.strictEqual(elig.isVerified, true);
+      assert.strictEqual(elig.eligible, true);
+    }
+  });
+
 });
 
 describe('Catalog Integrity & Package Arithmetic Verification', () => {

@@ -73,7 +73,11 @@ export const POST = apiHandler(async (request: Request, { params }: { params: { 
         refundId = rzRefund.id;
       }
 
-      await recordRefund(payment.gatewayPaymentId, refundId, refundAmount);
+      await recordRefund(payment.gatewayPaymentId, refundId, refundAmount, {
+        approverId: user.id,
+        requesterId: existing.requesterId,
+        isSimulation: isSim,
+      });
     } else if (existing.type === 'PAYOUT_DISBURSEMENT') {
       const { professionalType, vendorName, amount, purpose, orderId } = payload;
       const txnType = professionalType === 'LAWYER' ? 'LAWYER_PAYOUT' : 'CA_PAYOUT';
