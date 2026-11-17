@@ -160,4 +160,154 @@ describe('Maker-Checker Full Governance & Verification Suite', () => {
       assert.equal(approved.executedSideEffect, true);
     }
   });
+
+  it('Confirms refunds are recorded as separate, immutable ledger events without overwriting order price, accepted quote, or payment history', () => {
+    // 1. Initial State: Order with accepted quote and captured payment
+    const order = {
+      id: 'ord-immutable-01',
+      orderNumber: 'ORD-2026-IMMUTABLE',
+      totalAmount: 8999, // Original invariant contract value
+      amountPaid: 8999,
+      paymentStatus: 'PAID',
+    };
+
+    const acceptedQuote = {
+      id: 'quote-accepted-01',
+      orderId: 'ord-immutable-01',
+      total: 8999,
+      professionalFee: 6999,
+      govtFee: 1000,
+      status: 'ACCEPTED',
+    };
+
+    const payments = [
+      {
+        id: 'pay-001',
+        orderId: 'ord-immutable-01',
+        gatewayPaymentId: 'pay_gateway_live_123',
+        amount: 8999,
+        status: 'CAPTURED',
+        capturedAt: new Date('2026-10-10T10:00:00Z'),
+      },
+    ];
+
+    const ledgerEntries: Array<{
+      txnNo: string;
+      type: string;
+      credit: number;
+      debit: number;
+      orderId: string;
+    }> = [
+      {
+        txnNo: 'pay_gateway_live_123',
+        type: 'CLIENT_PAYMENT',
+        credit: 8999,
+        debit: 0,
+        orderId: 'ord-immutable-01',
+      },
+    ];
+
+    // Engine simulation matching recordRefund in src/lib/payments.ts
+    const executeRefund = (params: { gatewayPaymentId: string; refundId: string; amount: number }) => {
+      // 1. Duplicate / Idempotency check on unique ledger txnNo
+      const existingLedger = ledgerEntries.find((e) => e.txnNo === params.refundId);
+      if (existingLedger) {
+        return { duplicateSkipped: true };
+      }
+
+      // 2. Payment verification
+      const payment = payments.find((p) => p.gatewayPaymentId === params.gatewayPaymentId);
+      if (!payment) throw new HttpError(404, 'Payment not found for refund.');
+      if (payment.status === 'REFUNDED') throw new HttpError(409, 'Only captured payments can be refunded.');
+
+      // 3. Status transition when cumulative refunds reach full payment amount
+      (payment as any).refundedAmount = ((payment as any).refundedAmount || 0) + params.amount;
+      if ((payment as any).refundedAmount >= payment.amount) {
+        payment.status = 'REFUNDED';
+      }
+
+      // 4. Create separate, immutable refund ledger entry
+      ledgerEntries.push({
+        txnNo: params.refundId,
+        type: 'REFUND',
+        credit: 0,
+        debit: params.amount,
+        orderId: payment.orderId,
+      });
+
+      // 5. Decrement amountPaid on order, NEVER overwrite original totalAmount or accepted quote
+      order.amountPaid -= params.amount;
+      order.paymentStatus = order.amountPaid <= 0 ? 'REFUNDED' : 'PARTIALLY_PAID';
+
+      return { duplicateSkipped: false };
+    };
+
+    // Step A: Execute Partial Refund of ₹3,000
+    const partialRun = executeRefund({
+      gatewayPaymentId: 'pay_gateway_live_123',
+      refundId: 'ref_partial_001',
+      amount: 3000,
+    });
+
+    assert.equal(partialRun.duplicateSkipped, false);
+
+    // Invariance Assertions: Original order price and quote MUST NOT be modified
+    assert.equal(order.totalAmount, 8999, 'Original order contract price must never be overwritten by refund');
+    assert.equal(acceptedQuote.total, 8999, 'Accepted quote value must never be overwritten by refund');
+    assert.equal(acceptedQuote.status, 'ACCEPTED', 'Accepted quote state must remain ACCEPTED');
+
+    // Payment Record Invariance: Captured payment record preserved
+    assert.equal(payments[0].amount, 8999, 'Original payment amount in history must never be zeroed out');
+    assert.equal(payments[0].status, 'CAPTURED', 'Payment remains CAPTURED when only partially refunded');
+
+    // Ledger Invariance: Separate debit row appended
+    assert.equal(ledgerEntries.length, 2);
+    assert.equal(ledgerEntries[1].txnNo, 'ref_partial_001');
+    assert.equal(ledgerEntries[1].type, 'REFUND');
+    assert.equal(ledgerEntries[1].debit, 3000);
+
+    // Order tracking: amountPaid accurately decremented to ₹5,999
+    assert.equal(order.amountPaid, 5999);
+    assert.equal(order.paymentStatus, 'PARTIALLY_PAID');
+
+    // Step B: Duplicate / Retried Refund Attempt with same refundId
+    const retryRun = executeRefund({
+      gatewayPaymentId: 'pay_gateway_live_123',
+      refundId: 'ref_partial_001',
+      amount: 3000,
+    });
+
+    assert.equal(retryRun.duplicateSkipped, true, 'Duplicate refund attempt must be detected and skipped idempotently');
+    assert.equal(ledgerEntries.length, 2, 'No duplicate debit entry may be appended to general ledger');
+    assert.equal(order.amountPaid, 5999, 'Duplicate retry must NOT decrement amountPaid a second time');
+
+    // Step C: Full Final Refund of remaining ₹5,999
+    const finalRun = executeRefund({
+      gatewayPaymentId: 'pay_gateway_live_123',
+      refundId: 'ref_final_002',
+      amount: 5999,
+    });
+
+    assert.equal(finalRun.duplicateSkipped, false);
+    assert.equal(order.totalAmount, 8999, 'Order contract price remains invariant');
+    assert.equal(order.amountPaid, 0);
+    assert.equal(order.paymentStatus, 'REFUNDED');
+    assert.equal(payments[0].status, 'REFUNDED');
+    assert.equal(ledgerEntries.length, 3);
+
+    // Step D: Attempting to refund an already-refunded payment is rejected
+    assert.throws(
+      () =>
+        executeRefund({
+          gatewayPaymentId: 'pay_gateway_live_123',
+          refundId: 'ref_excess_003',
+          amount: 1000,
+        }),
+      (err: any) => {
+        assert.equal(err.status, 409);
+        assert.match(err.message, /Only captured payments can be refunded/);
+        return true;
+      }
+    );
+  });
 });

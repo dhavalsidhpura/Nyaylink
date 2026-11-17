@@ -41,7 +41,7 @@ CREATE TABLE "Organization" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "stateCode" TEXT NOT NULL DEFAULT 'MH',
+    "stateCode" TEXT NOT NULL DEFAULT 'UNKNOWN',
     "gstin" TEXT,
     "pan" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -71,7 +71,7 @@ CREATE TABLE "LegalEntity" (
     "pan" TEXT,
     "gstin" TEXT,
     "registeredOffice" TEXT,
-    "stateCode" TEXT NOT NULL DEFAULT 'MH',
+    "stateCode" TEXT NOT NULL DEFAULT 'UNKNOWN',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

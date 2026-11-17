@@ -61,6 +61,24 @@ describe('Pricing & GST Pure Math Engine', () => {
     assert.strictEqual(dl.baseStamp, 300);
     assert.strictEqual(dl.amount, 431);
   });
+
+  test('Unverified state code cannot drive GST calculation', () => {
+    assert.throws(
+      () => splitGst(1259.82, 'UNKNOWN', 'MH'),
+      /Place of supply is unverified/
+    );
+    assert.throws(
+      () => splitGst(1259.82, null as any, 'MH'),
+      /Place of supply is unverified/
+    );
+  });
+
+  test('Unverified state code cannot drive stamp duty or fee decisions', () => {
+    const unknown = getStateStampDuty('UNKNOWN');
+    assert.strictEqual(unknown.isVerified, false);
+    assert.strictEqual(unknown.amount, 0);
+    assert.match(unknown.breakdown, /State is UNKNOWN\/unverified/);
+  });
 });
 
 describe('Catalog Integrity & Package Arithmetic Verification', () => {

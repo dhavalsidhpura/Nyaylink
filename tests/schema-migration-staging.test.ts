@@ -189,7 +189,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
         'org_' || u."id",
         'org-' || lower(u."id"),
         coalesce(u."name", 'My Organization'),
-        'MH',
+        'UNKNOWN',
         u."createdAt",
         CURRENT_TIMESTAMP
       FROM "User" u
@@ -216,6 +216,7 @@ describe('Disposable Staging Database Schema Migration & Rollback Suite', () => 
     const backfilledOrg = db.public.one('SELECT * FROM "Organization" WHERE "id" = \'org_usr-1\'');
     assert.ok(backfilledOrg);
     assert.equal(backfilledOrg.name, 'Alpha Founder');
+    assert.equal(backfilledOrg.stateCode, 'UNKNOWN', 'Default stateCode must be UNKNOWN and never hardcoded to MH');
 
     // Verify backfilled Member
     const member = db.public.one('SELECT * FROM "OrganizationMember" WHERE "userId" = \'usr-1\'');

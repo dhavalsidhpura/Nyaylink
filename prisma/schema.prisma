@@ -542,7 +542,7 @@ model Organization {
   id          String   @id @default(cuid())
   slug        String   @unique
   name        String
-  stateCode   String   @default("MH")
+  stateCode   String   @default("UNKNOWN")
   gstin       String?
   pan         String?
   createdAt   DateTime @default(now())
@@ -577,7 +577,7 @@ model LegalEntity {
   pan              String?
   gstin            String?
   registeredOffice String?
-  stateCode        String       @default("MH")
+  stateCode        String       @default("UNKNOWN")
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 

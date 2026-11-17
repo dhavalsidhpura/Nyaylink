@@ -56,10 +56,21 @@ export interface GstSplit {
   intraState: boolean;
 }
 
+/** Validates whether a state code is an officially recognized Indian state/UT. */
+export function isVerifiedStateCode(code?: string | null): boolean {
+  if (!code) return false;
+  const trimmed = code.trim().toUpperCase();
+  if (trimmed === 'UNKNOWN' || trimmed === 'UNVERIFIED') return false;
+  return INDIAN_STATES.some((s) => s.code === trimmed);
+}
+
 /** Splits a GST amount into CGST+SGST (same state) or IGST (inter-state). */
-export function splitGst(gstAmount: number, placeOfSupply: string, supplierState = SUPPLIER_STATE): GstSplit {
+export function splitGst(gstAmount: number, placeOfSupply?: string | null, supplierState = SUPPLIER_STATE): GstSplit {
+  if (!isVerifiedStateCode(placeOfSupply)) {
+    throw new Error('GST Computation Rejected: Place of supply is unverified. A verified Indian state code is strictly required to determine tax jurisdiction (CGST/SGST vs IGST).');
+  }
   const gst = toPaise(gstAmount);
-  const intraState = placeOfSupply === supplierState;
+  const intraState = placeOfSupply!.toUpperCase() === supplierState;
   if (!intraState) return { cgst: 0, sgst: 0, igst: toRupees(gst), total: toRupees(gst), intraState };
   const cgst = Math.floor(gst / 2);
   return { cgst: toRupees(cgst), sgst: toRupees(gst - cgst), igst: 0, total: toRupees(gst), intraState };
@@ -139,12 +150,21 @@ export const STATE_STAMP_RULES: Record<string, StateStampRule> = {
   OD: { name: 'Odisha', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' },
 };
 
-export function getStateStampDuty(stateCode: string): { amount: number; breakdown: string; baseStamp: number } {
-  const rule = STATE_STAMP_RULES[stateCode] || { name: 'Standard State Rate', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' };
+export function getStateStampDuty(stateCode?: string | null): { amount: number; breakdown: string; baseStamp: number; isVerified: boolean } {
+  if (!isVerifiedStateCode(stateCode)) {
+    return {
+      amount: 0,
+      breakdown: 'State is UNKNOWN/unverified. Registered office state must be confirmed before official statutory stamp duty can be determined.',
+      baseStamp: 0,
+      isVerified: false,
+    };
+  }
+  const rule = STATE_STAMP_RULES[stateCode!.toUpperCase()] || { name: 'Standard State Rate', baseStamp: 1000, panTanFee: 131, note: '₹1,000 Stamp + ₹131 PAN/TAN' };
   return {
     amount: rule.baseStamp + rule.panTanFee,
     breakdown: rule.note,
     baseStamp: rule.baseStamp,
+    isVerified: true,
   };
 }
 
