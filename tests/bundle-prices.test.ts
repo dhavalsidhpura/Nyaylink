@@ -9,9 +9,9 @@ describe('Customer-Facing Bundle Prices Immutability Assertions', () => {
     'restaurant-kitchen-compliance-kit': { packagePrice: 6499, advanceToken: 999 },
     'ecommerce-seller-suite': { packagePrice: 5999, advanceToken: 999 },
     'retailer-physical-storefront-pack': { packagePrice: 4499, advanceToken: 999 },
-    'annual-corporate-compliance-retainer': { packagePrice: 18999, advanceToken: 999 },
-    'global-vc-delaware-crossborder-suite': { packagePrice: 24999, advanceToken: 999 },
-    'brand-fortress-ipr-protection-suite': { packagePrice: 7499, advanceToken: 999 },
+    'annual-corporate-compliance-retainer': { packagePrice: 19999, advanceToken: 999 },
+    'global-vc-delaware-crossborder-suite': { packagePrice: 28999, advanceToken: 999 },
+    'brand-fortress-ipr-protection-suite': { packagePrice: 7999, advanceToken: 999 },
   };
 
   it('Asserts exactly 8 customer-facing packages are defined', () => {

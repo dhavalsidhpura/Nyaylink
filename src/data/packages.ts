@@ -263,7 +263,7 @@ export const MASTER_PACKAGES: PackageItem[] = [
     icon: '📊',
     targetAudience: 'Private Limited companies, LLPs, and growing enterprises looking to outsource complete secretarial and tax duties.',
     description: 'Eliminates late penalties and departmental scrutiny by assigning a dedicated Chartered Accountant desk to handle every recurring statutory obligation.',
-    packagePrice: 18999,
+    packagePrice: 19999,
     advanceToken: 999,
     sla: 'Year-Round Dedicated CA',
     includedServices: [
@@ -304,7 +304,7 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: false,
     targetAudience: 'Indian SaaS, AI, and export founders applying to Y Combinator, Techstars, or raising venture checks from global investors.',
     description: 'An integrated cross-border formation package combining US Delaware C-Corporation incorporation, IRS EIN tax registration, Indian entity linkage, Startup India DPIIT recognition, and 0% IGST export LUT filing.',
-    packagePrice: 24999,
+    packagePrice: 28999,
     advanceToken: 999,
     sla: '10 - 15 Working Days',
     includedServices: [
@@ -346,7 +346,7 @@ export const MASTER_PACKAGES: PackageItem[] = [
     popular: false,
     targetAudience: 'D2C brands, consumer products, mobile app developers, and tech companies with valuable brand equity.',
     description: 'Prevents copycats, domain squatting, and confusingly similar competitor filings by combining trademark filing, copyright protection over source assets, and continuous 52-week automated Gazette scanning.',
-    packagePrice: 7499,
+    packagePrice: 7999,
     advanceToken: 999,
     sla: '3 - 5 Working Days Initial Docket',
     includedServices: [
