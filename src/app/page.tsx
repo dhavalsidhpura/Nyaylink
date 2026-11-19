@@ -380,7 +380,8 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 0. PROMINENT 2026 ANNOUNCEMENT & OFFER BANNER            */}
       {/* ======================================================== */}
-      <div className="bg-[#041E30] text-white py-1.5 px-3 sm:px-8 border-b border-cyan-500/20 text-center text-xs">
+      {/* Desktop Announcement */}
+      <div className="hidden sm:block bg-[#041E30] text-white py-1.5 px-3 sm:px-8 border-b border-cyan-500/20 text-center text-xs">
         <div className="max-w-[1600px] mx-auto flex items-center justify-center gap-2 flex-wrap">
           <span className="bg-[#0E7490] text-[#F4B942] font-black text-[10px] uppercase px-2 py-0.5 rounded-full tracking-wider border border-cyan-400/30">
             🚀 2026 Founder Fast-Track
@@ -397,10 +398,28 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Mobile-Only Ultra-Compact Announcement Strip (Zero Clutter) */}
+      <div className="sm:hidden bg-[#041E30] text-white py-1.5 px-3 border-b border-cyan-500/20 text-[11px] flex items-center justify-between">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="bg-[#0E7490] text-[#F4B942] font-black text-[9px] uppercase px-1.5 py-0.5 rounded-full shrink-0 border border-cyan-400/30">
+            ⚡ ₹999 Token
+          </span>
+          <span className="text-slate-200 font-semibold text-[10px] truncate">
+            Direct CA Supervision • Rule 33
+          </span>
+        </div>
+        <Link
+          href="/packages"
+          className="text-[#F4B942] hover:text-white font-black text-[10px] shrink-0 ml-2 underline underline-offset-2"
+        >
+          Bundles →
+        </Link>
+      </div>
+
       {/* ======================================================== */}
-      {/* 1. TOP GLOBAL TRUST & ADVISORY RIBBON (ALL DEVICES)      */}
+      {/* 1. TOP GLOBAL TRUST & ADVISORY RIBBON (DESKTOP ONLY)     */}
       {/* ======================================================== */}
-      <div className="bg-gradient-to-r from-[#031522] via-[#073B5C] to-[#031522] text-white text-[11px] py-2 px-3 sm:px-8 border-b border-cyan-800/40">
+      <div className="hidden sm:block bg-gradient-to-r from-[#031522] via-[#073B5C] to-[#031522] text-white text-[11px] py-2 px-3 sm:px-8 border-b border-cyan-800/40">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-1.5 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-center sm:justify-start">
             <span className="bg-[#F4B942] text-[#073B5C] font-black px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider">
@@ -536,10 +555,21 @@ export default function HomePage() {
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Mobile 1-Tap WhatsApp Rescue */}
+            <a
+              href="https://wa.me/919920054785?text=Hi%20NyayaLink%2C%20I%20need%20help%20choosing%20the%20right%20business%20registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp CA"
+              className="sm:hidden inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition shrink-0"
+            >
+              <span className="text-xs">💬</span>
+            </a>
+
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-cyan-400/40 hover:border-[#F4B942] text-white hover:text-[#F4B942] font-black text-xs px-3 py-1.5 rounded-xl transition shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-cyan-400/40 hover:border-[#F4B942] text-white hover:text-[#F4B942] font-black text-xs px-2.5 sm:px-3 py-1.5 rounded-xl transition shadow-xs shrink-0"
             >
               <span>🔑</span>
               <span>Log In</span>
@@ -554,14 +584,14 @@ export default function HomePage() {
 
             <Link
               href="/dashboard"
-              className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition"
+              className="hidden md:inline-flex bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition shrink-0"
             >
               Vault Dashboard
             </Link>
 
             <Link
               href="/ca/dashboard"
-              className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow flex items-center gap-1"
+              className="hidden lg:inline-flex bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow items-center gap-1 shrink-0"
             >
               <span>📊</span> CA Partner Portal
             </Link>
@@ -1450,23 +1480,58 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 4. TRUST & SOCIAL PROOF METRICS BANNER                   */}
       {/* ======================================================== */}
-      <section className="bg-white border-b border-slate-200 py-6 px-4 sm:px-8">
-        <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-center">
-          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
-            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">1,200+</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Businesses & Startups Advised</p>
+      <section className="bg-white border-b border-slate-200 py-3 sm:py-6 px-3 sm:px-8">
+        <div className="max-w-[1600px] mx-auto">
+          {/* Mobile Horizontal Scroll Strip (Space-Saving) */}
+          <div className="sm:hidden flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none snap-x snap-mandatory">
+            <div className="shrink-0 snap-start flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl shadow-2xs">
+              <span className="text-base">🏢</span>
+              <div className="leading-tight">
+                <strong className="block text-xs font-black text-[#073B5C]">1,200+</strong>
+                <span className="text-[9px] text-slate-500 font-semibold whitespace-nowrap">Businesses Advised</span>
+              </div>
+            </div>
+            <div className="shrink-0 snap-start flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl shadow-2xs">
+              <span className="text-base text-amber-500">⭐</span>
+              <div className="leading-tight">
+                <strong className="block text-xs font-black text-[#073B5C]">4.9 / 5.0</strong>
+                <span className="text-[9px] text-slate-500 font-semibold whitespace-nowrap">Verified Rating</span>
+              </div>
+            </div>
+            <div className="shrink-0 snap-start flex items-center gap-2 px-3 py-2 bg-emerald-50/90 border border-emerald-200/80 rounded-xl shadow-2xs">
+              <span className="text-base text-emerald-600">⚡</span>
+              <div className="leading-tight">
+                <strong className="block text-xs font-black text-emerald-800">₹999 Token</strong>
+                <span className="text-[9px] text-emerald-700 font-semibold whitespace-nowrap">Split Advance</span>
+              </div>
+            </div>
+            <div className="shrink-0 snap-start flex items-center gap-2 px-3 py-2 bg-cyan-50/90 border border-cyan-200/80 rounded-xl shadow-2xs">
+              <span className="text-base text-[#0E7490]">🛡️</span>
+              <div className="leading-tight">
+                <strong className="block text-xs font-black text-[#073B5C]">CA & Advocate</strong>
+                <span className="text-[9px] text-[#0E7490] font-semibold whitespace-nowrap">Direct Desk</span>
+              </div>
+            </div>
           </div>
-          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
-            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Verified Client Rating</p>
-          </div>
-          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
-            <strong className="text-xl sm:text-3xl font-black text-[#0E7490]">₹999 Token</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Split-Ticket Advance</p>
-          </div>
-          <div className="p-3 sm:p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
-            <strong className="text-xl sm:text-3xl font-black text-[#073B5C]">CA & Advocate</strong>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold mt-0.5">Direct Desk Supervision</p>
+
+          {/* Desktop 4-Column Grid */}
+          <div className="hidden sm:grid sm:grid-cols-4 gap-4 text-center">
+            <div className="p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+              <strong className="text-3xl font-black text-[#073B5C]">1,200+</strong>
+              <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Businesses & Startups Advised</p>
+            </div>
+            <div className="p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+              <strong className="text-3xl font-black text-[#073B5C]">4.9 / 5.0</strong>
+              <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Verified Client Rating</p>
+            </div>
+            <div className="p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+              <strong className="text-3xl font-black text-[#0E7490]">₹999 Token</strong>
+              <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Split-Ticket Advance</p>
+            </div>
+            <div className="p-4 bg-slate-50/80 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shadow-xs">
+              <strong className="text-3xl font-black text-[#073B5C]">CA & Advocate</strong>
+              <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Direct Desk Supervision</p>
+            </div>
           </div>
         </div>
       </section>
@@ -1474,9 +1539,43 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 4.1 THE NYAYALINK INTEGRITY GUARANTEE & ANTI-TELEMARKETING */}
       {/* ======================================================== */}
-      <section className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#073B5C] text-white py-6 px-4 sm:px-8 border-b border-cyan-900/50 shadow-md">
+      <section className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#073B5C] text-white py-4 sm:py-6 px-3 sm:px-8 border-b border-cyan-900/50 shadow-md">
         <div className="max-w-[1600px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Mobile Swipeable Horizontal Carousel */}
+          <div className="sm:hidden flex items-stretch gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none snap-x snap-mandatory">
+            <div className="w-[82vw] shrink-0 snap-start flex items-start gap-3 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-xl p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">🛡️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-xs text-white">Zero Pushy Sales Calls</h4>
+                <p className="text-[10px] text-slate-300 leading-snug">
+                  We never trigger automated call centers when you browse or calculate fees. 100% transparent, self-service digital tracking in your Vault.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-[82vw] shrink-0 snap-start flex items-start gap-3 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-xl p-2 rounded-xl bg-[#F4B942]/20 text-[#F4B942] shrink-0">⚖️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-xs text-white">Rule 33 Pure Agent Transparency</h4>
+                <p className="text-[10px] text-slate-300 leading-snug">
+                  Government stamp duties and MCA/IP India fees are passed through to the rupee with zero hidden markup. Itemized GST invoices.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-[82vw] shrink-0 snap-start flex items-start gap-3 p-3.5 bg-white/5 rounded-2xl border border-white/10">
+              <span className="text-xl p-2 rounded-xl bg-cyan-500/20 text-cyan-300 shrink-0">🏛️</span>
+              <div className="space-y-0.5">
+                <h4 className="font-extrabold text-xs text-white">Direct CA & Advocate Supervision</h4>
+                <p className="text-[10px] text-slate-300 leading-snug">
+                  Corporate filings are supervised directly by practicing Chartered Accountants; disputes & legal notices vetted by High Court advocates.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop 3-Column Grid */}
+          <div className="hidden sm:grid sm:grid-cols-3 gap-5">
             <div className="flex items-start gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/10">
               <span className="text-2xl p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">🛡️</span>
               <div className="space-y-0.5">
