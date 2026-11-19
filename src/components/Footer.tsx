@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
-
 import { usePathname } from 'next/navigation';
 
 export default function Footer() {
   const pathname = usePathname();
+  const [openMobileCat, setOpenMobileCat] = useState<string | null>(null);
+  const [showLegalNotice, setShowLegalNotice] = useState(false);
 
   // Suppress public consumer footer on back-office, partner, and administrative workspaces
   if (
@@ -17,190 +19,269 @@ export default function Footer() {
   ) {
     return null;
   }
+
+  const FOOTER_CATEGORIES = [
+    {
+      id: 'reg',
+      title: 'Business Registration',
+      links: [
+        { label: 'Private Limited Company', href: '/services/private-limited-company' },
+        { label: 'Limited Liability Partnership', href: '/services/llp-registration' },
+        { label: 'One Person Company (OPC)', href: '/services/one-person-company' },
+        { label: 'Public Limited Company', href: '/services/public-limited-company' },
+        { label: 'Section 8 Company (NGO)', href: '/services/section-8-company' },
+        { label: 'Startup India DPIIT Recognition', href: '/services/startup-india-dpiit-recognition' },
+        { label: 'US Delaware C-Corp (YC)', href: '/services/us-delaware-company-registration' },
+      ],
+    },
+    {
+      id: 'lic',
+      title: 'Licenses & Permits',
+      links: [
+        { label: 'FSSAI Food License', href: '/services/fssai-food-license' },
+        { label: 'FSSAI Renewal', href: '/services/fssai-renewal' },
+        { label: 'IEC [Import/Export Code]', href: '/services/import-export-code-iec' },
+        { label: 'ISO Certification', href: '/services/iso-certification' },
+        { label: 'MSME / Udyam Registration', href: '/services/msme-udyam-registration' },
+        { label: 'Shop & Establishment Act', href: '/services/shop-and-establishment-license' },
+      ],
+    },
+    {
+      id: 'tm',
+      title: 'Trademark & IPR',
+      links: [
+        { label: 'TM Registration (™ / ®)', href: '/services/trademark-registration' },
+        { label: 'TM Objection Reply', href: '/services/trademark-objection' },
+        { label: 'TM Hearing Representation', href: '/services/trademark-hearing-representation' },
+        { label: 'Copyright Registration', href: '/services/copyright-registration' },
+        { label: 'Patent Search & Filing', href: '/services/patent-filing-india' },
+      ],
+    },
+    {
+      id: 'tax',
+      title: 'GST & Tax Filings',
+      links: [
+        { label: 'GST Registration', href: '/services/gst-registration' },
+        { label: 'Monthly GST Return Filing', href: '/services/monthly-gst-return-filing' },
+        { label: 'GST LUT for Export', href: '/services/gst-lut-filing' },
+        { label: 'Corporate IT Return (ITR-6)', href: '/services/income-tax-return-itr-filing' },
+        { label: 'Bookkeeping & Retainer', href: '/services/accounting-bookkeeping-service' },
+      ],
+    },
+    {
+      id: 'legal',
+      title: 'Legal Drafting & Disputes',
+      links: [
+        { label: 'Founders Agreement', href: '/services/founders-agreement-drafting' },
+        { label: 'Commercial Contract / SLA', href: '/services/business-contract-drafting' },
+        { label: 'Advocate Demand Notice', href: '/services/legal-notice-demand-recovery' },
+        { label: 'Consumer Complaint Notice', href: '/services/consumer-complaint-notice' },
+        { label: 'NDAs & Tech Agreements', href: '/services/website-terms-privacy-policy' },
+      ],
+    },
+    {
+      id: 'tools',
+      title: 'Tools & Portals',
+      links: [
+        { label: 'MCA Company Name Search', href: '/tools/company-name-search' },
+        { label: 'Trademark IP Search', href: '/tools/trademark-search' },
+        { label: 'GSTIN Live Status Verify', href: '/tools/gst-search' },
+        { label: 'Startup India Eligibility', href: '/tools/startup-india-checker' },
+        { label: 'Frequently Asked Questions', href: '/faq' },
+        { label: 'CA & Expert Partner Portal', href: '/ca/dashboard' },
+        { label: 'My Documents Vault', href: '/dashboard' },
+      ],
+    },
+  ];
+
   return (
     <footer className="bg-[#052A42] text-slate-300 text-xs border-t border-[#0E7490]/30 font-sans mt-auto">
-      
-      {/* 1. MASTER SERVICES LINK GRID */}
-      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 border-b border-slate-700/60">
-        
-        {/* Column 1: Business Registration */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Business Registration
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/private-limited-company" className="hover:text-[#F4B942] transition-colors">Private Limited Company</Link></li>
-            <li><Link href="/services/llp-registration" className="hover:text-[#F4B942] transition-colors">Limited Liability Partnership</Link></li>
-            <li><Link href="/services/one-person-company" className="hover:text-[#F4B942] transition-colors">One Person Company (OPC)</Link></li>
-            <li><Link href="/services/public-limited-company" className="hover:text-[#F4B942] transition-colors">Public Limited Company</Link></li>
-            <li><Link href="/services/section-8-company" className="hover:text-[#F4B942] transition-colors">Section 8 Company (NGO)</Link></li>
-            <li><Link href="/services/nidhi-company-registration" className="hover:text-[#F4B942] transition-colors">Nidhi Company Setup</Link></li>
-            <li><Link href="/services/indian-subsidiary-registration" className="hover:text-[#F4B942] transition-colors">Indian Subsidiary (FDI)</Link></li>
-            <li><Link href="/services/startup-india-dpiit-recognition" className="hover:text-[#F4B942] transition-colors">Startup India DPIIT Recognition</Link></li>
-            <li><Link href="/services/us-delaware-company-registration" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">US Delaware C-Corp (YC)</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 2: Licenses & Permits */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Licenses & Permits
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/fssai-food-license" className="hover:text-[#F4B942] transition-colors">FSSAI Food License</Link></li>
-            <li><Link href="/services/fssai-renewal" className="hover:text-[#F4B942] transition-colors">FSSAI Renewal</Link></li>
-            <li><Link href="/services/import-export-code-iec" className="hover:text-[#F4B942] transition-colors">IEC [Import/Export Code]</Link></li>
-            <li><Link href="/services/iso-certification" className="hover:text-[#F4B942] transition-colors">ISO Certification</Link></li>
-            <li><Link href="/services/msme-udyam-registration" className="hover:text-[#F4B942] transition-colors">MSME / Udyam Registration</Link></li>
-            <li><Link href="/services/shop-and-establishment-license" className="hover:text-[#F4B942] transition-colors">Shop & Establishment Act</Link></li>
-            <li><Link href="/services/business-registration-license" className="hover:text-[#F4B942] transition-colors">Proprietorship Registration</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 3: Trademark & IPR */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Trademark & IPR
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/trademark-registration" className="hover:text-[#F4B942] transition-colors">TM Registration (™ / ®)</Link></li>
-            <li><Link href="/services/trademark-objection" className="hover:text-[#F4B942] transition-colors">TM Objection Reply</Link></li>
-            <li><Link href="/services/trademark-hearing-representation" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">TM Hearing Representation</Link></li>
-            <li><Link href="/services/trademark-watch-monitoring" className="hover:text-[#F4B942] transition-colors">TM Watch & Gazette Monitor</Link></li>
-            <li><Link href="/services/trademark-renewal" className="hover:text-[#F4B942] transition-colors">Trademark Renewal</Link></li>
-            <li><Link href="/services/trademark-opposition" className="hover:text-[#F4B942] transition-colors">Trademark Opposition</Link></li>
-            <li><Link href="/services/copyright-registration" className="hover:text-[#F4B942] transition-colors">Copyright Registration</Link></li>
-            <li><Link href="/services/logo-design" className="hover:text-[#F4B942] transition-colors">Logo & Brand Identity</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 4: GST & Taxation */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            GST & Taxation
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/gst-registration" className="hover:text-[#F4B942] transition-colors">GST Registration</Link></li>
-            <li><Link href="/services/gst-return-filing" className="hover:text-[#F4B942] transition-colors">Monthly GST Return (3B/1)</Link></li>
-            <li><Link href="/services/gst-nil-return-filing" className="hover:text-[#F4B942] transition-colors">GST Nil Return Filing</Link></li>
-            <li><Link href="/services/gstr-9-annual-filing" className="hover:text-[#F4B942] transition-colors">GSTR-9 Annual Return</Link></li>
-            <li><Link href="/services/gst-lut-filing" className="hover:text-[#F4B942] transition-colors">GST LUT Export Filing</Link></li>
-            <li><Link href="/services/gst-modification" className="hover:text-[#F4B942] transition-colors">GST Amendment / Modification</Link></li>
-            <li><Link href="/services/gst-eway-bill-generation" className="hover:text-[#F4B942] transition-colors">GST E-Way Bill Setup</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 5: Accounting & Secretarial */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Accounting & Strategic
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/virtual-cfo-services" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">Virtual CFO (vCFO) Advisory</Link></li>
-            <li><Link href="/services/online-bookkeeping" className="hover:text-[#F4B942] transition-colors">Online Bookkeeping Retainer</Link></li>
-            <li><Link href="/services/income-tax-return-itr" className="hover:text-[#F4B942] transition-colors">Income Tax Return (ITR)</Link></li>
-            <li><Link href="/services/tds-return-filing" className="hover:text-[#F4B942] transition-colors">TDS / TCS Quarterly Return</Link></li>
-            <li><Link href="/services/pf-esic-registration" className="hover:text-[#F4B942] transition-colors">PF & ESIC Registration</Link></li>
-            <li><Link href="/services/mca-inc-20a-commencement-of-business" className="hover:text-[#F4B942] transition-colors">MCA INC-20A Commencement</Link></li>
-            <li><Link href="/services/dir-3-kyc-director-filing" className="hover:text-[#F4B942] transition-colors">Director DIR-3 KYC Annual</Link></li>
-          </ul>
-        </div>
-
-        {/* Column 6: Technology, ODR & Portals */}
-        <div className="space-y-3">
-          <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
-            Tech & Legal Portals
-          </h4>
-          <ul className="space-y-2 text-slate-300 font-medium">
-            <li><Link href="/services/scale-your-business" className="hover:text-[#F4B942] transition-colors">Scale Your Business</Link></li>
-            <li><Link href="/services/ai-solutions" className="hover:text-[#F4B942] transition-colors">AI Agents & Chatbots</Link></li>
-            <li><Link href="/services/software-app-development" className="hover:text-[#F4B942] transition-colors">Custom App & CRM Dev</Link></li>
-            <li><Link href="/services/website-ecommerce" className="hover:text-[#F4B942] transition-colors">E-Commerce & Next.js</Link></li>
-            <li><Link href="/services/cheque-bounce-notice-138" className="hover:text-[#F4B942] transition-colors">Sec 138 Cheque Notice</Link></li>
-            <li><Link href="/vakil" className="hover:text-[#F4B942] transition-colors font-bold text-emerald-400">👨‍⚖️ वकील Search</Link></li>
-            <li><Link href="/packages" className="hover:text-[#F4B942] transition-colors font-bold text-[#F4B942]">📦 Bundled Packages</Link></li>
-                        <li><Link href="/tools/incorporation-calculator" className="hover:text-[#F4B942] transition-colors font-bold text-emerald-300">🏛️ Incorporation Calculator</Link></li>
-            <li><Link href="/tools/startup-india-checker" className="hover:text-[#F4B942] transition-colors font-bold text-amber-300">🇮🇳 Startup India & 80-IAC</Link></li>
-            <li><Link href="/tools" className="hover:text-[#F4B942] transition-colors font-bold text-cyan-300">⚙️ All Founder Tools Hub</Link></li>
-            <li><Link href="/tools/agreement-generator" className="hover:text-[#F4B942] transition-colors font-bold text-amber-300">📝 Agreement Generator</Link></li>
-            <li><Link href="/tools/track-status" className="hover:text-[#F4B942] transition-colors">🏛️ Track MCA/TM Status</Link></li>
-            <li><Link href="/ca/dashboard" className="hover:text-[#F4B942] transition-colors font-bold text-cyan-300">📊 CA & Expert Portal</Link></li>
-            <li><Link href="/dashboard" className="hover:text-[#F4B942] transition-colors">My Documents Vault</Link></li>
-          </ul>
-        </div>
-
-      </div>
-
-      {/* 2. CORPORATE LOCATION, CONTACT & DISCLAIMER */}
-      <div className="max-w-7xl mx-auto px-4 py-8 border-b border-slate-700/60 grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        {/* Contact & Address Details */}
-        <div className="space-y-2 bg-[#073B5C] p-4 rounded-xl border border-slate-700">
-          <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Corporate Head Office</h5>
-          <p className="text-slate-300 font-medium">
-            📍 <strong>Address:</strong> {BRAND.address}
-          </p>
-          <p className="text-slate-300 font-medium">
-            📞 <strong>Phone:</strong> <a href={`tel:${BRAND.phoneTel}`} className="text-[#F4B942] hover:underline font-bold">{BRAND.phone}</a>
-          </p>
-          <p className="text-slate-300 font-medium">
-            ✉️ <strong>Support Email:</strong> <a href={`mailto:${BRAND.supportEmail}`} className="text-[#F4B942] hover:underline">{BRAND.supportEmail}</a>
-          </p>
-        </div>
-
-        {/* Grievance Mechanism */}
-        <div className="space-y-2 bg-[#073B5C] p-4 rounded-xl border border-slate-700">
-          <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Grievance Redressal Cell</h5>
-          <p className="text-slate-300 leading-relaxed text-[11px]">
-            For any statutory compliance issues, escalation, or service feedback, mail directly to our legal grievance desk:
-          </p>
-          <p className="pt-1">
-            <strong>Grievance Mail:</strong> <a href={`mailto:${BRAND.grievanceEmail}`} className="text-[#F4B942] font-bold hover:underline text-xs">{BRAND.grievanceEmail}</a>
-          </p>
-        </div>
-
-        {/* Quick Portal Account Links */}
-        <div className="space-y-2 bg-[#073B5C] p-4 rounded-xl border border-slate-700">
-          <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">Instant Access</h5>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
-            Create an account or login to access your real-time CA filing dashboard.
-          </p>
-          <div className="flex gap-2 pt-2">
-            <Link href="/login" className="bg-[#0E7490] hover:bg-cyan-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors">
-              Client Login
+      {/* 1. MOBILE COLLAPSIBLE LINK ACCORDIONS (MD:HIDDEN) */}
+      <div className="md:hidden px-4 py-6 border-b border-slate-700/60 space-y-3">
+        {/* Quick Popular Chips */}
+        <div className="space-y-2 pb-2 border-b border-slate-700/40">
+          <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+            Popular Shortcuts:
+          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link
+              href="/services/private-limited-company"
+              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded-lg border border-slate-700 text-slate-200 text-[11px] font-medium"
+            >
+              🏢 Pvt Ltd
             </Link>
-            <Link href="/register" className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-extrabold px-3 py-1.5 rounded-lg text-xs transition-colors">
-              Register / Sign Up
+            <Link
+              href="/services/trademark-registration"
+              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded-lg border border-slate-700 text-slate-200 text-[11px] font-medium"
+            >
+              ™️ Trademark
+            </Link>
+            <Link
+              href="/services/gst-registration"
+              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded-lg border border-slate-700 text-slate-200 text-[11px] font-medium"
+            >
+              🧾 GST
+            </Link>
+            <Link
+              href="/packages"
+              className="px-2.5 py-1 bg-[#F4B942]/10 hover:bg-[#F4B942]/20 rounded-lg border border-[#F4B942]/30 text-[#F4B942] text-[11px] font-bold"
+            >
+              📦 Bundles
+            </Link>
+            <Link
+              href="/faq"
+              className="px-2.5 py-1 bg-cyan-900/30 hover:bg-cyan-900/50 rounded-lg border border-cyan-700/30 text-cyan-300 text-[11px] font-bold"
+            >
+              📖 FAQs
             </Link>
           </div>
         </div>
 
+        {/* Collapsible Category Menus */}
+        <div className="space-y-1.5 pt-1">
+          {FOOTER_CATEGORIES.map((cat) => {
+            const isOpen = openMobileCat === cat.id;
+            return (
+              <div key={cat.id} className="border border-slate-700/60 rounded-xl overflow-hidden bg-[#073B5C]/40">
+                <button
+                  type="button"
+                  onClick={() => setOpenMobileCat(isOpen ? null : cat.id)}
+                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left font-bold text-slate-200 text-xs hover:bg-white/5 transition cursor-pointer"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-[#F4B942]">{cat.title}</span>
+                  <span className="text-slate-400 font-mono text-sm">{isOpen ? '−' : '+'}</span>
+                </button>
+                {isOpen && (
+                  <ul className="px-3.5 pb-3 pt-1 space-y-2 border-t border-slate-700/40 text-[11px] bg-[#041E30]/60">
+                    {cat.links.map((link, lIdx) => (
+                      <li key={lIdx}>
+                        <Link href={link.href} className="text-slate-300 hover:text-[#F4B942] transition-colors block py-0.5">
+                          • {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 3. LEGAL & REGULATORY COMPLIANCE DISCLAIMER */}
-      <div className="max-w-7xl mx-auto px-4 py-6 border-b border-slate-700/60 text-slate-400 text-[11px] leading-relaxed space-y-2">
-        <strong className="text-[#F4B942] block uppercase tracking-wider">Statutory & Regulatory Notice:</strong>
-        <p>
+      {/* 1. DESKTOP FULL SERVICES LINK GRID (HIDDEN ON MOBILE) */}
+      <div className="hidden md:grid max-w-7xl mx-auto px-4 py-12 md:grid-cols-3 lg:grid-cols-6 gap-8 border-b border-slate-700/60">
+        {FOOTER_CATEGORIES.map((cat) => (
+          <div key={cat.id} className="space-y-3">
+            <h4 className="font-extrabold text-[#F4B942] uppercase tracking-wider text-[11px] border-b border-slate-700 pb-1.5">
+              {cat.title}
+            </h4>
+            <ul className="space-y-2 text-slate-300 font-medium">
+              {cat.links.map((link, lIdx) => (
+                <li key={lIdx}>
+                  <Link href={link.href} className="hover:text-[#F4B942] transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* 2. CORPORATE LOCATION, CONTACT & SUPPORT */}
+      <div className="max-w-7xl mx-auto px-4 py-6 border-b border-slate-700/60">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Corporate Head Office */}
+          <div className="space-y-1.5 bg-[#073B5C] p-3.5 rounded-xl border border-slate-700">
+            <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">
+              Corporate Head Office
+            </h5>
+            <p className="text-slate-300 font-medium text-[11px]">
+              📍 {BRAND.address}
+            </p>
+            <div className="flex items-center gap-4 text-[11px] pt-1">
+              <a href={`tel:${BRAND.phoneTel}`} className="text-[#F4B942] hover:underline font-bold">
+                📞 {BRAND.phone}
+              </a>
+              <span className="text-slate-500">|</span>
+              <a href={`mailto:${BRAND.supportEmail}`} className="text-[#F4B942] hover:underline">
+                ✉️ {BRAND.supportEmail}
+              </a>
+            </div>
+          </div>
+
+          {/* Grievance Cell */}
+          <div className="space-y-1.5 bg-[#073B5C] p-3.5 rounded-xl border border-slate-700">
+            <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">
+              Grievance Redressal
+            </h5>
+            <p className="text-slate-300 text-[11px] leading-snug">
+              Statutory escalations or filing feedback:
+            </p>
+            <a href={`mailto:${BRAND.grievanceEmail}`} className="text-[#F4B942] font-bold hover:underline text-[11px] block pt-0.5">
+              ✉️ {BRAND.grievanceEmail}
+            </a>
+          </div>
+
+          {/* Quick Access */}
+          <div className="space-y-1.5 bg-[#073B5C] p-3.5 rounded-xl border border-slate-700 flex flex-col justify-between">
+            <div>
+              <h5 className="font-extrabold text-[#F4B942] text-xs uppercase tracking-wider">
+                Instant Portal Access
+              </h5>
+              <p className="text-slate-300 text-[11px] leading-snug">
+                Track live CA filings in your 256-bit encrypted Vault.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1.5">
+              <Link href="/login" className="bg-[#0E7490] hover:bg-cyan-800 text-white font-bold px-3 py-1 rounded-lg text-xs transition-colors">
+                Client Login
+              </Link>
+              <Link href="/ca/dashboard" className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-extrabold px-3 py-1 rounded-lg text-xs transition-colors">
+                CA Partner Portal
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. LEGAL & REGULATORY COMPLIANCE DISCLAIMER (COLLAPSIBLE ON MOBILE) */}
+      <div className="max-w-7xl mx-auto px-4 py-4 border-b border-slate-700/60 text-slate-400 text-[11px] leading-relaxed">
+        <div className="flex items-center justify-between">
+          <strong className="text-[#F4B942] uppercase tracking-wider text-[10px]">
+            Statutory &amp; Bar Council Regulatory Notice:
+          </strong>
+          <button
+            type="button"
+            onClick={() => setShowLegalNotice(!showLegalNotice)}
+            className="md:hidden text-cyan-300 hover:text-white text-[10px] font-bold cursor-pointer"
+          >
+            {showLegalNotice ? 'Collapse ▲' : 'Read Full Notice ▼'}
+          </button>
+        </div>
+        <p className={`mt-1.5 ${showLegalNotice ? 'block' : 'hidden md:block'}`}>
           NyayaLink is an independent corporate compliance and legal-technology platform. NyayaLink is not a law firm and does not solicit legal work. Pursuant to the Bar Council of India Rules (Rule 36) and the Advocates Act, 1961, empanelled Advocates and Chartered Accountants listed on this platform practice independently and exercise independent professional discretion. All government fees, ROC stamp duties, and statutory filing challans are pass-through disbursements collected strictly as a pure agent (Rule 33 CGST Rules).
         </p>
       </div>
 
       {/* 4. COPYRIGHT & MANDATORY POLICIES BAR */}
-      <div className="bg-[#031c2d] py-4 pb-20 md:pb-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-[#031c2d] py-3.5 pb-20 md:pb-4 px-4 text-center text-slate-400 text-[11px] border-t border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <p>© {new Date().getFullYear()} {BRAND.name} — {BRAND.tagline}. All Rights Reserved. {BRAND.city} {BRAND.pincode}.</p>
-          <div className="flex items-center gap-4 text-xs font-semibold text-slate-300">
-            <Link href="/packages" className="text-[#F4B942] hover:underline font-bold">Bundled Packages</Link>
+          <div className="flex items-center gap-3 text-xs font-semibold text-slate-300 flex-wrap justify-center">
+            <Link href="/packages" className="text-[#F4B942] hover:underline font-bold">Founder Bundles</Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-[#F4B942] transition-colors">Terms of Service</Link>
+            <Link href="/faq" className="text-cyan-300 hover:underline font-bold">FAQs</Link>
             <span>•</span>
-            <Link href="/privacy" className="hover:text-[#F4B942] transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-[#F4B942] transition-colors">Terms</Link>
             <span>•</span>
-            <Link href="/refund-policy" className="hover:text-[#F4B942] transition-colors">Refund Policy</Link>
+            <Link href="/privacy" className="hover:text-[#F4B942] transition-colors">Privacy</Link>
+            <span>•</span>
+            <Link href="/refund-policy" className="hover:text-[#F4B942] transition-colors">Refunds</Link>
           </div>
         </div>
       </div>
-
     </footer>
   );
 }

@@ -22,14 +22,18 @@ export default function MobileBottomNav() {
 
   const items = [
     { label: 'Home', href: '/', icon: '🏠' },
-    { label: 'Packages', href: '/packages', icon: '📦' },
-    { label: 'Tools', href: '/tools', icon: '⚙️' },
+    { label: 'Services', href: '/packages', icon: '📋' },
+    {
+      label: 'Advisor',
+      isAdvisor: true,
+      icon: '🤖',
+      highlight: true,
+    },
     {
       label: 'WhatsApp',
       href: 'https://wa.me/919920054785?text=Hello%20NyayaLink%2C%20I%20need%20assistance%20with%20company%20registration%20and%20compliance.',
       icon: '💬',
       isExternal: true,
-      highlight: true,
     },
     { label: 'Account', href: '/dashboard', icon: '👤' },
   ];
@@ -39,6 +43,27 @@ export default function MobileBottomNav() {
       <nav className="max-w-md mx-auto grid grid-cols-5 items-center px-1 py-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]">
         {items.map((item, idx) => {
           const isActive = pathname === item.href;
+          if (item.isAdvisor) {
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('nyaylink_open_advisor'));
+                  }
+                }}
+                className="flex flex-col items-center justify-center py-1 text-center group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#0E7490] border border-cyan-400/50 text-[#F4B942] flex items-center justify-center text-base shadow-sm group-active:scale-95 transition-transform">
+                  {item.icon}
+                </div>
+                <span className="text-[9px] sm:text-[10px] font-bold text-cyan-300 mt-0.5 truncate max-w-full">
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
           if (item.isExternal) {
             return (
               <a
@@ -61,7 +86,7 @@ export default function MobileBottomNav() {
           return (
             <Link
               key={idx}
-              href={item.href}
+              href={item.href || '#'}
               className={`flex flex-col items-center justify-center py-1 text-center group ${
                 isActive ? 'text-[#F4B942]' : 'text-slate-300 hover:text-white'
               }`}

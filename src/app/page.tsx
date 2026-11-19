@@ -6,6 +6,45 @@ import { useRouter } from 'next/navigation';
 import { ALL_CATEGORIES, MASTER_SERVICES } from '@/data/services';
 import { INDIAN_STATES, getStateStampDuty, formatINR, getPricingModelBadge } from '@/lib/pricing';
 
+
+const FOUNDER_REVIEWS = [
+  {
+    stars: '★★★★★',
+    quote: '“Incorporated our SaaS entity in just 4 days. The ₹999 advance model gave us complete peace of mind, and the state stamp duty was passed through at exact govt challan with zero markup.”',
+    name: 'Rohit K.',
+    role: 'CTO @ NexaCloud Labs (Bengaluru)',
+    service: '🏢 Pvt Ltd Company',
+  },
+  {
+    stars: '★★★★★',
+    quote: '“Our trademark faced an objection from a conglomerate. NyayaLink assigned a High Court Advocate who drafted a flawless reply and cleared our hearing in one attempt. Certificate granted!”',
+    name: 'Priya S.',
+    role: 'Founder @ Aara Naturals (Mumbai)',
+    service: '™️ TM Hearing & Class 3',
+  },
+  {
+    stars: '★★★★★',
+    quote: '“GST registration and MSME Udyam certificate approved in under 72 hours. The encrypted document vault keeps all our PAN, TAN, and GST certificates securely archived with zero clutter.”',
+    name: 'Vikram M.',
+    role: 'Director @ Apex Precision (Delhi NCR)',
+    service: '🧾 GST & MSME Udyam',
+  },
+  {
+    stars: '★★★★★',
+    quote: '“Secured our multi-state FSSAI food license in under a week. Communication with our assigned CA over direct WhatsApp was fast and professional. No endless sales rep spam.”',
+    name: 'Dr. Ananya R.',
+    role: 'Co-Founder @ NutriBites (Hyderabad)',
+    service: '📜 Central FSSAI License',
+  },
+  {
+    stars: '★★★★★',
+    quote: '“Drafted our multi-founder LLP agreement and filed Form 3 with the ROC seamlessly. Transparent pass-through fee ledger without the usual hidden markups or aggressive sales calls.”',
+    name: 'Karan Mehra',
+    role: 'Managing Partner @ StackZero (Pune)',
+    service: '🤝 LLP Agreement & ROC',
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -40,6 +79,15 @@ export default function HomePage() {
   const [isAllServicesExpanded, setIsAllServicesExpanded] = useState(false);
   const packagesSliderRef = useRef<HTMLDivElement>(null);
   const [activePackageIndex, setActivePackageIndex] = useState(0);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+
+  // Auto-slide founder reviews every 4.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveReviewIndex((prev) => (prev + 1) % 5);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
   const [comparisonCompetitor, setComparisonCompetitor] = useState<'portals' | 'offline'>('portals');
   // Entity Matchmaker Decision Wizard State
   // Entity Matchmaker Decision Wizard State (Interactive Step-by-Step)
@@ -1612,14 +1660,14 @@ export default function HomePage() {
       {/* ======================================================== */}
       {/* 4.2 DUAL-TRACK DISPUTE RESOLUTION (HONEST ALTERNATIVE)    */}
       {/* ======================================================== */}
-      <section className="bg-white border-b border-slate-200 py-8 px-4 sm:px-8">
-        <div className="max-w-[1600px] mx-auto bg-gradient-to-br from-slate-50 via-cyan-50/30 to-amber-50/30 rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 bg-[#073B5C] text-[#F4B942] text-[10px] font-black uppercase px-3 py-1 rounded-full">
+      <section className="bg-white border-b border-slate-200 py-6 sm:py-8 px-3 sm:px-8">
+        <div className="max-w-[1600px] mx-auto bg-gradient-to-br from-slate-50 via-cyan-50/30 to-amber-50/30 rounded-3xl p-4 sm:p-8 border border-slate-200 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-[#073B5C] text-[#F4B942] text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
                 <span>⚖️</span> Honest Dispute Resolution (ODR)
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-[#073B5C]">
+              <h3 className="text-lg sm:text-2xl font-black text-[#073B5C]">
                 Consumer Dispute, Fraud, or Unpaid Dues? Choose the Honest Dual-Track
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -1627,7 +1675,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+            {/* Desktop-Only Action Buttons (Hidden on mobile to eliminate duplication) */}
+            <div className="hidden sm:flex flex-row gap-3 shrink-0">
               <Link
                 href="/services/consumer-complaint-notice"
                 className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-5 py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2"
@@ -1643,35 +1692,51 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-slate-200 text-xs">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-extrabold text-[#073B5C] text-sm">Track 1: Statutory Advocate Demand Notice</span>
-                <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">₹1,999 - ₹2,499</span>
+          {/* Actionable Track Cards with Direct CTA Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-200 text-xs">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-[#073B5C] text-sm">Track 1: Advocate Demand Notice</span>
+                  <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">₹1,999 - ₹2,499</span>
+                </div>
+                <p className="text-slate-500 text-[11px] leading-relaxed">
+                  High-impact notice on advocate letterhead served via Registered Speed Post with Proof of Delivery (POD). Solves 70%+ of disputes pre-litigation.
+                </p>
               </div>
-              <p className="text-slate-500 text-[11px] leading-relaxed">
-                High-impact notice on advocate letterhead served via Registered Speed Post with Proof of Delivery (POD). Solves 70%+ of e-commerce, refund, and contract disputes pre-litigation.
-              </p>
+              <Link
+                href="/services/consumer-complaint-notice"
+                className="w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-2.5 rounded-xl transition text-center shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span>📜</span> Send Legal Notice (₹1,999) →
+              </Link>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-extrabold text-[#073B5C] text-sm">Track 2: e-Daakhil / Consumer Court Filing</span>
-                <span className="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded text-[10px]">Direct Advocate Representation</span>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-[#073B5C] text-sm">Track 2: e-Daakhil / Court Filing</span>
+                  <span className="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded text-[10px]">Direct Advocate Representation</span>
+                </div>
+                <p className="text-slate-500 text-[11px] leading-relaxed">
+                  If the opposite party defaults, hire a verified Bar Council advocate from our directory to draft your petition and represent you before the District Commission.
+                </p>
               </div>
-              <p className="text-slate-500 text-[11px] leading-relaxed">
-                If the opposite party defaults, hire a verified Bar Council advocate from our Vakil directory to draft your petition and represent you before the District Commission.
-              </p>
+              <Link
+                href="/vakil"
+                className="w-full bg-white hover:bg-slate-50 text-[#073B5C] border-2 border-[#073B5C] font-black text-xs py-2.5 rounded-xl transition text-center shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span>👨‍⚖️</span> Book Verified Court Advocate →
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ======================================================== */}
       {/* 4.5 STARTING A BUSINESS: 4 1-CLICK FOUNDER PLAYBOOKS     */}
       {/* ======================================================== */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 w-full overflow-hidden">
-        <div className="bg-gradient-to-b from-white to-slate-50/80 rounded-3xl border-2 border-[#0E7490]/30 shadow-md p-6 sm:p-10 space-y-8">
+        <div className="bg-gradient-to-b from-white to-slate-50/80 rounded-3xl border-2 border-[#0E7490]/30 shadow-md p-4 sm:p-10 space-y-5 sm:space-y-8">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200/80 pb-6">
             <div className="space-y-1.5 max-w-3xl">
@@ -1708,7 +1773,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => scrollPackages('left')}
-                className="w-7 h-7 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-black text-[#073B5C] active:bg-slate-100"
+                className="w-10 h-10 rounded-full bg-white border border-slate-300 shadow-sm flex items-center justify-center text-sm font-black text-[#073B5C] active:bg-slate-100 transition"
                 aria-label="Previous package"
               >
                 ←
@@ -1716,7 +1781,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => scrollPackages('right')}
-                className="w-7 h-7 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-black text-[#073B5C] active:bg-slate-100"
+                className="w-10 h-10 rounded-full bg-white border border-slate-300 shadow-sm flex items-center justify-center text-sm font-black text-[#073B5C] active:bg-slate-100 transition"
                 aria-label="Next package"
               >
                 →
@@ -1731,7 +1796,7 @@ export default function HomePage() {
           >
             
             {/* PLAYBOOK 1: SELLING ON AMAZON / FLIPKART */}
-            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-4">
+            <div className="w-[84vw] max-w-[320px] snap-center shrink-0 md:w-auto md:max-w-none md:shrink bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 hover:border-[#0E7490] transition shadow-xs hover:shadow-lg flex flex-col justify-between space-y-3 sm:space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-3xl p-2.5 bg-amber-50 rounded-2xl border border-amber-100">🛒</span>
@@ -2100,23 +2165,23 @@ export default function HomePage() {
                             setWizardFounders('solo');
                             setWizardStep(2);
                           }}
-                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 sm:gap-3 group ${
                             wizardFounders === 'solo'
                               ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
                               : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">👤</span>
+                          <div className="flex items-center gap-2.5 sm:gap-3">
+                            <span className="text-xl sm:text-2xl p-1.5 sm:p-2 bg-white rounded-xl shadow-xs shrink-0">👤</span>
                             <div>
-                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Just Me Alone</div>
-                              <div className="text-[11px] font-bold text-[#0E7490]">Solo Entrepreneur / 1 Owner</div>
+                              <div className="text-xs sm:text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">Just Me Alone</div>
+                              <div className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]">Solo Entrepreneur / 1 Owner</div>
                             </div>
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">
-                            100% control, single director & shareholder. Best for independent consultants, solo tech creators, or freelancers.
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-snug">
+                            100% control, single director & shareholder. Ideal for consultants, solo creators, or freelancers (OPC / Sole Prop).
                           </p>
-                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <span className="hidden sm:flex text-[11px] font-bold text-[#0E7490] items-center gap-1 group-hover:translate-x-1 transition-transform">
                             Select Solo & Continue →
                           </span>
                         </button>
@@ -2127,23 +2192,23 @@ export default function HomePage() {
                             setWizardFounders('multi');
                             setWizardStep(2);
                           }}
-                          className={`p-4 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-3 group ${
+                          className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 sm:gap-3 group ${
                             wizardFounders === 'multi'
                               ? 'border-2 border-[#0E7490] bg-cyan-50/70 shadow-sm'
                               : 'border-slate-200 bg-slate-50/60 hover:border-[#0E7490]/50 hover:bg-slate-50'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl p-2 bg-white rounded-xl shadow-xs">👥</span>
+                          <div className="flex items-center gap-2.5 sm:gap-3">
+                            <span className="text-xl sm:text-2xl p-1.5 sm:p-2 bg-white rounded-xl shadow-xs shrink-0">👥</span>
                             <div>
-                              <div className="text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">2 or More People</div>
-                              <div className="text-[11px] font-bold text-[#0E7490]">Co-Founders / Partners</div>
+                              <div className="text-xs sm:text-sm font-black text-[#073B5C] group-hover:text-[#0E7490]">2 or More People</div>
+                              <div className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]">Co-Founders / Partners</div>
                             </div>
                           </div>
-                          <p className="text-xs text-slate-600 leading-relaxed">
-                            Split equity, assign board seats, or share commercial partnership responsibilities with at least 2 partners.
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-snug">
+                            Split equity, assign board seats, and share commercial responsibilities with 2+ partners (Pvt Ltd / LLP).
                           </p>
-                          <span className="text-[11px] font-bold text-[#0E7490] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          <span className="hidden sm:flex text-[11px] font-bold text-[#0E7490] items-center gap-1 group-hover:translate-x-1 transition-transform">
                             Select 2+ Partners & Continue →
                           </span>
                         </button>
@@ -3470,123 +3535,117 @@ export default function HomePage() {
           </div>
 
           {/* 4 Testimonials Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-            
-            {/* Review 1 */}
-            <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between hover:shadow-md transition space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <span className="text-amber-500 text-xs tracking-tight">★★★★★</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
-                    ✓ Verified Customer
+          {/* 5 VERIFIED FOUNDER REVIEWS: HORIZONTAL AUTO-SLIDING CAROUSEL */}
+          <div className="space-y-4">
+            {/* Mobile Auto-Sliding Single Review Card (sm:hidden) */}
+            <div className="sm:hidden">
+              <div className="bg-slate-50/90 rounded-2xl border border-slate-200 p-4 shadow-sm min-h-[190px] flex flex-col justify-between transition-all duration-500 animate-in fade-in">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-amber-500 text-xs tracking-tight">
+                      {FOUNDER_REVIEWS[activeReviewIndex].stars}
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
+                      ✓ Verified Founder
+                    </span>
+                  </div>
+                  <p className="text-slate-700 text-xs leading-relaxed font-medium">
+                    {FOUNDER_REVIEWS[activeReviewIndex].quote}
+                  </p>
+                </div>
+
+                <div className="pt-2.5 border-t border-slate-200/80 flex items-center justify-between">
+                  <div>
+                    <strong className="block text-[#073B5C] font-extrabold text-xs">
+                      {FOUNDER_REVIEWS[activeReviewIndex].name}
+                    </strong>
+                    <span className="text-[10px] text-slate-500 block">
+                      {FOUNDER_REVIEWS[activeReviewIndex].role}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#0E7490] bg-cyan-50 px-2 py-0.5 rounded-lg border border-cyan-100 shrink-0">
+                    {FOUNDER_REVIEWS[activeReviewIndex].service}
                   </span>
                 </div>
-                <p className="text-slate-600 leading-relaxed font-medium">
-                  “Incorporated our SaaS entity in just 4 days. The ₹999 advance model gave us complete peace of mind, and the state stamp duty was passed through at exact govt challan with zero markup.”
-                </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-200/60">
-                <strong className="block text-[#073B5C] font-extrabold text-xs">Rohit K.</strong>
-                <span className="text-[10px] text-slate-500 block">CTO @ NexaCloud Labs (Bengaluru)</span>
-                <span className="text-[10px] font-bold text-[#0E7490] mt-0.5 inline-block">🏢 Pvt Ltd Company</span>
+              {/* Mobile Carousel Navigation & Dot Indicators */}
+              <div className="flex items-center justify-between pt-3 px-1">
+                <div className="flex items-center gap-1.5">
+                  {FOUNDER_REVIEWS.map((_, dotIdx) => (
+                    <button
+                      key={dotIdx}
+                      type="button"
+                      onClick={() => setActiveReviewIndex(dotIdx)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        activeReviewIndex === dotIdx
+                          ? 'w-6 bg-[#073B5C]'
+                          : 'w-2 bg-slate-300 hover:bg-slate-400'
+                      }`}
+                      aria-label={`Go to review ${dotIdx + 1}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveReviewIndex((prev) => (prev - 1 + FOUNDER_REVIEWS.length) % FOUNDER_REVIEWS.length)}
+                    className="w-8 h-8 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-bold text-[#073B5C] active:bg-slate-100"
+                    aria-label="Previous review"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveReviewIndex((prev) => (prev + 1) % FOUNDER_REVIEWS.length)}
+                    className="w-8 h-8 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center text-xs font-bold text-[#073B5C] active:bg-slate-100"
+                    aria-label="Next review"
+                  >
+                    →
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Review 2 */}
-            <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between hover:shadow-md transition space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <span className="text-amber-500 text-xs tracking-tight">★★★★★</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
-                    ✓ Verified Customer
-                  </span>
+            {/* Desktop / Tablet Grid (Hidden on Mobile) */}
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              {FOUNDER_REVIEWS.map((rev, rIdx) => (
+                <div
+                  key={rIdx}
+                  className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between hover:shadow-md transition space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <span className="text-amber-500 text-xs tracking-tight">{rev.stars}</span>
+                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
+                        ✓ Verified Customer
+                      </span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed font-medium">
+                      {rev.quote}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-200/60">
+                    <strong className="block text-[#073B5C] font-extrabold text-xs">{rev.name}</strong>
+                    <span className="text-[10px] text-slate-500 block">{rev.role}</span>
+                    <span className="text-[10px] font-bold text-[#0E7490] mt-0.5 inline-block">{rev.service}</span>
+                  </div>
                 </div>
-                <p className="text-slate-600 leading-relaxed font-medium">
-                  “Our trademark faced an objection from a conglomerate. NyayaLink assigned a High Court Advocate who drafted a flawless reply and cleared our hearing in one attempt. Certificate granted!”
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-200/60">
-                <strong className="block text-[#073B5C] font-extrabold text-xs">Priya S.</strong>
-                <span className="text-[10px] text-slate-500 block">Founder @ Aara Naturals (Mumbai)</span>
-                <span className="text-[10px] font-bold text-[#0E7490] mt-0.5 inline-block">™️ TM Hearing & Class 3</span>
-              </div>
+              ))}
             </div>
-
-            {/* Review 3 */}
-            <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between hover:shadow-md transition space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <span className="text-amber-500 text-xs tracking-tight">★★★★★</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
-                    ✓ Verified Customer
-                  </span>
-                </div>
-                <p className="text-slate-600 leading-relaxed font-medium">
-                  “GST registration and MSME Udyam certificate approved in under 72 hours. The encrypted document vault keeps all our PAN, TAN, and GST certificates securely archived with zero clutter.”
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-200/60">
-                <strong className="block text-[#073B5C] font-extrabold text-xs">Vikram M.</strong>
-                <span className="text-[10px] text-slate-500 block">Director @ Apex Precision (Delhi NCR)</span>
-                <span className="text-[10px] font-bold text-[#0E7490] mt-0.5 inline-block">🧾 GST & MSME Udyam</span>
-              </div>
-            </div>
-
-            {/* Review 4 */}
-            <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between hover:shadow-md transition space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <span className="text-amber-500 text-xs tracking-tight">★★★★★</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full">
-                    ✓ Verified Customer
-                  </span>
-                </div>
-                <p className="text-slate-600 leading-relaxed font-medium">
-                  “Secured our multi-state FSSAI food license in under a week. Communication with our assigned CA over direct WhatsApp was fast and professional. No endless sales rep spam.”
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-200/60">
-                <strong className="block text-[#073B5C] font-extrabold text-xs">Dr. Ananya R.</strong>
-                <span className="text-[10px] text-slate-500 block">Co-Founder @ NutriBites (Hyderabad)</span>
-                <span className="text-[10px] font-bold text-[#0E7490] mt-0.5 inline-block">📜 Central FSSAI License</span>
-              </div>
-            </div>
-
           </div>
-
-          {/* Regulatory & Institutional Trust Banner */}
-          <div className="bg-[#073B5C] text-white rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-lg">
-            <div className="space-y-1">
-              <strong className="text-sm font-black text-white block">
-                Empanelled Network of 500+ CAs, CSs & High Court Advocates
-              </strong>
-              <p className="text-[11px] text-cyan-200 font-medium">
-                100% Bar Council Rule 36 & CGST Rule 33 Pure Agent Compliant Execution across 28 States & 8 UTs.
-              </p>
-            </div>
-            <Link
-              href="/packages"
-              className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-2.5 rounded-xl uppercase tracking-wider transition shrink-0 shadow"
-            >
-              Explore All Bundles →
-            </Link>
-          </div>
-
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 8. HOMEPAGE FAQS                                        */}
+      {/* 8. HOMEPAGE FAQS (CURATED 4 QUESTIONS + FULL KNOWLEDGE BASE LINK) */}
       {/* ======================================================== */}
-      <section className="bg-white border-t border-slate-200 py-16 px-4 sm:px-8">
+      <section className="bg-white border-t border-slate-200 py-12 px-4 sm:px-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <h3 className="text-2xl sm:text-3xl font-black text-[#073B5C]">Frequently Asked Questions</h3>
-            <p className="text-xs text-slate-500">Everything you need to know about our legal-tech execution.</p>
+            <p className="text-xs text-slate-500">Quick answers to the most common legal & filing questions.</p>
           </div>
 
           <div className="space-y-2.5 text-xs">
@@ -3596,32 +3655,16 @@ export default function HomePage() {
                 a: 'The ₹999 advance token allows you to initiate your statutory filing (including MCA name reservation, constitutional document drafting, and CA pre-audit) without paying the full package fee upfront. Once your documents are CA-verified and the name is reserved, the remaining balance is settled transparently in your Order Tracking Room.',
               },
               {
+                q: 'Are government statutory fees and state stamp duties included?',
+                a: 'NyayaLink packages clearly itemize professional fees and standard portal charges. State-specific stamp duties (which vary by authorized capital and registered state, e.g., Maharashtra, Delhi, Karnataka) and official registry fees are passed through strictly at actual government challan receipts with zero markup under Rule 33 of CGST Rules.',
+              },
+              {
                 q: 'How does NyayaLink guarantee government filing accuracy?',
                 a: 'Every filing undergoes a 2-stage verification workflow: automated algorithmic validation against MCA V3, GSTN, and IP India rules, followed by meticulous scrutiny and digital certification from practicing Chartered Accountants, Company Secretaries, or High Court Advocates before submission.',
               },
               {
-                q: 'Are government statutory fees and state stamp duties included?',
-                a: 'NyayaLink packages clearly itemize professional fees and standard portal charges. State-specific stamp duties (which vary by authorized capital and registered state, e.g., Maharashtra, Delhi, Karnataka) and official registry fees are passed through strictly at actual government challan receipts with zero markup.',
-              },
-              {
                 q: 'Is the entire registration process 100% online and paperless?',
                 a: 'Yes, 100% digital and paperless. You never need to visit a physical government office or courier physical papers. Identity verification and document signing are handled securely via Class-3 Digital Signature Certificates (DSC) or Aadhaar OTP, and all documents are stored in your encrypted NyayaLink Vault.',
-              },
-              {
-                q: 'How long does company incorporation or registration take from start to finish?',
-                a: 'Private Limited and LLP incorporations typically complete within 3 to 7 working days, subject to Central Registration Centre (CRC) processing. GST registrations take 3 to 5 working days, while MSME Udyam certificates are issued within 24 to 48 hours.',
-              },
-              {
-                q: 'Can my business claim GST Input Tax Credit (ITC) on NyayaLink invoices?',
-                a: 'Yes. NyayaLink issues valid GST tax invoices with our active GSTIN for all professional services. Simply enter your company GSTIN during checkout or in your Vault profile, and you can claim full 18% Input Tax Credit on your monthly GSTR-3B filings.',
-              },
-              {
-                q: 'What post-incorporation compliances are required after company registration?',
-                a: 'Under the Companies Act 2013, newly incorporated companies must complete three mandatory steps: (1) Open a corporate bank current account and file MCA Form INC-20A (Commencement of Business) within 180 days, (2) Appoint a statutory auditor via Form ADT-1 within 30 days, and (3) Complete annual Director DIR-3 KYC filings before September 30.',
-              },
-              {
-                q: 'How do I download and preserve my approved government certificates?',
-                a: 'Once approved by statutory authorities (MCA, GSTN, DGFT, or IP India), all official certificates (Certificate of Incorporation, PAN/TAN cards, GSTIN registration certificate, Trademark TM-A receipts) are permanently archived in your encrypted digital Vault with verifiable QR codes for instant lifetime download.',
               },
             ].map((faq, idx) => (
               <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden">
@@ -3629,6 +3672,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                   className="w-full text-left p-4 font-bold text-[#073B5C] flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer"
+                  aria-expanded={openFaq === idx}
                 >
                   <span>{faq.q}</span>
                   <span className="text-sm text-slate-400 font-mono">{openFaq === idx ? '−' : '+'}</span>
@@ -3641,8 +3685,20 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          {/* Dedicated FAQ Knowledge Base Button */}
+          <div className="pt-4 text-center">
+            <Link
+              href="/faq"
+              className="inline-flex items-center gap-2 bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-6 py-3 rounded-xl uppercase tracking-wider transition shadow cursor-pointer"
+            >
+              <span>📖 View All 20+ Questions on Dedicated FAQ Page →</span>
+            </Link>
+          </div>
         </div>
       </section>
+
+
 
 
 

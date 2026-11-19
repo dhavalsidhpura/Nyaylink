@@ -102,6 +102,15 @@ export default function SmartAdvisorDrawer() {
   const [callbackSubmitted, setCallbackSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setHasPrompted(false);
+    };
+    window.addEventListener('nyaylink_open_advisor', handleOpen);
+    return () => window.removeEventListener('nyaylink_open_advisor', handleOpen);
+  }, []);
+
   // Gentle auto-prompt after 35s of reading (once per session)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -164,7 +173,7 @@ export default function SmartAdvisorDrawer() {
   return (
     <>
       {/* 1. DOCKED FLOATING BUTTON (BOTTOM RIGHT) */}
-      <aside aria-label="Quick Advisory Pop-out" className="fixed bottom-20 md:bottom-6 right-3 sm:right-6 z-40 print:hidden flex flex-col items-end gap-2">
+      <aside aria-label="Quick Advisory Pop-out" className="hidden md:flex fixed bottom-6 right-6 z-40 print:hidden flex-col items-end gap-2">
         {/* Gentle Auto-Prompt Tooltip (Non-intrusive) */}
         {hasPrompted && !isOpen && (
           <div className="bg-white text-slate-800 p-3.5 rounded-2xl shadow-2xl border-2 border-[#0E7490] max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-300">
