@@ -17,6 +17,7 @@ import {
 import { openRazorpayCheckout } from '@/lib/checkout-client';
 import StampDutyCalculator from '@/components/StampDutyCalculator';
 import DeliverablesUnboxingCard from '@/components/DeliverablesUnboxingCard';
+import { getStateDocumentRequirements } from '@/data/stateDocumentRequirements';
 
 export interface ServicePricing {
   professionalFee: number;
@@ -121,6 +122,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const [staffSlab, setStaffSlab] = useState<'0_9' | '10_20' | '20_plus'>('0_9');
 
   const pricingModel = useMemo(() => getPricingModelBadge(slug, serviceCategory), [slug, serviceCategory]);
+
+  // Mobile Segmented Control Tab
+  const [mobileTab, setMobileTab] = useState<'overview' | 'documents'>('overview');
+  const [showAllStatesDocs, setShowAllStatesDocs] = useState(false);
 
   // Modals
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
@@ -244,6 +249,34 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
   const baseProfFee = effectivePricing.prof;
   const dynamicGovtFee = effectivePricing.govt;
+
+  // Statutory Filing vs Pure Professional Service Mode
+  const isStatutoryFiling = useMemo(() => {
+    const cat = (serviceCategory || '').toLowerCase();
+    const s = slug.toLowerCase();
+    return (
+      cat === 'company-reg' ||
+      cat === 'trademark-ipr' ||
+      cat === 'copyright' ||
+      cat === 'licenses-permits' ||
+      s.includes('company') ||
+      s.includes('incorporation') ||
+      s.includes('llp') ||
+      s.includes('fssai') ||
+      s.includes('shop') ||
+      s.includes('gumasta') ||
+      s.includes('iec') ||
+      s.includes('gst-reg') ||
+      dynamicGovtFee > 0
+    );
+  }, [serviceCategory, slug, dynamicGovtFee]);
+
+  const isPureService = !isStatutoryFiling;
+
+  // Dynamic state-specific document requirements
+  const stateSpecificDocs = useMemo(() => {
+    return getStateDocumentRequirements(selectedState, isStatutoryFiling);
+  }, [selectedState, isStatutoryFiling]);
 
   const baseQuote = useMemo(
     () =>
@@ -544,7 +577,164 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
           {/* LEFT COLUMN (65% width): Education, Deliverables & Trust */}
           {/* ======================================================== */}
           <div className="lg:col-span-8 space-y-8">
+
+            {/* MOBILE 2-TAB SEGMENTED CONTROL (Matching Online Legal India UX pattern) */}
+            <div className="lg:hidden sticky top-14 z-30 bg-white/95 backdrop-blur-md py-2 border-b border-slate-200">
+              <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('overview')}
+                  className={`flex-1 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    mobileTab === 'overview'
+                      ? 'bg-[#073B5C] text-white shadow-sm font-black'
+                      : 'text-slate-600 hover:text-slate-900 font-bold'
+                  }`}
+                >
+                  <span>📋 Service Overview</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('documents')}
+                  className={`flex-1 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    mobileTab === 'documents'
+                      ? 'bg-[#073B5C] text-white shadow-sm font-black'
+                      : 'text-slate-600 hover:text-slate-900 font-bold'
+                  }`}
+                >
+                  <span>📁 Documents Required</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    mobileTab === 'documents' ? 'bg-[#F4B942] text-[#073B5C]' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* DEDICATED MOBILE DOCUMENTS REQUIRED TAB VIEW (lg:hidden) */}
+            {mobileTab === 'documents' && (
+              <div className="lg:hidden space-y-5 animate-in fade-in duration-150">
+                <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                        Compliance Checklist
+                      </span>
+                      <h2 className="text-base font-black text-[#073B5C]">
+                        {displayTitle}
+                      </h2>
+                    </div>
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">
+                      Vault Assured
+                    </span>
+                  </div>
+
+                  {/* State selector dropdown on mobile documents tab */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="mobile-doc-state-select" className="block text-xs font-bold text-[#073B5C]">
+                      {isStatutoryFiling ? 'Jurisdiction State:' : 'Operational State (Place of Supply):'}
+                    </label>
+                    <select
+                      id="mobile-doc-state-select"
+                      value={selectedState}
+                      onChange={(e) => setSelectedState(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-extrabold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490] cursor-pointer"
+                    >
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st.code} value={st.code}>
+                          {st.name} ({st.code})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-400">
+                      Showing tailored documentation requirements for {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}.
+                    </p>
+                  </div>
+
+                  {/* Universal Documents */}
+                  <div className="space-y-2 pt-1">
+                    <h3 className="text-xs font-black uppercase text-slate-600 tracking-wider">
+                      1. Universal Identification & Entity Records ({allDocsList.length})
+                    </h3>
+                    <div className="space-y-2">
+                      {allDocsList.map((doc, idx) => {
+                        const parsed = getDocIcon(doc);
+                        return (
+                          <div key={idx} className="p-3 bg-slate-50/80 border border-slate-200 rounded-2xl flex items-start gap-2.5">
+                            <span className="text-lg shrink-0 mt-0.5">{parsed.icon}</span>
+                            <div className="min-w-0">
+                              <strong className="text-xs font-bold text-[#073B5C] block leading-snug">{doc}</strong>
+                              <span className="text-[10px] text-slate-400">Clear smartphone photo or PDF scan accepted</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* State Jurisdiction Specific Documents */}
+                  {isStatutoryFiling && stateSpecificDocs.length > 0 && (
+                    <div className="space-y-2 pt-3 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-black uppercase text-[#0E7490] tracking-wider flex items-center gap-1.5">
+                          <span>📍</span> 2. {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState} Premises & Tax Mandates
+                        </h3>
+                        <span className="text-[9px] bg-cyan-100 text-cyan-900 font-bold px-2 py-0.5 rounded-full">
+                          State Specific
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {stateSpecificDocs.map((doc, idx) => (
+                          <div key={idx} className="p-3 bg-cyan-50/60 border border-cyan-200/80 rounded-2xl space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-emerald-700 font-bold text-xs">✓</span>
+                                <strong className="text-xs font-bold text-[#073B5C]">{doc.title}</strong>
+                              </div>
+                              {doc.mandatory && (
+                                <span className="text-[9px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
+                                  Required
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-600 pl-4 leading-relaxed">{doc.desc}</p>
+                            <span className="text-[9px] font-mono text-slate-400 pl-4 block">{doc.authority}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Vault Reassurance Box */}
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-950 space-y-1">
+                    <strong className="block font-black text-emerald-900 flex items-center gap-1">
+                      <span>🛡️</span> Zero Pressure: No Documents Needed Right Now
+                    </strong>
+                    <p className="text-[10px] text-emerald-800 leading-relaxed">
+                      You do not need documents ready in hand to get started. Secure your booking with a ₹999 advance token today. Your assigned CA will open your private encrypted Vault and assist you step-by-step.
+                    </p>
+                  </div>
+
+                  {/* Upload Specs */}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-[10px] text-slate-500 space-y-0.5">
+                    <span className="font-bold text-slate-700 block">Accepted Formats: PDF, JPG, PNG (&lt; 10 MB)</span>
+                    <span>Built-in smartphone camera compression automatically optimizes large photo files.</span>
+                  </div>
+
+                  {/* Mobile CTA on Documents Tab */}
+                  <button
+                    type="button"
+                    onClick={() => setIsCheckoutModalOpen(true)}
+                    className="w-full bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs py-3.5 rounded-2xl uppercase tracking-wider shadow cursor-pointer transition active:scale-[0.99]"
+                  >
+                    Start for {formatINR(activePayAmount)} {payAdvance ? 'Advance' : ''} →
+                  </button>
+                </div>
+              </div>
+            )}
             
+            {/* OVERVIEW CONTENT CONTAINER (Visible on desktop, toggled on mobile) */}
+            <div className={`space-y-8 ${mobileTab === 'documents' ? 'hidden lg:block' : 'block'}`}>
             {/* HERO SECTION */}
             <div className="space-y-4">
               {!isServiceActive && (
@@ -696,7 +886,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             </div>
 
             {/* SECTION 3: SIMPLIFIED DOCUMENTS (PROGRESSIVE DISCLOSURE GRID) */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
               <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
@@ -705,7 +895,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   <p className="text-xs text-slate-500">Simple smartphone photos or clear scans. Uploaded privately right after booking.</p>
                 </div>
                 <span className="text-[11px] font-semibold text-slate-400">
-                  {allDocsList.length} items total
+                  {allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)} items total
                 </span>
               </div>
 
@@ -727,6 +917,50 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 ))}
               </div>
 
+              {/* Dynamic State Document Requirements (Active when statutory filing is selected) */}
+              {isStatutoryFiling && stateSpecificDocs.length > 0 && (
+                <div className="bg-gradient-to-br from-cyan-50/60 to-slate-50 border border-cyan-200/90 rounded-2xl p-4 sm:p-5 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200/60 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📍</span>
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-extrabold text-[#073B5C]">
+                          State Jurisdiction Additions: {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}
+                        </h3>
+                        <p className="text-[10px] text-slate-500">
+                          Mandated by local Registrar & Revenue authorities for premises verification in {selectedState}.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="bg-[#0E7490] text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                      {selectedState} Verified
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    {stateSpecificDocs.map((doc, idx) => (
+                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-emerald-700 font-bold">✓</span>
+                            <strong className="text-xs text-[#073B5C]">{doc.title}</strong>
+                            {doc.mandatory && (
+                              <span className="text-[9px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
+                                Required
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-600 pl-4">{doc.desc}</p>
+                        </div>
+                        <span className="text-[9px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded shrink-0 hidden sm:inline">
+                          {doc.authority}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Progressive Disclosure Link */}
               <div className="pt-2 flex items-center justify-between text-xs">
                 <button
@@ -734,7 +968,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   onClick={() => setIsDocsModalOpen(true)}
                   className="font-extrabold text-[#0E7490] hover:text-[#073B5C] hover:underline flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>📋 + View complete documentation guidelines ({allDocsList.length} items)</span>
+                  <span>📋 + View complete documentation guidelines ({allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)} items)</span>
                   <span>→</span>
                 </button>
                 <span className="text-[11px] text-slate-400 hidden sm:inline">PDF, JPG, PNG accepted (up to 10MB)</span>
@@ -999,6 +1233,25 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </div>
             </div>
 
+            {/* Mobile In-Line Prompt to Check Required Documents */}
+            <div className="lg:hidden p-4 bg-cyan-50/80 border border-cyan-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+              <div>
+                <strong className="text-xs text-[#073B5C] block">Check Documentation Checklist</strong>
+                <p className="text-[10px] text-slate-500">
+                  {allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)} documents for {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileTab('documents')}
+                className="bg-[#073B5C] text-[#F4B942] text-xs font-black px-4 py-2 rounded-xl whitespace-nowrap cursor-pointer shadow-xs"
+              >
+                View Checklist →
+              </button>
+            </div>
+
+            </div>{/* END OF OVERVIEW CONTENT CONTAINER */}
+
           </div>
 
           {/* ======================================================== */}
@@ -1031,7 +1284,11 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               {/* STATE SELECTION DROPDOWN */}
               <div className="space-y-1.5">
                 <label htmlFor="card-state" className="block text-xs font-bold text-[#073B5C]">
-                  {isStateSpecificService ? 'Select Incorporation State' : 'Select Operational State (GST)'}
+                  {isStatutoryFiling
+                    ? isStateSpecificService
+                      ? 'Select Incorporation State'
+                      : 'Select Statutory Jurisdiction'
+                    : 'Select Operational State (Place of Supply)'}
                 </label>
                 <select
                   id="card-state"
@@ -1046,16 +1303,20 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   ))}
                 </select>
                 <p className="text-[10px] text-slate-400">
-                  {isStateSpecificService
-                    ? `Stamp Duty calculated automatically for ${stateStamp.breakdown}.`
-                    : 'Determines Place of Supply for valid GST tax invoice.'}
+                  {isStatutoryFiling
+                    ? isStateSpecificService
+                      ? `Stamp Duty calculated automatically for ${stateStamp.breakdown}.`
+                      : 'Determines official jurisdiction & portal state registration.'
+                    : 'Determines Place of Supply for valid B2B GST tax invoice & Input Tax Credit (ITC).'}
                 </p>
               </div>
 
-              {/* PRICING BREAKDOWN MATRIX */}
+              {/* PRICING BREAKDOWN MATRIX (2-Mode Architecture) */}
               <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 font-medium">NyayaLink Professional Fee</span>
+                  <span className="text-slate-600 font-medium">
+                    {isPureService ? 'Professional Retainer Fee' : 'NyayaLink Professional Fee'}
+                  </span>
                   <strong className="text-slate-900 font-extrabold">{formatINR(baseProfFee)}</strong>
                 </div>
 
@@ -1064,20 +1325,28 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   <strong className="text-slate-900 font-extrabold">{formatINR(baseQuote.gstAmount)}</strong>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600 font-medium flex items-center gap-1">
-                    <span>Govt Stamp Duty & Fee</span>
-                    {isStateSpecificService && <span className="text-[10px] text-emerald-700 font-bold">(Live)</span>}
-                  </span>
-                  <strong className="text-slate-900 font-extrabold">
-                    {dynamicGovtFee > 0 ? formatINR(dynamicGovtFee) : '₹0 (At Actuals)'}
-                  </strong>
-                </div>
+                {/* Show Govt Stamp Duty & Fee ONLY for statutory filings with portal costs */}
+                {isStatutoryFiling ? (
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600 font-medium flex items-center gap-1">
+                      <span>Govt Stamp Duty & Fee</span>
+                      {isStateSpecificService && <span className="text-[10px] text-emerald-700 font-bold">(Live)</span>}
+                    </span>
+                    <strong className="text-slate-900 font-extrabold">
+                      {dynamicGovtFee > 0 ? formatINR(dynamicGovtFee) : '₹0 (At Actuals)'}
+                    </strong>
+                  </div>
+                ) : null}
 
                 <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm font-black text-[#073B5C]">
-                  <span>Total Estimated Outlay</span>
+                  <span>{isPureService ? 'Total Invoiced Amount' : 'Total Estimated Outlay'}</span>
                   <span className="text-base text-slate-900">{formatINR(totalEstimatedCost)}</span>
                 </div>
+                {isPureService && (
+                  <p className="text-[10px] text-emerald-700 font-medium pt-0.5">
+                    ✓ 100% Tax Deductible B2B Expense (Eligible for Full GST ITC)
+                  </p>
+                )}
               </div>
 
               {/* SPLIT-TICKET PROPOSITION BOX */}
@@ -1120,7 +1389,11 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
                 <p className="text-[10px] text-slate-500 leading-tight">
                   {payAdvance
-                    ? 'Start name reservation and document drafting today for ₹999. Remaining balance is billed after CA verification.'
+                    ? isPureService
+                      ? 'Start onboarding with your dedicated CA/Legal Expert today for ₹999. Remaining balance is billed after preliminary review & scope sign-off.'
+                      : 'Start name reservation and document drafting today for ₹999. Remaining balance is billed after CA verification.'
+                    : isPureService
+                    ? 'Complete payment upfront. Immediate dedicated CA assignment and kickoff.'
                     : 'Complete payment upfront. Direct fast-track filing into statutory portal queue.'}
                 </p>
               </div>
@@ -1169,27 +1442,40 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   </span>
                 </div>
 
-              {/* PURE AGENT ZERO-MARKUP GUARANTEE */}
-              <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
-                <div className="flex items-center gap-1.5 font-black text-emerald-900">
-                  <span>🛡️</span> Zero Markup on Statutory Fees
+              {/* VALUE ASSURANCE & ZERO-MARKUP GUARANTEE */}
+              {isPureService ? (
+                <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
+                  <div className="flex items-center gap-1.5 font-black text-emerald-900">
+                    <span>🛡️</span> Dedicated Professional Retainer
+                  </div>
+                  <p className="text-[10px] text-emerald-800 leading-snug">
+                    Assigned Chartered Accountant / Legal Advocate directly handles your scope. Full client confidentiality guaranteed under strict NDA and professional ethics.
+                  </p>
                 </div>
-                <p className="text-[10px] text-emerald-800 leading-snug">
-                  Statutory portal fees (MCA, FoSCoS, Labor, GSTN) pass through strictly at actuals under Rule 33 of CGST. Official government treasury e-Challan receipts are uploaded directly to your Vault.
-                </p>
-              </div>
+              ) : (
+                <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
+                  <div className="flex items-center gap-1.5 font-black text-emerald-900">
+                    <span>🛡️</span> Zero Markup on Statutory Fees
+                  </div>
+                  <p className="text-[10px] text-emerald-800 leading-snug">
+                    Statutory portal fees (MCA, FoSCoS, Labor, GSTN) pass through strictly at actuals under Rule 33 of CGST. Official government treasury e-Challan receipts are uploaded directly to your Vault.
+                  </p>
+                </div>
+              )}
 
               {/* TRUST SIGNALS */}
               <div className="pt-1 space-y-1.5 text-[11px] text-slate-500 text-center font-medium">
                 <div className="flex items-center justify-center gap-3 text-slate-600 font-semibold text-[10px]">
                   <span>🔒 256-Bit SSL</span>
                   <span>•</span>
-                  <span>🛡️ Pre-Checked MCA & TM Search</span>
+                  <span>{isPureService ? '📑 GST Tax Invoice' : '🛡️ Pre-Checked Registry Search'}</span>
                   <span>•</span>
                   <span>🤝 Zero Hidden Fees</span>
                 </div>
                 <p className="text-[10px] text-slate-400">
-                  Government stamp duty is strictly pass-through at actuals. Never marked up.
+                  {isPureService
+                    ? 'Transparent professional retainer billing with zero hidden hourly surcharges.'
+                    : 'Government stamp duty is strictly pass-through at actuals. Never marked up.'}
                 </p>
               </div>
 
@@ -1198,44 +1484,6 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
         </div>
       </main>
-
-      {/* ======================================================== */}
-      {/* 3. MOBILE FIXED BOTTOM SHEET / BAR (lg:hidden)          */}
-      {/* ======================================================== */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#073B5C] text-white p-3.5 px-4 flex items-center justify-between z-40 border-t border-cyan-800 shadow-2xl">
-        <div className="space-y-0.5">
-          <span className="text-[10px] text-cyan-200 font-bold block uppercase tracking-wider">
-            {payAdvance ? 'Booking Token' : 'Total Package'}
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <strong className="text-lg font-black text-[#F4B942]">
-              {formatINR(activePayAmount)}
-            </strong>
-            {payAdvance && (
-              <span className="text-[10px] text-slate-300">
-                (Total: {formatINR(totalEstimatedCost)})
-              </span>
-            )}
-          </div>
-        </div>
-
-        {!isServiceActive ? (
-          <a
-            href="#consultation"
-            className="bg-[#073B5C] border border-[#F4B942] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl uppercase whitespace-nowrap"
-          >
-            Consultation Only
-          </a>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsCheckoutModalOpen(true)}
-            className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-5 py-3 rounded-xl uppercase tracking-wider shadow cursor-pointer active:scale-95 transition"
-          >
-            Start for {formatINR(activePayAmount)} →
-          </button>
-        )}
-      </div>
 
 
       {/* ======================================================== */}
@@ -1351,38 +1599,55 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   <span className="text-[9px] text-slate-400 block mt-0.5">UIDAI sends mandatory authentication OTPs for GST Aadhaar auth & DSC verification here.</span>
                 </div>
 
-                {/* Proposed Name / Brand */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Entity / Brand / Business Name (Adaptive for statutory vs pure services) */}
+                {isPureService ? (
                   <div>
                     <label className="block font-bold text-[#073B5C] mb-1">
-                      Proposed Name (1st Choice)
+                      Business / Entity / Client Name *
                     </label>
                     <input
                       type="text"
                       value={entityName}
                       onChange={(e) => setEntityName(e.target.value)}
-                      placeholder="e.g. Acme Innovations"
+                      placeholder="e.g. Acme Enterprises or Personal Name"
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                     />
                   </div>
-                  <div>
-                    <label className="block font-bold text-[#073B5C] mb-1">
-                      2nd Choice (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={entityNameChoice2}
-                      onChange={(e) => setEntityNameChoice2(e.target.value)}
-                      placeholder="e.g. Acme Technologies"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                    />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-bold text-[#073B5C] mb-1">
+                        {isStateSpecificService ? 'Proposed Company Name (1st Choice)' : 'Registered Name / Trademark'}
+                      </label>
+                      <input
+                        type="text"
+                        value={entityName}
+                        onChange={(e) => setEntityName(e.target.value)}
+                        placeholder="e.g. Acme Innovations"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#073B5C] mb-1">
+                        2nd Choice (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={entityNameChoice2}
+                        onChange={(e) => setEntityNameChoice2(e.target.value)}
+                        placeholder="e.g. Acme Technologies"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Selected State & Amount Summary */}
                 <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Jurisdiction: {selectedState}</span>
+                    <span className="text-[10px] text-slate-500 block">
+                      {isPureService ? 'Place of Supply (GST):' : 'Jurisdiction:'} {selectedState}
+                    </span>
                     <strong className="text-slate-800 text-xs">
                       {payAdvance ? '₹999 Booking Token' : 'Full Payment'}
                     </strong>
@@ -1395,20 +1660,34 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   </div>
                 </div>
 
-                {/* Statutory Pure Agent Fee Disclosure */}
-                <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
-                  <span className="font-extrabold flex items-center gap-1 text-amber-950">
-                    <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
-                  </span>
-                  <p>
-                    Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
-                  </p>
-                </div>
+                {/* Disclosure Note (Pure Service B2B vs Statutory Pure Agent) */}
+                {isPureService ? (
+                  <div className="p-2.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl space-y-1 text-[10px] text-emerald-900 leading-tight">
+                    <span className="font-extrabold flex items-center gap-1 text-emerald-950">
+                      <span>📑</span> B2B GST Invoicing & Input Tax Credit (ITC):
+                    </span>
+                    <p>
+                      A 100% compliant GST tax invoice with SAC {displaySac} will be generated for your business. Full Input Tax Credit can be claimed under Section 16 of the CGST Act.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
+                    <span className="font-extrabold flex items-center gap-1 text-amber-950">
+                      <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
+                    </span>
+                    <p>
+                      Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
+                    </p>
+                  </div>
+                )}
 
                 {/* Advance Token Scope Note */}
                 {payAdvance && (
                   <div className="p-2.5 bg-cyan-50/80 border border-cyan-200/80 rounded-xl text-[10px] text-[#073B5C] leading-tight">
-                    <strong>ℹ️ Advance Token Scope:</strong> This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.
+                    <strong>ℹ️ Advance Token Scope:</strong>{' '}
+                    {isPureService
+                      ? 'This ₹999 advance locks in your assigned Chartered Accountant, onboarding briefing, and preliminary ledger review. Scope execution starts immediately upon balance confirmation.'
+                      : 'This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.'}
                   </div>
                 )}
 
@@ -1534,6 +1813,39 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   </button>
                 </form>
 
+                {/* In-Modal TRAI SMS Delay Rescue Support */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-[#073B5C] flex items-center gap-1">
+                      <span>🎧</span> OTP Delayed?
+                    </span>
+                    <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                      DLT Telecom Delay Rescue
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-tight">
+                    If TRAI telecom scrubbing delays your SMS code, get instant verification assistance:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href="tel:+919920054785"
+                      className="bg-white border border-slate-300 hover:border-[#0E7490] text-[#073B5C] p-2 rounded-xl text-center font-bold text-[10px] flex items-center justify-center gap-1 shadow-xs transition"
+                    >
+                      <span>📞</span> Call CA Desk
+                    </a>
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Support, I am booking ${displayTitle} with phone ${phone || email} and need instant verification assistance.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-center font-bold text-[10px] flex items-center justify-center gap-1 shadow-xs transition"
+                    >
+                      <span>💬</span> WhatsApp Desk
+                    </a>
+                  </div>
+                </div>
+
                 <p className="text-[10px] text-slate-400 text-center">
                   Your payment window opens immediately upon code verification.
                 </p>
@@ -1593,15 +1905,15 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
         </div>
       )}
 
-      {/* STICKY MOBILE BOTTOM BOOKING BAR */}
+      {/* STICKY MOBILE BOTTOM BOOKING BAR (Single high-converting bar) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] print:hidden">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] uppercase font-bold text-slate-500">
-              {payAdvance ? 'Advance Token' : 'Total Price'}
+              {payAdvance ? 'Advance Token' : (isPureService ? 'Total Retainer' : 'Total Price')}
             </span>
             <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.2 rounded">
-              Zero Markup
+              {isPureService ? 'Fixed Retainer' : 'Zero Markup'}
             </span>
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -1624,6 +1936,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm"
+            title="Chat with CA on WhatsApp"
           >
             💬
           </a>
@@ -1633,7 +1946,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             onClick={() => setIsCheckoutModalOpen(true)}
             className="bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-4 py-2.5 rounded-xl uppercase tracking-wider shadow-md transition cursor-pointer"
           >
-            {payAdvance ? 'Book for ₹999 →' : 'Book Filing →'}
+            {payAdvance ? 'Book for ₹999 →' : (isPureService ? 'Book Retainer →' : 'Book Filing →')}
           </button>
         </div>
       </div>

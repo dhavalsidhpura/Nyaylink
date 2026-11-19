@@ -236,6 +236,54 @@ function LoginForm() {
               <button type="button" onClick={() => requestCode()} disabled={loading} className="w-full text-[#0E7490] font-bold text-xs cursor-pointer">
                 Resend code
               </button>
+
+              {/* TRAI SMS Delay Rescue Card */}
+              <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-[#073B5C] flex items-center gap-1.5">
+                      <span>🎧</span> Need Help Signing In?
+                    </span>
+                    <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                      DLT / SMS Delay Support
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    Telecom operator scrubbers (TRAI DLT) can occasionally delay SMS delivery. If your code is delayed, connect with our compliance desk directly:
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                    <a
+                      href="tel:+919920054785"
+                      className="bg-white border border-slate-300 hover:border-[#0E7490] text-[#073B5C] p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-xs transition"
+                    >
+                      <span>📞</span> Call Us
+                    </a>
+                    <a
+                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
+                        `Hi NyayaLink Support, I am trying to sign in with ${identifier} but have not received my OTP code.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-xs transition"
+                    >
+                      <span>💬</span> WhatsApp Code
+                    </a>
+                  </div>
+
+                  <div className="text-[10px] text-slate-400 space-y-1 pt-1.5 border-t border-slate-200/60">
+                    <div className="flex items-start gap-1">
+                      <span className="text-slate-500">📶</span>
+                      <span><strong>Check Network:</strong> Poor connectivity or airplane mode can delay OTP delivery.</span>
+                    </div>
+                    <div className="flex items-start gap-1">
+                      <span className="text-slate-500">✉️</span>
+                      <span><strong>Try Email:</strong> You can also sign in with your business email address.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </form>
           )}
 

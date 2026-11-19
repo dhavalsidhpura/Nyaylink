@@ -87,6 +87,64 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
 
   const [preValidationSuccess, setPreValidationSuccess] = useState<string | null>(null);
 
+  /**
+   * Client-side HTML5 canvas compression for mobile camera photos.
+   * Resizes large smartphone camera photos (> 750KB) to max 1920px at 82% quality,
+   * keeping PAN / Aadhaar / utility bills crystal clear for CA review while
+   * shrinking 8-15MB payloads to ~400-700KB to prevent mobile timeouts.
+   */
+  const compressImageIfLarge = (file: File, maxDimension = 1920, quality = 0.82): Promise<File> => {
+    if (typeof window === 'undefined' || !file.type.startsWith('image/')) {
+      return Promise.resolve(file);
+    }
+    if (file.size <= 750 * 1024) {
+      return Promise.resolve(file);
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(file);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob || blob.size >= file.size) {
+              return resolve(file);
+            }
+            const compressedName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+            const compressed = new File([blob], compressedName, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressed);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+      img.src = url;
+    });
+  };
+
   const validateFile = (key: string, file: File): Promise<string | null> => {
     return new Promise((resolve) => {
       // 1. File size checks
@@ -144,18 +202,32 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
     });
   };
 
-  const upload = async (key: string, file: File) => {
+  const upload = async (key: string, rawFile: File) => {
     setError('');
     setPreValidationSuccess(null);
+    setBusyKey(key);
+
+    let file = rawFile;
+    if (rawFile.type.startsWith('image/') && rawFile.size > 750 * 1024) {
+      try {
+        file = await compressImageIfLarge(rawFile);
+        if (file.size < rawFile.size) {
+          setPreValidationSuccess(
+            'Photo optimized from ' + (rawFile.size / (1024 * 1024)).toFixed(1) + ' MB to ' + (file.size / 1024).toFixed(0) + ' KB for instant vault upload.'
+          );
+        }
+      } catch (err) {
+        console.warn('Image compression fallback to raw file:', err);
+      }
+    }
 
     const validationError = await validateFile(key, file);
     if (validationError) {
       setError(validationError);
+      setBusyKey(null);
       if (inputs.current[key]) inputs.current[key]!.value = '';
       return;
     }
-
-    setBusyKey(key);
     try {
       let uploadSucceeded = false;
 

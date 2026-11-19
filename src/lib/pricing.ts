@@ -306,7 +306,7 @@ export function checkStateSchemeEligibility(
 
 
 export interface PricingModelBadge {
-  type: 'PAN_INDIA' | 'STATE_VARIABLE' | 'SLAB_TIERED';
+  type: 'PAN_INDIA' | 'STATE_VARIABLE' | 'SLAB_TIERED' | 'PURE_SERVICE';
   label: string;
   shortBadge: string;
   tooltip: string;
@@ -352,6 +352,36 @@ export function getPricingModelBadge(slug: string, category: string): PricingMod
       tooltip: 'MCA ROC fee is ₹0 (capital ≤ ₹15L). State stamp duty on MoA/AoA passes through at actuals per state Stamp Act.',
       badgeClass: 'bg-cyan-50 text-[#073B5C] border-cyan-200',
       pillClass: 'bg-cyan-100/80 text-[#073B5C]',
+    };
+  }
+
+  // Pure Professional Retainer & Tech Services (Zero Govt Portal Fees)
+  if (
+    category === 'business-tech' ||
+    category === 'legal-dispute' ||
+    lowerSlug.includes('bookkeeping') ||
+    lowerSlug.includes('accounting') ||
+    lowerSlug.includes('virtual-cfo') ||
+    lowerSlug.includes('cfo') ||
+    lowerSlug.includes('payroll') ||
+    lowerSlug.includes('tds-return') ||
+    lowerSlug.includes('gst-return') ||
+    lowerSlug.includes('nil-return') ||
+    lowerSlug.includes('notice') ||
+    lowerSlug.includes('agreement') ||
+    lowerSlug.includes('contract') ||
+    lowerSlug.includes('advisory') ||
+    lowerSlug.includes('scale') ||
+    lowerSlug.includes('app-dev') ||
+    lowerSlug.includes('ai-solutions')
+  ) {
+    return {
+      type: 'PURE_SERVICE',
+      label: 'Pan-India Fixed Retainer',
+      shortBadge: 'Fixed Retainer',
+      tooltip: 'Pure professional service with zero government portal fees. 100% tax deductible with GST Input Tax Credit (ITC).',
+      badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      pillClass: 'bg-emerald-100/80 text-emerald-800',
     };
   }
 
