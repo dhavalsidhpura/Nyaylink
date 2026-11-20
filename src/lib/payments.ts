@@ -193,40 +193,47 @@ export async function capturePayment(
       payment.consultation?.client.email?.includes('test');
 
     if (!isTestAccount) {
-      if (payment.order) {
-        await sendNotificationEmail({
-          to: payment.order.client.email,
-          subject: `Payment Confirmed [${payment.order.orderNumber}]`,
-          html: buildPaymentReceiptEmail(
-            payment.order.client.name,
-            payment.order.orderNumber,
-            num(payment.amount),
-            payment.order.service.title,
-            `/orders/${payment.order.orderNumber}`
-          ),
-        });
-
-        if (payment.order.client.phone) {
-          await notifyOrderCreatedWhatsApp({
-            phone: payment.order.client.phone,
-            clientName: payment.order.client.name,
-            orderNumber: payment.order.orderNumber,
-            serviceTitle: payment.order.service.title,
-            amountPaid: num(payment.amount),
-          });
+      try {
+        if (payment.order) {
+          await Promise.allSettled([
+            sendNotificationEmail({
+              to: payment.order.client.email,
+              subject: `Payment Confirmed [${payment.order.orderNumber}]`,
+              html: buildPaymentReceiptEmail(
+                payment.order.client.name,
+                payment.order.orderNumber,
+                num(payment.amount),
+                payment.order.service.title,
+                `/orders/${payment.order.orderNumber}`
+              ),
+            }),
+            payment.order.client.phone
+              ? notifyOrderCreatedWhatsApp({
+                  phone: payment.order.client.phone,
+                  clientName: payment.order.client.name,
+                  orderNumber: payment.order.orderNumber,
+                  serviceTitle: payment.order.service.title,
+                  amountPaid: num(payment.amount),
+                })
+              : Promise.resolve(),
+          ]);
+        } else if (payment.consultation && !result.slotLost) {
+          const c = payment.consultation;
+          await Promise.allSettled([
+            sendNotificationEmail({
+              to: c.client.email,
+              subject: `Consultation confirmed [${c.number}]`,
+              html: buildConsultationConfirmedEmail(c.client.name, c.lawyer.user.name, c.startsAt, c.number),
+            }),
+            sendNotificationEmail({
+              to: c.lawyer.user.email,
+              subject: `New consultation booked [${c.number}]`,
+              html: buildConsultationConfirmedEmail(c.lawyer.user.name, `${c.client.name} (client)`, c.startsAt, c.number),
+            }),
+          ]);
         }
-      } else if (payment.consultation && !result.slotLost) {
-        const c = payment.consultation;
-        await sendNotificationEmail({
-          to: c.client.email,
-          subject: `Consultation confirmed [${c.number}]`,
-          html: buildConsultationConfirmedEmail(c.client.name, c.lawyer.user.name, c.startsAt, c.number),
-        });
-        await sendNotificationEmail({
-          to: c.lawyer.user.email,
-          subject: `New consultation booked [${c.number}]`,
-          html: buildConsultationConfirmedEmail(c.lawyer.user.name, `${c.client.name} (client)`, c.startsAt, c.number),
-        });
+      } catch (notifyErr) {
+        console.warn('[notifications] Non-blocking outbound notification failure:', notifyErr);
       }
     } else {
       console.log(`[staging] Suppressed outbound notifications for test account: ${payment.order?.client.email || payment.consultation?.client.email}`);

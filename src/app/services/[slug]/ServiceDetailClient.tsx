@@ -117,6 +117,12 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   // Service Type & Pricing Model Flags
   const isFssaiService = slug.includes('fssai');
   const isShopActService = slug.includes('shop-and-establishment') || slug.includes('gumasta');
+  const isDisputeService =
+    serviceCategory === 'legal-disputes' ||
+    slug.includes('notice') ||
+    slug.includes('consumer') ||
+    slug.includes('cheque') ||
+    slug.includes('dispute');
 
   // Interactive Tier States
   const [fssaiTier, setFssaiTier] = useState<'basic' | 'state' | 'central'>('basic');
@@ -849,6 +855,55 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 }}
                 showComparisonDetails={true}
               />
+            )}
+
+            {/* DIRECT ADVOCATE REPRESENTATION RADAR (FOR DISPUTES & NOTICES) */}
+            {isDisputeService && (
+              <div className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#041E30] text-white rounded-3xl p-5 sm:p-7 shadow-md space-y-4 border border-cyan-800/80">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-white/10 pb-3">
+                  <div>
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                      Bar Council Verified Advocates
+                    </span>
+                    <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                      Direct High Court Advocate Representation
+                    </h3>
+                    <p className="text-xs text-cyan-200">
+                      Formal legal notices and court petitions drafted directly on practicing advocate letterhead.
+                    </p>
+                  </div>
+                  <Link
+                    href="/vakil"
+                    className="inline-flex items-center gap-1.5 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] text-xs font-black px-4 py-2.5 rounded-xl transition shadow-xs self-start sm:self-auto"
+                  >
+                    <span>Browse Empanelled Advocates →</span>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-base">📜</span>
+                    <strong className="block text-white font-bold text-[11px]">Advocate Letterhead</strong>
+                    <p className="text-[10px] text-cyan-200 leading-snug">
+                      Issued with official Bar Council enrollment numbers, carrying immediate statutory weight.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-base">📮</span>
+                    <strong className="block text-white font-bold text-[11px]">Speed Post with POD</strong>
+                    <p className="text-[10px] text-cyan-200 leading-snug">
+                      Dispatched via India Post with Proof of Delivery (POD) archived in your vault for court admissibility.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-base">⚖️</span>
+                    <strong className="block text-white font-bold text-[11px]">Litigation Ready</strong>
+                    <p className="text-[10px] text-cyan-200 leading-snug">
+                      Seamless transition to e-Daakhil consumer forum filing or Section 138 trial if the opponent defaults.
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* OFFICIAL DELIVERABLES UNBOXING KIT (INTERACTIVE VISUAL PREVIEW) */}

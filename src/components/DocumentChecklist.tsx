@@ -165,10 +165,22 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         return;
       }
 
-      // 3. Keyword mismatch heuristic
+      // 3. Keyword mismatch & Utility Bill Freshness (< 60 Days) Heuristic
       const req = requirements.find((r) => r.key === key);
       const reqLabel = (req?.label || '').toLowerCase();
       const fileName = file.name.toLowerCase();
+
+      // Statutory Freshness Check (< 60 days) for premises proof
+      if (reqLabel.includes('electricity') || reqLabel.includes('utility') || reqLabel.includes('bill') || reqLabel.includes('address')) {
+        const isFresh = window.confirm(
+          `⚡ Statutory Freshness Verification (MCA V3 & GST Rule):\n\nRegistrar of Companies and GST authorities automatically reject utility bills older than 60 days (under 2 months old).\n\nIs your "${file.name}" dated within the last 60 days?`
+        );
+        if (!isFresh) {
+          resolve('Upload cancelled. Please obtain and upload a utility bill issued within the last 60 days.');
+          return;
+        }
+      }
+
       if (reqLabel.includes('pan') && (fileName.includes('bill') || fileName.includes('rent') || fileName.includes('noc'))) {
         const proceed = window.confirm(
           `Notice: You are uploading "${file.name}" for "${req?.label}". This filename suggests an address/utility proof rather than a PAN card. Do you wish to continue?`
@@ -360,6 +372,31 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
             <strong className="text-xs text-[#073B5C]">{title}</strong>
             {required && <span className="text-[9px] font-bold text-rose-600 uppercase">Required</span>}
             <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ${ui.style}`}>{ui.label}</span>
+            {(() => {
+              const lower = title.toLowerCase();
+              if (lower.includes('bill') || lower.includes('electricity') || lower.includes('utility')) {
+                return (
+                  <span className="text-[9px] font-black bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.2 rounded-md">
+                    ⚡ &lt; 60 Days Old
+                  </span>
+                );
+              }
+              if (lower.includes('pan')) {
+                return (
+                  <span className="text-[9px] font-black bg-cyan-50 text-cyan-900 border border-cyan-200 px-2 py-0.2 rounded-md">
+                    🪪 Color Scan
+                  </span>
+                );
+              }
+              if (lower.includes('noc')) {
+                return (
+                  <span className="text-[9px] font-black bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.2 rounded-md">
+                    ✍️ Owner Signed
+                  </span>
+                );
+              }
+              return null;
+            })()}
           </div>
           {doc && (
             <p className="text-[11px] text-slate-500 truncate">
