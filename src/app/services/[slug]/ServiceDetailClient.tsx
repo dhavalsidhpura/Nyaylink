@@ -17,6 +17,7 @@ import {
 import { openRazorpayCheckout } from '@/lib/checkout-client';
 import StampDutyCalculator from '@/components/StampDutyCalculator';
 import DeliverablesUnboxingCard from '@/components/DeliverablesUnboxingCard';
+import CompanyTierSelector, { TierKey } from '@/components/CompanyTierSelector';
 import { getStateDocumentRequirements } from '@/data/stateDocumentRequirements';
 
 export interface ServicePricing {
@@ -153,6 +154,31 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
     return MASTER_PACKAGES.find((p) => p.slug === packageParam || p.id === packageParam) || null;
   }, [packageParam]);
 
+  // Active Formation Tier State (Launch vs Growth vs Complete vs Retainer)
+  const [activeFormationTier, setActiveFormationTier] = useState<TierKey>(() => {
+    if (packageParam === 'tech-founder-venture-suite') return 'complete';
+    if (packageParam === 'annual-corporate-compliance-retainer') return 'retainer';
+    if (packageParam === 'startup-launchpad-bundle') return 'growth';
+    return 'growth'; // Default to Growth (Startup Launchpad) as recommended tier
+  });
+
+  // Effective package resolves either from active formation tier (on company registration) or URL param
+  const effectivePackage: PackageItem | null = useMemo(() => {
+    if (slug === 'private-limited-company' || serviceCategory === 'company-reg') {
+      if (activeFormationTier === 'growth') {
+        return MASTER_PACKAGES.find((p) => p.slug === 'startup-launchpad-bundle') || null;
+      }
+      if (activeFormationTier === 'complete') {
+        return MASTER_PACKAGES.find((p) => p.slug === 'tech-founder-venture-suite') || null;
+      }
+      if (activeFormationTier === 'retainer') {
+        return MASTER_PACKAGES.find((p) => p.slug === 'annual-corporate-compliance-retainer') || null;
+      }
+      return null; // 'launch' is standalone service
+    }
+    return matchedPackage;
+  }, [slug, serviceCategory, activeFormationTier, matchedPackage]);
+
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -250,6 +276,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const baseProfFee = effectivePricing.prof;
   const dynamicGovtFee = effectivePricing.govt;
 
+  // Active pricing derived from effective package if selected
+  const activeProfFee = effectivePackage ? effectivePackage.packagePrice : baseProfFee;
+  const activeGovtFee = effectivePackage && effectivePackage.slug === 'annual-corporate-compliance-retainer' ? 0 : dynamicGovtFee;
+
   // Statutory Filing vs Pure Professional Service Mode
   const isStatutoryFiling = useMemo(() => {
     const cat = (serviceCategory || '').toLowerCase();
@@ -267,9 +297,9 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
       s.includes('gumasta') ||
       s.includes('iec') ||
       s.includes('gst-reg') ||
-      dynamicGovtFee > 0
+      activeGovtFee > 0
     );
-  }, [serviceCategory, slug, dynamicGovtFee]);
+  }, [serviceCategory, slug, activeGovtFee]);
 
   const isPureService = !isStatutoryFiling;
 
@@ -281,13 +311,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const baseQuote = useMemo(
     () =>
       computeQuote(
-        { professionalFee: baseProfFee, govtFee: dynamicGovtFee, gstRate },
+        { professionalFee: activeProfFee, govtFee: activeGovtFee, gstRate },
         selectedState
       ),
-    [baseProfFee, dynamicGovtFee, gstRate, selectedState]
+    [activeProfFee, activeGovtFee, gstRate, selectedState]
   );
 
-  const totalEstimatedCost = matchedPackage ? matchedPackage.packagePrice : baseQuote.total;
+  const totalEstimatedCost = baseQuote.total;
   const advanceAmount = Math.min(999, totalEstimatedCost);
   const activePayAmount = payAdvance ? advanceAmount : totalEstimatedCost;
 
@@ -358,20 +388,20 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             mobile: phone,
             aadhaarPhone: aadhaarPhone || phone,
             email: email || session?.user?.email || '',
-            entityName: entityName || (matchedPackage ? matchedPackage.title : details.title),
+            entityName: entityName || (effectivePackage ? effectivePackage.title : details.title),
             entityNameChoice2: entityNameChoice2 || '',
             selectedState,
             bookingPlan: payAdvance ? 'ADVANCE_999' : 'FULL_PAYMENT',
             ...(isFssaiService ? { fssaiTier, fssaiTierLabel: effectivePricing.tierLabel, fssaiGovtFee: String(dynamicGovtFee) } : {}),
             ...(isShopActService ? { staffSlab, staffSlabLabel: effectivePricing.tierLabel, shopActGovtFee: String(dynamicGovtFee) } : {}),
-            ...(matchedPackage
+            ...(effectivePackage
               ? {
                   isPackageBooking: 'true',
-                  packageId: matchedPackage.id,
-                  packageSlug: matchedPackage.slug,
-                  packageTitle: matchedPackage.title,
-                  bundleIncludedServices: matchedPackage.includedServices.map((s) => s.name).join(' • '),
-                  bundleDeliverables: matchedPackage.deliverables.join(' | '),
+                  packageId: effectivePackage.id,
+                  packageSlug: effectivePackage.slug,
+                  packageTitle: effectivePackage.title,
+                  bundleIncludedServices: effectivePackage.includedServices.map((s) => s.name).join(' • '),
+                  bundleDeliverables: effectivePackage.deliverables.join(' | '),
                 }
               : {}),
           },
@@ -806,6 +836,21 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             </div>
 
             
+            {/* COMPANY INCORPORATION TIERS (LAUNCH VS GROWTH VS COMPLETE VS RETAINER) */}
+            {(slug === 'private-limited-company' || serviceCategory === 'company-reg') && (
+              <CompanyTierSelector
+                selectedState={selectedState}
+                onSelectState={setSelectedState}
+                activeTier={activeFormationTier}
+                onSelectTier={(tier) => setActiveFormationTier(tier)}
+                onCheckout={(tier) => {
+                  setActiveFormationTier(tier);
+                  setIsCheckoutModalOpen(true);
+                }}
+                showComparisonDetails={true}
+              />
+            )}
+
             {/* OFFICIAL DELIVERABLES UNBOXING KIT (INTERACTIVE VISUAL PREVIEW) */}
             <DeliverablesUnboxingCard serviceSlug={slug} serviceTitle={displayTitle} />
 
@@ -1315,9 +1360,9 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600 font-medium">
-                    {isPureService ? 'Professional Retainer Fee' : 'NyayaLink Professional Fee'}
+                    {effectivePackage ? effectivePackage.title : (isPureService ? 'Professional Retainer Fee' : 'NyayaLink Professional Fee')}
                   </span>
-                  <strong className="text-slate-900 font-extrabold">{formatINR(baseProfFee)}</strong>
+                  <strong className="text-slate-900 font-extrabold">{formatINR(activeProfFee)}</strong>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -1333,7 +1378,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                       {isStateSpecificService && <span className="text-[10px] text-emerald-700 font-bold">(Live)</span>}
                     </span>
                     <strong className="text-slate-900 font-extrabold">
-                      {dynamicGovtFee > 0 ? formatINR(dynamicGovtFee) : '₹0 (At Actuals)'}
+                      {activeGovtFee > 0 ? formatINR(activeGovtFee) : '₹0 (At Actuals)'}
                     </strong>
                   </div>
                 ) : null}
@@ -1514,14 +1559,14 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             {otpStep === 'form' ? (
               <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-xs">
                 
-                {matchedPackage && (
+                {effectivePackage && (
                   <div className="p-3 bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-2xl space-y-1">
                     <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
-                      Bundled Package • Save {matchedPackage.savingsPercent}%
+                      Bundled Package • Save {effectivePackage.savingsPercent}%
                     </span>
-                    <h4 className="font-bold text-xs">{matchedPackage.title}</h4>
+                    <h4 className="font-bold text-xs">{effectivePackage.title}</h4>
                     <p className="text-[10px] text-cyan-100">
-                      Includes: {matchedPackage.includedServices.map((s) => s.name).join(' + ')}
+                      Includes: {effectivePackage.includedServices.map((s) => s.name).join(' + ')}
                     </p>
                   </div>
                 )}
@@ -1655,7 +1700,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   <div className="text-right">
                     <span className="text-[10px] text-slate-400 block">Total Scope:</span>
                     <strong className="text-emerald-700 text-xs font-black">
-                      {matchedPackage ? formatINR(matchedPackage.packagePrice) : formatINR(totalEstimatedCost)}
+                      {effectivePackage ? formatINR(effectivePackage.packagePrice) : formatINR(totalEstimatedCost)}
                     </strong>
                   </div>
                 </div>

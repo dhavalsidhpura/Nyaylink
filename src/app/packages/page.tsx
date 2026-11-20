@@ -2,13 +2,18 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MASTER_PACKAGES, PackageItem } from '@/data/packages';
 import Header from '@/components/Header';
+import CompanyTierSelector, { TierKey } from '@/components/CompanyTierSelector';
 
 export default function PackagesPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedDeliverables, setExpandedDeliverables] = useState<Record<string, boolean>>({});
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [selectedState, setSelectedState] = useState<string>('MH');
+  const [activeTier, setActiveTier] = useState<TierKey>('growth');
 
   // Compute category counts dynamically from MASTER_PACKAGES
   const counts = useMemo(() => {
@@ -125,6 +130,31 @@ export default function PackagesPage() {
           ))}
         </div>
       </div>
+
+      {/* ======================================================== */}
+      {/* 2.5 INTERACTIVE FORMATION TIER HUB (LAUNCH/GROWTH/COMPLETE) */}
+      {/* ======================================================== */}
+      {(activeCategory === 'all' || activeCategory === 'startup') && (
+        <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 w-full">
+          <CompanyTierSelector
+            selectedState={selectedState}
+            onSelectState={setSelectedState}
+            activeTier={activeTier}
+            onSelectTier={setActiveTier}
+            onCheckout={(tier) => {
+              if (tier === 'launch') {
+                router.push('/services/private-limited-company');
+              } else if (tier === 'growth') {
+                router.push('/services/private-limited-company?package=startup-launchpad-bundle');
+              } else if (tier === 'complete') {
+                router.push('/services/private-limited-company?package=tech-founder-venture-suite');
+              } else if (tier === 'retainer') {
+                router.push('/services/private-limited-company?package=annual-corporate-compliance-retainer');
+              }
+            }}
+          />
+        </section>
+      )}
 
       {/* ======================================================== */}
       {/* 3. PACKAGES RESPONSIVE GRID (1 col Mobile, 2 cols Tablet, 3 cols Large Desktop) */}
