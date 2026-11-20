@@ -30,7 +30,11 @@ async function fetchCAData(userId: string) {
     }),
 
     prisma.order.findMany({
-      where: { assignedCAId: null, paymentStatus: 'PAID', status: { notIn: ['APPROVED', 'REJECTED'] } },
+      where: {
+        assignedCAId: null,
+        paymentStatus: { in: ['PAID', 'PARTIALLY_PAID'] },
+        status: { notIn: ['APPROVED', 'REJECTED'] },
+      },
       include: {
         service: { select: { title: true, sla: true, category: true } },
         client: { select: { name: true, email: true, state: true } },

@@ -14,12 +14,13 @@ export const POST = apiHandler(async () => {
   // 4 Hours SLA Threshold
   const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
 
-  // Find all active orders without an assigned specialist older than 4 hours
+  // Find all active paid orders without an assigned specialist older than 4 hours
   const orphanOrders = await prisma.order.findMany({
     where: {
       assignedCAId: null,
+      paymentStatus: { in: ['PAID', 'PARTIALLY_PAID'] },
       createdAt: { lt: fourHoursAgo },
-      status: { in: ['DOCS_PENDING', 'IN_PROGRESS', 'QUERY_RAISED', 'PENDING_PAYMENT'] },
+      status: { in: ['DOCS_PENDING', 'IN_PROGRESS', 'QUERY_RAISED'] },
     },
     include: {
       service: { select: { title: true } },

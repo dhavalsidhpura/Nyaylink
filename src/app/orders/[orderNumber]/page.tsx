@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSessionUser, orderAccess } from '@/lib/authz';
-import { plain } from '@/lib/serialize';
+import { plain, num } from '@/lib/serialize';
 import { formatINR, splitGst, stateName } from '@/lib/pricing';
 import DocumentChecklist from '@/components/DocumentChecklist';
 import OrderMessages from '@/components/OrderMessages';
@@ -302,6 +302,36 @@ export default async function OrderTrackingPage({ params }: Props) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {duePayments.length > 0 && (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl p-5 shadow-sm space-y-3">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-amber-200/70 pb-3">
+                  <div className="space-y-0.5">
+                    <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Action Required • Payment Due
+                    </span>
+                    <h3 className="text-sm sm:text-base font-black text-[#073B5C]">
+                      {order.paymentStatus === 'PARTIALLY_PAID' ? 'Milestone Balance Payment Due' : 'Pending Order Payment'}
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono font-black text-amber-900">
+                    {formatINR(duePayments.reduce((s, p) => s + num(p.amount), 0))} Due
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {duePayments.map((p) => (
+                    <div key={p.id} className="p-3 bg-white rounded-2xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <strong className="block text-xs text-[#073B5C] font-extrabold">{p.description}</strong>
+                        <span className="text-[10px] text-slate-500 font-mono">Payment Ref: #{p.id.slice(-8).toUpperCase()}</span>
+                      </div>
+                      <PayNowButton paymentId={p.id} amount={num(p.amount)} label={`Pay ${formatINR(p.amount)} Now →`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {order.paymentStatus === 'UNPAID' && (
               <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-900 flex items-start gap-3">
                 <span className="text-xl shrink-0">📄</span>

@@ -74,6 +74,33 @@ export const POST = apiHandler(async (request: Request) => {
         actorId: user.id,
       },
     });
+
+    // Auto-advance timeline to IN_PROGRESS once all mandatory requirements have uploaded files
+    if (order.status === 'DOCS_PENDING' && order.service.requirements.length > 0) {
+      const activeDocs = await tx.vaultDocument.findMany({
+        where: { orderId: order.id, status: { not: 'SUPERSEDED' } },
+        select: { requirementKey: true },
+      });
+      const keysWithDocs = new Set(activeDocs.map((d) => d.requirementKey).filter(Boolean));
+      if (requirementKey) keysWithDocs.add(requirementKey);
+
+      const allFulfilled = order.service.requirements.every((req) => !req.required || keysWithDocs.has(req.key));
+      if (allFulfilled) {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: 'IN_PROGRESS' },
+        });
+        await tx.orderStatusLog.create({
+          data: {
+            orderId: order.id,
+            status: 'IN_PROGRESS',
+            remarks: 'All mandatory compliance documents received. Dossier submitted to CA review desk.',
+            actorId: user.id,
+          },
+        });
+      }
+    }
+
     return doc;
   });
 

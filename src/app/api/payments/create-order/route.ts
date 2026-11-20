@@ -9,6 +9,7 @@ import { nextOrderNumber } from '@/lib/counters';
 import { preparePaymentCheckout, type CheckoutPayload } from '@/lib/payments';
 import { num } from '@/lib/serialize';
 import { CONSENT_VERSIONS } from '@/lib/env';
+import { MASTER_PACKAGES } from '@/data/packages';
 
 const schema = z.object({
   serviceSlug: z.string().min(1).max(120),
@@ -53,8 +54,16 @@ export const POST = apiHandler(async (request: Request) => {
   const service = await getActiveService(body.serviceSlug);
   if (!service) throw new HttpError(404, 'This service is not available.');
 
+  // If a bundled package is booked (e.g. startup-launchpad-bundle), resolve its package pricing
+  const matchedPackage = body.intake?.isPackageBooking === 'true' && body.intake?.packageSlug
+    ? MASTER_PACKAGES.find((p) => p.slug === body.intake.packageSlug || p.id === body.intake.packageId)
+    : null;
+
+  const baseProfFee = matchedPackage ? matchedPackage.packagePrice : num(service.professionalFee);
+  const baseGovtFee = matchedPackage && matchedPackage.slug === 'annual-corporate-compliance-retainer' ? 0 : num(service.govtFee);
+
   const quote = computeQuote(
-    { professionalFee: num(service.professionalFee), govtFee: num(service.govtFee), gstRate: num(service.gstRate) },
+    { professionalFee: baseProfFee, govtFee: baseGovtFee, gstRate: num(service.gstRate) },
     body.clientState
   );
 
