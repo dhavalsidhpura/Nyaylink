@@ -260,6 +260,43 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       ) : null}
 
 
+            {/* MOBILE TAB BAR (STICKY, HORIZONTAL SCROLL) */}
+      <div className="lg:hidden sticky top-0 z-30 bg-[#073B5C] text-white px-4 py-2.5 shadow-md">
+        <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] -mx-1 px-1">
+          {[
+            ['assigned', '📋', 'Dockets', myOrders.length],
+            ['pool', '⚡', 'Pool', metrics.unclaimedCount],
+            ['docs', '📑', 'Review', metrics.pendingDocsCount],
+            ['srn', '🏛️', 'SRN', null],
+            ['earnings', '💰', 'Payouts', null],
+            ['calendar', '📅', 'Deadlines', null],
+          ].map(([key, icon, label, count]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key as any)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === key
+                  ? 'bg-[#F4B942] text-[#073B5C] shadow-xs'
+                  : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              <span>{icon}</span>
+              <span>{label}</span>
+              {typeof count === 'number' && count > 0 && (
+                <span
+                  className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                    activeTab === key ? 'bg-[#073B5C] text-white' : 'bg-[#F4B942] text-[#073B5C]'
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* TOP KPI CARDS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 w-full">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -300,7 +337,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       {/* MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* SIDE NAVIGATION */}
-        <aside className="lg:col-span-3 space-y-4">
+        <aside className="hidden lg:block lg:col-span-3 space-y-4">
           <nav className="bg-white rounded-2xl border border-slate-200 p-2 shadow-sm space-y-1">
             {[
               ['assigned', '📋', 'My Filing Dockets', `${myOrders.length} Dockets`],
@@ -579,7 +616,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 shrink-0">
                         <a
                           href={`/api/documents/${doc.id}`}
                           target="_blank"

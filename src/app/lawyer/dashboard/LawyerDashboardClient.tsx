@@ -72,7 +72,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCourtEmergency(!courtEmergency)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
+              className={`w-full sm:w-auto px-4 py-2.5 sm:py-1.5 rounded-xl text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 min-h-[42px] sm:min-h-0 ${
                 courtEmergency
                   ? 'bg-rose-600 text-white shadow-md animate-pulse'
                   : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300'
@@ -123,7 +123,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
           <Stat label="Fee / session" value={formatINR(profile.consultationFee)} />
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto [scrollbar-width:none]" role="tablist">
+        <nav className="flex gap-2 overflow-x-auto [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0 pb-1" role="tablist">
           {([
             ['schedule', '🗓️ Schedule'],
             ['earnings', '💰 Earnings'],
@@ -136,7 +136,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
               role="tab"
               aria-selected={tab === key}
               onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold shrink-0 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-extrabold shrink-0 cursor-pointer min-h-[42px] flex items-center gap-1.5 transition ${
                 tab === key ? 'bg-[#073B5C] text-[#F4B942]' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
@@ -209,7 +209,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
                   Pre-Formatted Statutory Legal Notice Generator
                 </h3>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
                 {[
                   ['cheque', 'Section 138 Cheque Bounce'],
                   ['trademark', 'Trademark Cease & Desist'],
@@ -218,7 +218,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
                   <button
                     key={k}
                     onClick={() => setSelectedNoticeType(k as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    className={`flex-1 sm:flex-initial text-center px-3.5 py-2.5 sm:py-1.5 rounded-xl text-xs font-bold transition cursor-pointer min-h-[40px] sm:min-h-0 flex items-center justify-center ${
                       selectedNoticeType === k ? 'bg-[#073B5C] text-[#F4B942]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     }`}
                   >
