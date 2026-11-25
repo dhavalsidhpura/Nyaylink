@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Role } from '@prisma/client';
 import type { AdminData } from './page';
+import AdminNav from '@/components/admin/AdminNav';
 
 function formatINR(amount: number): string {
   if (typeof amount !== 'number' || isNaN(amount)) return '0';
@@ -153,58 +154,9 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex flex-col">
-      <header className="bg-[#073B5C] text-white border-b border-cyan-900/60 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow-inner border border-cyan-400/30 flex items-center gap-1">
-              Nyaya<span className="text-[#F4B942]">Link</span>
-            </Link>
-            <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-              Owner HQ · Super Controller Cockpit
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/admin/crm" className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-xs flex items-center gap-1">
-              <span>💼</span> Sales CRM
-            </Link>
-            <Link href="/admin/finance" className="bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-xs flex items-center gap-1">
-              <span>🏛️</span> Finance &amp; Tax
-            </Link>
-            <Link href="/" className="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[#F4B942] font-bold text-xs px-3 py-1.5 rounded-xl transition-all shadow-sm">
-              Exit to Site →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <AdminNav active="hq" subtitle="Owner HQ" role={role} />
 
-      {/* Super Controller Enterprise Department Bar */}
-      <div className="bg-slate-900 border-b border-slate-800 text-white px-4 sm:px-6 py-2">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
-            <span className="text-slate-400 font-extrabold text-[10px] uppercase tracking-wider mr-1">Workspaces:</span>
-            <Link href="/admin/crm" className="bg-white/10 hover:bg-white/20 text-[#F4B942] font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-              💼 1. Sales &amp; CRM Desk
-            </Link>
-            <Link href="/admin/orders" className="bg-white/10 hover:bg-white/20 text-cyan-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-              📋 2. CA Legal Operations Desk
-            </Link>
-            <Link href="/admin/finance" className="bg-white/10 hover:bg-white/20 text-emerald-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-              🏛️ 3. Finance &amp; Rule 33 Pure Agent
-            </Link>
-            <Link href="/admin/lawyers" className="bg-white/10 hover:bg-white/20 text-amber-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-              ⚖️ 4. Advocate Console
-            </Link>
-            <Link href="/admin/pricing" className="bg-white/10 hover:bg-white/20 text-purple-300 font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
-              🏷️ 5. Catalog &amp; Rates
-            </Link>
-          </div>
-          <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded font-mono font-bold hidden md:inline">
-            ACCESS: {role}
-          </span>
-        </div>
-      </div>
-
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[53px] z-40">
+      <div className="bg-white border-b border-slate-200 shadow-sm lg:sticky lg:top-14 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <nav className="flex space-x-1 sm:space-x-2 py-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {TABS.map(([key, icon, label, badge]) => (
@@ -217,7 +169,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               >
                 <span>{icon}</span> {label}
                 {badge !== null && (
-                  <span className="bg-amber-100 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-black">{badge}</span>
+                  <span className="bg-amber-100 text-amber-900 text-[11px] px-2 py-0.5 rounded-full font-black">{badge}</span>
                 )}
               </button>
             ))}
@@ -232,7 +184,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
             <div className="bg-gradient-to-br from-[#073B5C] to-[#0B527E] text-white rounded-3xl p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-cyan-800 pb-3">
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+                  <span className="text-[11px] font-black uppercase text-[#F4B942] tracking-wider block">
                     Super Controller Governance &bull; Rule 33 Pure Agent
                   </span>
                   <h2 className="text-lg font-black">All-India Corporate Treasury &amp; Statutory Escrow</h2>
@@ -251,41 +203,45 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                 <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
                   <span className="text-slate-300 font-semibold block text-[11px]">Net Bank Cash Balance</span>
                   <strong className="text-2xl font-black text-white block">{CAN.finance(role) ? `₹${formatINR(balance)}` : '—'}</strong>
-                  <span className="text-[10px] text-slate-300">Live operational cash ledger</span>
+                  <span className="text-[11px] text-slate-300">Live operational cash ledger</span>
                 </div>
                 <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
                   <span className="text-emerald-300 font-semibold block text-[11px]">Taxable Platform Revenue</span>
                   <strong className="text-2xl font-black text-emerald-400 block">{CAN.finance(role) ? `₹${formatINR(totalTaxable)}` : '—'}</strong>
-                  <span className="text-[10px] text-emerald-200">Facilitation &amp; CA professional fees</span>
+                  <span className="text-[11px] text-emerald-200">Facilitation &amp; CA professional fees</span>
                 </div>
                 <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
                   <span className="text-[#F4B942] font-semibold block text-[11px]">Pure Agent Statutory Escrow</span>
                   <strong className="text-2xl font-black text-[#F4B942] block">
                     ₹{formatINR(invoices.reduce((sum, i) => sum + (i.reimbursements || 0), 0))}
                   </strong>
-                  <span className="text-[10px] text-amber-200">ROC / State Stamp / TM Pass-Through</span>
+                  <span className="text-[11px] text-amber-200">ROC / State Stamp / TM Pass-Through</span>
                 </div>
                 <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
                   <span className="text-cyan-300 font-semibold block text-[11px]">Output GST Liability (18%)</span>
                   <strong className="text-2xl font-black text-cyan-300 block">{CAN.finance(role) ? `₹${formatINR(totalGSTLiability)}` : '—'}</strong>
-                  <span className="text-[10px] text-cyan-200">GSTR-3B statutory tax liability</span>
+                  <span className="text-[11px] text-cyan-200">GSTR-3B statutory tax liability</span>
                 </div>
               </div>
 
               <div className="bg-white/5 rounded-2xl p-3 border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-4">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">First-Time-Right (FTR) Filing Rate</span>
-                    <strong className="text-sm font-black text-emerald-300">94.8% (Target &gt;92%)</strong>
+                    <span className="text-[11px] text-slate-300 uppercase font-bold block">Active Filings</span>
+                    <strong className="text-sm font-black text-emerald-300">
+                      {orders.filter((o) => o.status !== 'APPROVED' && o.status !== 'REJECTED').length} Open
+                    </strong>
                   </div>
                   <div className="border-l border-white/10 pl-4">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Statutory SLA Compliance</span>
-                    <strong className="text-sm font-black text-[#F4B942]">99.1% Within 48h TAT</strong>
+                    <span className="text-[11px] text-slate-300 uppercase font-bold block">Pending Documents</span>
+                    <strong className="text-sm font-black text-[#F4B942]">
+                      {pendingDocuments.length} Awaiting Review
+                    </strong>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[11px]">
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 rounded font-black">
-                    Rule 33 Pure Agent Escrow Active
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 rounded font-bold">
+                    Rule 33 Pure Agent Ledger
                   </span>
                 </div>
               </div>
@@ -333,7 +289,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                           <span className="text-xs font-bold text-slate-800 block">{o.service.title}</span>
                           <span className="text-[11px] text-slate-500 block">Client: {o.client.name} | CA: {o.assignedCA?.name || 'Unassigned'}</span>
                         </div>
-                        <span className="text-[10px] bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-full uppercase">
+                        <span className="text-[11px] bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-full uppercase">
                           {o.status.replace(/_/g, ' ')}
                         </span>
                       </div>
@@ -356,11 +312,11 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                       <div key={m.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
                         <div className="flex justify-between items-center">
                           <strong className="text-xs font-bold text-[#073B5C]">{m.name}</strong>
-                          <span className="text-[9px] bg-slate-200 text-slate-700 font-extrabold px-2 py-0.5 rounded uppercase">
+                          <span className="text-[11px] bg-slate-200 text-slate-700 font-extrabold px-2 py-0.5 rounded uppercase">
                             {m.role.replace(/_/g, ' ')}
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-500 font-medium block">
+                        <span className="text-xs text-slate-500 font-medium block">
                           Active Cases: {m.assignedOrders.filter((o) => o.status !== 'APPROVED' && o.status !== 'REJECTED').length}
                         </span>
                       </div>
@@ -391,7 +347,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Applicant Name</th>
                       <th className="p-4">Contact Info</th>
                       <th className="p-4">Inquiry Category</th>
@@ -413,7 +369,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                           <td className="p-4 font-bold text-[#0E7490]">{l.complianceType}</td>
                           <td className="p-4 font-bold text-slate-700">{l.assignedTo?.name || 'Unassigned'}</td>
                           <td className="p-4">
-                            <span className="text-[10px] bg-amber-100 text-amber-900 font-black px-2.5 py-1 rounded-full uppercase">{l.status}</span>
+                            <span className="text-[11px] bg-amber-100 text-amber-900 font-black px-2.5 py-1 rounded-full uppercase">{l.status}</span>
                           </td>
                         </tr>
                       ))
@@ -440,7 +396,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Order / SRN</th>
                       <th className="p-4">Client</th>
                       <th className="p-4">Service</th>
@@ -460,13 +416,13 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                         <td className="p-4">{o.service.title}</td>
                         <td className="p-4 font-extrabold text-emerald-700">₹{formatINR(o.totalAmount)}</td>
                         <td className="p-4 font-bold text-[#0E7490]">{o.assignedCA?.name || 'Unassigned'}</td>
-                        <td className="p-4 text-center font-bold uppercase text-amber-800 text-[10px]">
+                        <td className="p-4 text-center font-bold uppercase text-amber-800 text-[11px]">
                           <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">{o.status.replace(/_/g, ' ')}</span>
                         </td>
                         <td className="p-4 text-right">
                           <Link
                             href={`/admin/orders/${o.orderNumber}`}
-                            className="bg-slate-100 hover:bg-[#073B5C] hover:text-[#F4B942] text-[#073B5C] font-bold text-[10px] px-2.5 py-1 rounded-lg transition-colors inline-block whitespace-nowrap shadow-xs"
+                            className="bg-slate-100 hover:bg-[#073B5C] hover:text-[#F4B942] text-[#073B5C] font-bold text-[11px] px-2.5 py-1 rounded-lg transition-colors inline-block whitespace-nowrap shadow-sm"
                           >
                             Manage / Refund ↗
                           </Link>
@@ -541,22 +497,22 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                 <span className="text-xl">💰</span>
                 <strong className="block text-xs font-black text-[#073B5C]">Dynamic Pricing & GST</strong>
-                <p className="text-[11px] text-slate-500">Edit professional fees, pass-through govt fees, and statutory portal fee notes.</p>
+                <p className="text-xs text-slate-500">Edit professional fees, pass-through govt fees, and statutory portal fee notes.</p>
               </div>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                 <span className="text-xl">📁</span>
                 <strong className="block text-xs font-black text-[#073B5C]">Document Requirements</strong>
-                <p className="text-[11px] text-slate-500">Add or remove KYC document checklists required for client filing vaults.</p>
+                <p className="text-xs text-slate-500">Add or remove KYC document checklists required for client filing vaults.</p>
               </div>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                 <span className="text-xl">⏸️</span>
                 <strong className="block text-xs font-black text-[#073B5C]">Active / Pause Control</strong>
-                <p className="text-[11px] text-slate-500">Instantly pause services when govt portals are down or intake is full.</p>
+                <p className="text-xs text-slate-500">Instantly pause services when govt portals are down or intake is full.</p>
               </div>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                 <span className="text-xl">➕</span>
                 <strong className="block text-xs font-black text-[#073B5C]">Add Brand-New Services</strong>
-                <p className="text-[11px] text-slate-500">Create new service slugs and publish them live to checkout immediately.</p>
+                <p className="text-xs text-slate-500">Create new service slugs and publish them live to checkout immediately.</p>
               </div>
             </div>
           </div>
@@ -588,7 +544,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
                 ['Total Output GST Liability', totalGSTLiability],
               ] as const).map(([label, value]) => (
                 <div key={label} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">{label}</span>
+                  <span className="text-xs text-slate-400 font-bold uppercase block">{label}</span>
                   <strong className="text-xl font-extrabold text-[#073B5C]">₹{formatINR(value)}</strong>
                 </div>
               ))}
@@ -613,7 +569,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Txn Ref</th>
                       <th className="p-4">Description</th>
                       <th className="p-4">Debit</th>
@@ -657,7 +613,7 @@ export default function AdminWorkspaceClient({ role, team, leads, orders, pendin
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Staff Member</th>
                       <th className="p-4">System Role</th>
                       <th className="p-4">Active Cases</th>

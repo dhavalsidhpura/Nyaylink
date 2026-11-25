@@ -119,7 +119,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
             Everything your company needs to legally invoice clients, open bank accounts, and operate in India.
           </p>
         </div>
-        <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold px-3 py-1 rounded-full uppercase text-[10px] self-start sm:self-auto">
+        <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold px-3 py-1 rounded-full uppercase text-[11px] self-start sm:self-auto">
           ✓ All-Inclusive Statutory Kit
         </span>
       </div>
@@ -147,7 +147,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                 <strong className={`block text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-[#073B5C]'}`}>
                   {item.title.split(' (')[0]}
                 </strong>
-                <span className={`block text-[10px] mt-0.5 truncate ${isSelected ? 'text-cyan-200' : 'text-slate-500'}`}>
+                <span className={`block text-[11px] mt-0.5 truncate ${isSelected ? 'text-cyan-200' : 'text-slate-500'}`}>
                   {item.badge}
                 </span>
               </div>
@@ -157,13 +157,13 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
       </div>
 
       {/* Active Deliverable Deep Dive Card */}
-      <div className="bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-200 p-6 sm:p-7 space-y-5 shadow-xs">
+      <div className="bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-200 p-6 sm:p-7 space-y-5 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
           
           {/* Left: Detailed Specifications */}
           <div className="space-y-4 flex-1">
             <div className="space-y-1">
-              <span className="inline-block bg-[#0E7490]/10 text-[#0E7490] font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-[#0E7490]/20">
+              <span className="inline-block bg-[#0E7490]/10 text-[#0E7490] font-black text-[11px] uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-[#0E7490]/20">
                 {activeItem.badge}
               </span>
               <h3 className="text-xl font-black text-[#073B5C]">
@@ -192,7 +192,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
               <strong className="text-xs font-bold text-amber-900 block flex items-center gap-1.5">
                 <span>💡</span> Why This Matters for Your Business:
               </strong>
-              <p className="text-[11px] text-amber-800 leading-relaxed font-normal">
+              <p className="text-xs text-amber-800 leading-relaxed font-normal">
                 {activeItem.whyItMatters}
               </p>
             </div>
@@ -210,10 +210,10 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                   </div>
                   <div>
                     <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black block">GOVERNMENT OF INDIA</span>
-                    <span className="text-[10px] font-extrabold text-[#073B5C] block">MINISTRY OF CORPORATE AFFAIRS</span>
-                    <span className="text-[9px] font-bold text-slate-600 block mt-0.5">Central Registration Centre</span>
+                    <span className="text-[11px] font-extrabold text-[#073B5C] block">MINISTRY OF CORPORATE AFFAIRS</span>
+                    <span className="text-[11px] font-bold text-slate-600 block mt-0.5">Central Registration Centre</span>
                   </div>
-                  <div className="border-t border-b border-dashed border-slate-200 py-2 space-y-1 text-left font-mono text-[9px]">
+                  <div className="border-t border-b border-dashed border-slate-200 py-2 space-y-1 text-left font-mono text-[11px]">
                     <div className="flex justify-between">
                       <span className="text-slate-400">CIN:</span>
                       <strong className="text-slate-800">U72900MH2026PTC398124</strong>
@@ -241,7 +241,7 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                   </div>
                   <div>
                     <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black block">INCOME TAX DEPARTMENT</span>
-                    <span className="text-[10px] font-extrabold text-[#073B5C] block">PERMANENT ACCOUNT NUMBER</span>
+                    <span className="text-[11px] font-extrabold text-[#073B5C] block">PERMANENT ACCOUNT NUMBER</span>
                   </div>
                   <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-center space-y-1">
                     <span className="text-[14px] font-black tracking-widest text-[#073B5C] block">
@@ -263,9 +263,9 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                   </div>
                   <div>
                     <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black block">FORM INC-33 &amp; INC-34</span>
-                    <span className="text-[10px] font-extrabold text-[#073B5C] block">e-MOA &amp; e-AOA CHARTER</span>
+                    <span className="text-[11px] font-extrabold text-[#073B5C] block">e-MOA &amp; e-AOA CHARTER</span>
                   </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-left text-[9px] text-slate-600 space-y-1">
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-left text-[11px] text-slate-600 space-y-1">
                     <p className="line-clamp-2 italic">
                       &quot;To carry on business of technology development, digital services, and commerce...&quot;
                     </p>
@@ -284,11 +284,11 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                   </div>
                   <div>
                     <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black block">CLASS-3 CRYPTOGRAPHIC TOKEN</span>
-                    <span className="text-[10px] font-extrabold text-[#073B5C] block">2x USB Hardware Keys</span>
+                    <span className="text-[11px] font-extrabold text-[#073B5C] block">2x USB Hardware Keys</span>
                   </div>
                   <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-center space-y-1 text-emerald-950">
                     <span className="text-xs font-black block">FIPS 140-2 Validated</span>
-                    <span className="text-[9px] block">2-Year Validity Included</span>
+                    <span className="text-[11px] block">2-Year Validity Included</span>
                   </div>
                   <div className="text-[8px] text-emerald-700 font-bold">
                     ✓ ZERO COMPETITOR SURCHARGE
@@ -303,9 +303,9 @@ export default function DeliverablesUnboxingCard({ serviceSlug, serviceTitle }: 
                   </div>
                   <div>
                     <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black block">CORPORATE BANKING KIT</span>
-                    <span className="text-[10px] font-extrabold text-[#073B5C] block">Partner Fast-Track Pass</span>
+                    <span className="text-[11px] font-extrabold text-[#073B5C] block">Partner Fast-Track Pass</span>
                   </div>
-                  <div className="bg-cyan-50 p-2 rounded-xl border border-cyan-200 text-center text-[10px] text-cyan-900 font-bold">
+                  <div className="bg-cyan-50 p-2 rounded-xl border border-cyan-200 text-center text-[11px] text-cyan-900 font-bold">
                     HDFC · ICICI · Axis · RazorpayX
                   </div>
                   <div className="text-[8px] text-slate-500">

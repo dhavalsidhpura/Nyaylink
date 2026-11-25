@@ -12,7 +12,7 @@ async function fetchDashboard(userId: string) {
     prisma.order.findMany({
       where: { clientId: userId },
       include: {
-        service: { select: { title: true, sla: true } },
+        service: { select: { title: true, sla: true, category: true } },
         assignedCA: { select: { name: true } },
         statusLogs: { orderBy: { createdAt: 'desc' }, take: 4 },
       },

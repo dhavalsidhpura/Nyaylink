@@ -38,6 +38,13 @@ const FOUNDER_REVIEWS = [
     role: 'Managing Partner @ StackZero (Pune)',
     service: '🤝 LLP Agreement & ROC',
   },
+  {
+    stars: '★★★★★',
+    quote: '“Completed our Startup India DPIIT recognition and GST LUT filing in parallel. Having one clean Vault for every ROC receipt and tax certificate saves hours every month.”',
+    name: 'Meera Iyer',
+    role: 'Co-Founder @ CloudCraft SaaS (Chennai)',
+    service: '🚀 DPIIT & GST LUT',
+  },
 ];
 
 export default function FounderReviewsCarousel() {
@@ -61,7 +68,7 @@ export default function FounderReviewsCarousel() {
               Direct CA &amp; Advocate Verified Reviews
             </span>
             <h3 className="text-2xl sm:text-3xl font-black text-[#073B5C]">
-              Loved by 10,000+ Founders Across India
+              Trusted by 1,200+ Founders Across India
             </h3>
             <p className="text-xs text-slate-500 max-w-xl">
               Real feedback from Indian entrepreneurs, tech founders, restaurants, and D2C brands who trust NyayaLink for their statutory filings.
@@ -69,11 +76,11 @@ export default function FounderReviewsCarousel() {
           </div>
 
           {/* Overall Rating Pill */}
-          <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs self-start md:self-auto shrink-0">
+          <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-sm self-start md:self-auto shrink-0">
             <span className="text-2xl font-black text-[#073B5C]">4.9</span>
             <div>
               <div className="text-amber-500 text-xs font-black">★★★★★</div>
-              <span className="text-[10px] text-slate-500 font-bold block">1,240+ Verified Reviews</span>
+              <span className="text-xs text-slate-500 font-bold block">1,240+ Verified Reviews</span>
             </div>
           </div>
         </div>
@@ -86,7 +93,7 @@ export default function FounderReviewsCarousel() {
                 <span className="text-amber-500 text-xs font-black tracking-widest">
                   {FOUNDER_REVIEWS[activeReviewIndex].stars}
                 </span>
-                <span className="text-[9px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
                   {FOUNDER_REVIEWS[activeReviewIndex].service}
                 </span>
               </div>
@@ -100,11 +107,11 @@ export default function FounderReviewsCarousel() {
                 <strong className="block text-xs font-extrabold text-[#073B5C]">
                   {FOUNDER_REVIEWS[activeReviewIndex].name}
                 </strong>
-                <span className="text-[10px] text-slate-500 block leading-tight">
+                <span className="text-xs text-slate-500 block leading-tight">
                   {FOUNDER_REVIEWS[activeReviewIndex].role}
                 </span>
               </div>
-              <span className="text-[9px] text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 ✓ Verified Docket
               </span>
             </div>
@@ -154,12 +161,12 @@ export default function FounderReviewsCarousel() {
           {FOUNDER_REVIEWS.map((review, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-3xl border border-slate-200 hover:border-[#0E7490] bg-white hover:bg-slate-50/50 transition-all shadow-xs hover:shadow-md flex flex-col justify-between space-y-4"
+              className="p-6 rounded-3xl border border-slate-200 hover:border-[#0E7490] bg-white hover:bg-slate-50/50 transition-all shadow-sm hover:shadow-md flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-amber-500 text-xs font-black tracking-widest">{review.stars}</span>
-                  <span className="text-[10px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">
                     {review.service}
                   </span>
                 </div>
@@ -169,9 +176,9 @@ export default function FounderReviewsCarousel() {
               <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
                 <div>
                   <strong className="block text-xs font-black text-[#073B5C]">{review.name}</strong>
-                  <span className="text-[10px] text-slate-500 block">{review.role}</span>
+                  <span className="text-xs text-slate-500 block">{review.role}</span>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                   ✓ Verified Docket
                 </span>
               </div>

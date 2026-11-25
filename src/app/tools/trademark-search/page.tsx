@@ -2,16 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface TMResult {
   brandName: string;
   recommendedClass: number;
   classDescription: string;
   isAvailable: boolean;
-  score: number;
-  existingMarks: { name: string; classNo: number; status: string }[];
+  label: string;
+  existingMarks: { name: string; status: string }[];
   filingTip: string;
 }
+
+const KNOWN_TRADEMARKS = ['APPLE', 'GOOGLE', 'NYAYA', 'AMAZON', 'ZOMATO', 'MOBIZ', 'FLIPKART', 'SWIGGY', 'PAYTM', 'RELIANCE', 'TATA', 'NIKE'];
+const DESCRIPTIVE_TERMS = ['BEST', 'INDIA', 'SUPER', 'QUALITY', 'ONLINE', 'SHOP', 'STORE', 'SERVICES', 'SOLUTIONS'];
 
 export default function TrademarkSearchTool() {
   const [brandName, setBrandName] = useState('');
@@ -27,12 +31,11 @@ export default function TrademarkSearchTool() {
     setIsSearching(true);
     setResult(null);
 
-    // Simulating IP India Registry Search
     setTimeout(() => {
       const clean = brandName.trim().toUpperCase();
-      const hasConflict = ['APPLE', 'GOOGLE', 'NYAYA', 'AMAZON', 'ZOMATO', 'MOBIZ'].some((b) =>
-        clean.includes(b)
-      );
+      const words = clean.split(/\s+/).filter(Boolean);
+      const brandConflict = KNOWN_TRADEMARKS.find((b) => clean.includes(b));
+      const allDescriptive = words.length > 0 && words.every((w) => DESCRIPTIVE_TERMS.includes(w));
 
       const classDescriptions: Record<string, string> = {
         '9': 'Computers, Software, Mobile Electronics & Hardware',
@@ -43,19 +46,20 @@ export default function TrademarkSearchTool() {
         '45': 'Legal Services & Dispute Resolution',
       };
 
-      if (hasConflict) {
+      if (brandConflict || allDescriptive) {
+        const flags: { name: string; status: string }[] = [];
+        if (brandConflict) flags.push({ name: `Contains well-known mark "${brandConflict}"`, status: 'Sec 11 Risk' });
+        if (allDescriptive) flags.push({ name: 'Purely descriptive / generic wording', status: 'Sec 9 Risk' });
+
         setResult({
           brandName: brandName.trim(),
           recommendedClass: parseInt(businessType),
           classDescription: classDescriptions[businessType] || 'Specialized Goods & Services',
           isAvailable: false,
-          score: 42,
-          existingMarks: [
-            { name: `${clean} INDIA PVT LTD`, classNo: parseInt(businessType), status: 'Registered ®' },
-            { name: `${clean} GLOBAL VENTURES`, classNo: parseInt(businessType), status: 'Opposed / Pending' },
-          ],
+          label: 'Section 9 / 11 Risk Flagged',
+          existingMarks: flags,
           filingTip:
-            'A phonetically similar or identical wordmark already exists under this NICE Class. We recommend adding a unique invented word prefix before submitting Form TM-A.',
+            'Our preliminary screen flagged a potential Section 9 (descriptive) or Section 11 (well-known mark) objection risk. Add a distinctive coined word or device logo, and run a live check on IP India Public Search.',
         });
       } else {
         setResult({
@@ -63,28 +67,21 @@ export default function TrademarkSearchTool() {
           recommendedClass: parseInt(businessType),
           classDescription: classDescriptions[businessType] || 'Specialized Goods & Services',
           isAvailable: true,
-          score: 96,
+          label: 'Distinctive Pre-Screen Passed',
           existingMarks: [],
           filingTip:
-            'High likelihood of registration! No direct phonetic conflicts found in IP India Journal. Fast-track filing available under MSME fee concession (₹4,500 govt fee).',
+            'Your mark passes our preliminary distinctiveness check for NICE Class ' +
+            businessType +
+            '. Verify exact phonetic matches on IP India Public Search or let our TM attorney run a comprehensive clearance before Form TM-A filing.',
         });
       }
       setIsSearching(false);
-    }, 1200);
+    }, 350);
   };
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased">
-      <header className="bg-[#073B5C] text-white py-3.5 px-4 sm:px-8 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3.5 py-1 rounded-xl font-mono shadow border border-cyan-400/30">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <Link href="/#catalog-section" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Explore All Services
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full flex-grow space-y-8">
         <div className="text-center space-y-3">
@@ -151,21 +148,26 @@ export default function TrademarkSearchTool() {
             <div className="pt-4 border-t border-slate-100 space-y-4 animate-fadeIn">
               {result.isAvailable ? (
                 <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">✅</span>
                       <strong className="text-emerald-900 font-extrabold text-sm sm:text-base">
-                        &quot;{result.brandName}&quot; is Available in Class {result.recommendedClass}!
+                        &quot;{result.brandName}&quot; — Class {result.recommendedClass} ({result.label})
                       </strong>
                     </div>
-                    <span className="bg-emerald-200 text-emerald-900 font-bold px-2.5 py-0.5 rounded text-[10px]">
-                      Score: {result.score}/100
-                    </span>
+                    <a
+                      href="https://tmrsearch.ipindia.gov.in/tmrpublicsearch/frmmain.aspx"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white border border-emerald-300 text-emerald-900 font-bold px-2.5 py-1 rounded-lg text-[11px] hover:underline"
+                    >
+                      Verify on IP India ↗
+                    </a>
                   </div>
 
                   <div className="p-3 bg-white/80 rounded-xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
                     <span><strong>NICE Class {result.recommendedClass}:</strong> {result.classDescription}</span>
-                    <p className="text-[11px] leading-relaxed pt-1 text-slate-700">{result.filingTip}</p>
+                    <p className="text-xs leading-relaxed pt-1 text-slate-700">{result.filingTip}</p>
                   </div>
 
                   <div className="pt-2 space-y-2">
@@ -178,7 +180,7 @@ export default function TrademarkSearchTool() {
                       </Link>
                       <a
                         href={`https://wa.me/919920054785?text=${encodeURIComponent(
-                          `Hi NyayaLink IPR Team, I ran the Trademark Conflict Search for brand "${result.brandName}" in Class ${result.recommendedClass}. Result: Available (Score: ${result.score}/100). I want to file this mark with the ₹999 advance token.`
+                          `Hi NyayaLink IPR Team, I screened brand "${result.brandName}" in Class ${result.recommendedClass}. Please run a live IP India clearance and help me file Form TM-A with the ₹999 advance token.`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -195,15 +197,15 @@ export default function TrademarkSearchTool() {
                 </div>
               ) : (
                 <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">⚠️</span>
                       <strong className="text-rose-900 font-extrabold text-sm sm:text-base">
-                        Potential Conflicts in Class {result.recommendedClass}
+                        Potential Risks in Class {result.recommendedClass}
                       </strong>
                     </div>
-                    <span className="bg-rose-200 text-rose-900 font-bold px-2.5 py-0.5 rounded text-[10px]">
-                      Score: {result.score}/100
+                    <span className="bg-rose-200 text-rose-900 font-bold px-2.5 py-0.5 rounded text-[11px]">
+                      {result.label}
                     </span>
                   </div>
 

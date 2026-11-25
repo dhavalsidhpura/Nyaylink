@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { STATE_STAMP_RULES } from '@/lib/pricing';
+import AdminNav from '@/components/admin/AdminNav';
 
 interface ServiceRequirement {
   id?: string;
@@ -30,10 +31,12 @@ interface ServiceItem {
 const CATEGORIES = [
   { value: 'all', label: 'All Categories' },
   { value: 'company-reg', label: 'Company Registration' },
-  { value: 'business-compliance', label: 'Annual Compliance' },
-  { value: 'trademark-ip', label: 'Trademark & IP' },
-  { value: 'tax-gst', label: 'Tax & GST' },
-  { value: 'licenses', label: 'Licenses & Registrations' },
+  { value: 'tax-accounting', label: 'Tax & Accounting' },
+  { value: 'trademark-ipr', label: 'Trademark & IPR' },
+  { value: 'copyright', label: 'Copyright' },
+  { value: 'licenses-permits', label: 'Licenses & Permits' },
+  { value: 'business-tech', label: 'Business & Technology' },
+  { value: 'legal-dispute', label: 'Dispute Resolution (ODR)' },
 ];
 
 export default function AdminPricingConsole() {
@@ -51,7 +54,7 @@ export default function AdminPricingConsole() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newSlug, setNewSlug] = useState('');
-  const [newCategory, setNewCategory] = useState('business-compliance');
+  const [newCategory, setNewCategory] = useState('company-reg');
   const [newProfFee, setNewProfFee] = useState<number>(4999);
   const [newGovtFee, setNewGovtFee] = useState<number>(0);
   const [newGovtFeeNote, setNewGovtFeeNote] = useState('Direct portal charges at actuals');
@@ -273,51 +276,32 @@ export default function AdminPricingConsole() {
   }, [services, search, selectedCategory, selectedStatus]);
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] p-4 sm:p-8 antialiased font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#F0F4F8] antialiased font-sans flex flex-col">
+      <AdminNav
+        active="pricing"
+        subtitle="Catalog & Dynamic Pricing"
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap"
+          >
+            <span>+</span> Add New Service
+          </button>
+        }
+      />
+
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6">
 
         {/* NOTIFICATION TOAST */}
         {actionMessage && (
-          <div className="fixed top-5 right-5 z-50 bg-[#073B5C] text-[#F4B942] font-black text-xs px-5 py-3 rounded-2xl shadow-2xl border border-cyan-400/40 animate-in fade-in slide-in-from-top-4">
+          <div className="fixed top-16 right-5 z-50 bg-[#073B5C] text-[#F4B942] font-black text-xs px-5 py-3 rounded-2xl shadow-2xl border border-cyan-400/40 animate-fadeIn">
             ✓ {actionMessage}
           </div>
         )}
 
-        {/* HEADER BAR */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <span className="bg-[#073B5C] text-[#F4B942] font-black text-[11px] px-3 py-1 rounded-xl">
-                Staff Console
-              </span>
-              <h1 className="text-xl sm:text-2xl font-black text-[#073B5C]">
-                Service Catalog & Dynamic Pricing Manager
-              </h1>
-            </div>
-            <p className="text-xs text-slate-500">
-              Manage professional fees, government portal charges, required KYC documents, active states, and add brand-new statutory services.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#0E7490] hover:bg-[#073B5C] text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition shadow cursor-pointer flex items-center gap-1.5"
-            >
-              <span>+</span> Add New Service
-            </button>
-            <Link
-              href="/admin"
-              className="text-xs text-slate-600 hover:text-[#073B5C] font-bold px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
-            >
-              ← Main Dashboard
-            </Link>
-          </div>
-        </div>
-
         {/* TABS & FILTERS */}
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
           {/* Tab buttons */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
             <button
@@ -325,7 +309,7 @@ export default function AdminPricingConsole() {
               onClick={() => setActiveTab('services')}
               className={`text-xs font-black px-4 py-1.5 rounded-lg transition ${
                 activeTab === 'services'
-                  ? 'bg-white text-[#073B5C] shadow-xs'
+                  ? 'bg-white text-[#073B5C] shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -336,7 +320,7 @@ export default function AdminPricingConsole() {
               onClick={() => setActiveTab('stamp')}
               className={`text-xs font-black px-4 py-1.5 rounded-lg transition ${
                 activeTab === 'stamp'
-                  ? 'bg-white text-[#073B5C] shadow-xs'
+                  ? 'bg-white text-[#073B5C] shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -430,7 +414,7 @@ export default function AdminPricingConsole() {
         {/* TAB 2: STATE STAMP DUTY MATRIX */}
         {activeTab === 'stamp' && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-2">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🏛️</span>
                 <h2 className="text-base font-extrabold text-[#073B5C]">
@@ -446,11 +430,11 @@ export default function AdminPricingConsole() {
               {Object.entries(STATE_STAMP_RULES).map(([code, rule]) => (
                 <div
                   key={code}
-                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-2 hover:border-[#0E7490] transition"
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 hover:border-[#0E7490] transition"
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                     <strong className="text-sm font-black text-[#073B5C]">{rule.name}</strong>
-                    <span className="bg-cyan-50 text-[#0E7490] font-mono text-[10px] font-bold px-2 py-0.5 rounded">
+                    <span className="bg-cyan-50 text-[#0E7490] font-mono text-[11px] font-bold px-2 py-0.5 rounded">
                       {code}
                     </span>
                   </div>
@@ -468,7 +452,7 @@ export default function AdminPricingConsole() {
                       <span>₹{(rule.baseStamp + rule.panTanFee).toLocaleString()}</span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 pt-1 leading-tight">{rule.note}</p>
+                  <p className="text-xs text-slate-400 pt-1 leading-tight">{rule.note}</p>
                 </div>
               ))}
             </div>
@@ -481,11 +465,11 @@ export default function AdminPricingConsole() {
       {/* MODAL 1: ADD NEW SERVICE                                */}
       {/* ======================================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] flex flex-col animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                   Service Creation
                 </span>
                 <h3 className="text-lg font-black text-[#073B5C]">Add New Legal & Compliance Service</h3>
@@ -522,7 +506,7 @@ export default function AdminPricingConsole() {
                     placeholder="e.g. startup-india-dpiit"
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono text-[11px] focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                   />
-                  <span className="text-[10px] text-slate-400">Public URL: /services/{newSlug || '...'}</span>
+                  <span className="text-xs text-slate-400">Public URL: /services/{newSlug || '...'}</span>
                 </div>
               </div>
 
@@ -683,15 +667,15 @@ export default function AdminPricingConsole() {
       {/* MODAL 2: EDIT SERVICE & DOCUMENT REQUIREMENTS           */}
       {/* ======================================================== */}
       {editingService && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] flex flex-col animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                   Service Configuration & KYC
                 </span>
                 <h3 className="text-lg font-black text-[#073B5C]">{editingService.title}</h3>
-                <span className="text-[10px] font-mono text-slate-400">/{editingService.slug}</span>
+                <span className="text-[11px] font-mono text-slate-400">/{editingService.slug}</span>
               </div>
               <button
                 type="button"
@@ -773,7 +757,7 @@ export default function AdminPricingConsole() {
                   <label className="block font-bold text-[#073B5C]">
                     Required KYC Documents ({editReqList.length})
                   </label>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-xs text-slate-400">
                     Changes reflect immediately in the customer document vault
                   </span>
                 </div>
@@ -889,10 +873,10 @@ function RateRow({
       <td className="py-3 px-4">
         <strong className="text-[#073B5C] block font-extrabold text-xs">{item.title}</strong>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[10px] text-cyan-800 bg-cyan-50 px-1.5 py-0.5 rounded font-mono font-bold uppercase">
+          <span className="text-[11px] text-cyan-800 bg-cyan-50 px-1.5 py-0.5 rounded font-mono font-bold uppercase">
             {item.category}
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">/{item.slug}</span>
+          <span className="text-xs text-slate-400 font-mono">/{item.slug}</span>
         </div>
       </td>
 
@@ -926,7 +910,7 @@ function RateRow({
       </td>
 
       <td className="py-3 px-4 text-center">
-        <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-md">
+        <span className="inline-block bg-slate-100 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-md">
           📁 {item.requirements ? item.requirements.length : 0} docs
         </span>
       </td>
@@ -935,7 +919,7 @@ function RateRow({
         <button
           type="button"
           onClick={() => onQuickSave(item.slug, { isActive: !item.isActive })}
-          className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase cursor-pointer transition ${
+          className={`text-[11px] font-black px-2.5 py-1 rounded-full uppercase cursor-pointer transition ${
             item.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
           }`}
           title="Click to toggle live or paused status"
@@ -957,7 +941,7 @@ function RateRow({
             type="button"
             onClick={() => onQuickSave(item.slug, { professionalFee: fee, govtFee, govtFeeNote: note })}
             disabled={isSaving || !dirty}
-            className="bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-200 disabled:text-slate-400 text-[#F4B942] font-black text-[10px] px-3 py-1.5 rounded-lg uppercase transition shadow cursor-pointer"
+            className="bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-200 disabled:text-slate-400 text-[#F4B942] font-black text-[11px] px-3 py-1.5 rounded-lg uppercase transition shadow cursor-pointer"
           >
             {isSaving ? '...' : 'Save'}
           </button>

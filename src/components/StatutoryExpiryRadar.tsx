@@ -1,7 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+const CATEGORY_RENEWAL_ROUTE: Record<TrackedStatutoryItem['category'], string> = {
+  FSSAI: '/services/fssai-renewal',
+  DIR3_KYC: '/services/dir-3-kyc-director-filing',
+  TRADEMARK: '/services/trademark-renewal',
+  GST_LUT: '/services/gst-lut-filing',
+  INC20A: '/services/mca-inc-20a-commencement-of-business',
+  IEC: '/services/iec-modification',
+  SHOP_ACT: '/services/shop-and-establishment-license',
+};
 
 export interface TrackedStatutoryItem {
   id: string;
@@ -35,70 +45,55 @@ const DEFAULT_TRACKED_ITEMS: TrackedStatutoryItem[] = [
     riskDescription: 'Must be renewed at least 30 days prior to expiry on FoSCoS portal. Filing within 1–30 days incurs ₹100/day late penalty. Post-expiry filing is rejected and requires fresh application.',
     penaltyAmount: '₹100/day late fine + ₹5,00,000 unlicenced seizure penalty',
     renewalFee: '₹1,499 Renewal Token',
-    actionUrl: '/#catalog-section',
+    actionUrl: '/services/fssai-renewal',
   },
   {
     id: 'dir3-01',
     category: 'DIR3_KYC',
-    title: 'Director Annual DIR-3 KYC',
-    identifier: 'DIN 09841203 (Dhaval Sidhpura)',
+    title: 'Sample: Director Annual DIR-3 KYC',
+    identifier: 'DIN Example (Every 30 Sept)',
     validitySpan: 'Annual (Every 30 September)',
     issuedDate: '01 Oct 2025',
     expiryDate: '30 Sep 2027',
     daysRemaining: 331,
     status: 'SAFE',
     statutoryAct: 'Section 157 & Rule 12A, Companies (Appointment and Qualification of Directors) Rules',
-    riskDescription: 'Every DIN holder must file annual web KYC. Missing the September 30 deadline permanently deactivates the director DIN and triggers a non-compoundable late fee.',
+    riskDescription: 'Every DIN holder must file annual web KYC. Missing the September 30 deadline deactivates the director DIN and triggers a statutory late fee.',
     penaltyAmount: 'Flat ₹5,000 per DIN + Automatic DIN Deactivation',
-    renewalFee: '₹799 per Director',
-    actionUrl: '/#catalog-section',
+    renewalFee: '₹999 per Director',
+    actionUrl: '/services/dir-3-kyc-director-filing',
   },
   {
     id: 'tm-01',
     category: 'TRADEMARK',
-    title: 'Trademark Registration (Brand & Device Mark)',
-    identifier: 'App #5910248 (Class 42 — LegalTech & Cloud Software)',
+    title: 'Sample: Trademark Registration (Brand & Device Mark)',
+    identifier: 'App Example (Class 42)',
     validitySpan: '10 Years (Decennial Cycle)',
     issuedDate: '14 Oct 2024',
     expiryDate: '14 Oct 2034',
     daysRemaining: 2872,
     status: 'SAFE',
     statutoryAct: 'Section 25, Trade Marks Act, 1999 (Form TM-R)',
-    riskDescription: 'Trademarks remain valid for 10 years. Form TM-R must be filed within 6 months prior to expiry. If not renewed, the mark is advertised in the TM Journal as removed and opens up to squatters.',
+    riskDescription: 'Trademarks remain valid for 10 years. Form TM-R must be filed within 6 months prior to expiry.',
     penaltyAmount: 'Loss of exclusive trademark ownership + ₹4,500 restoration surcharge',
-    renewalFee: '₹2,999 Form TM-R Desk',
-    actionUrl: '/#catalog-section',
+    renewalFee: '₹2,499 Form TM-R Desk',
+    actionUrl: '/services/trademark-renewal',
   },
   {
     id: 'gst-lut-01',
     category: 'GST_LUT',
-    title: 'GST Letter of Undertaking (LUT)',
-    identifier: 'LUT-MH-2026-00491 (Export Services without IGST)',
+    title: 'Sample: GST Letter of Undertaking (LUT)',
+    identifier: 'LUT Annual Export Filing',
     validitySpan: '1 Financial Year (Expires 31 March)',
     issuedDate: '01 Apr 2026',
     expiryDate: '31 Mar 2027',
     daysRemaining: 148,
     status: 'SAFE',
     statutoryAct: 'Rule 96A, CGST Rules, 2017',
-    riskDescription: 'Mandatory for all IT exporters and freelancers to invoice international clients without 18% IGST. Expires automatically on March 31 of each financial year.',
-    penaltyAmount: '18% IGST blocked upfront on all foreign wire transfers',
-    renewalFee: '₹999 Annual Filing',
-    actionUrl: '/#catalog-section',
-  },
-  {
-    id: 'inc20a-01',
-    category: 'INC20A',
-    title: 'MCA Form INC-20A (Commencement of Business)',
-    identifier: 'SRN AA9182301 (Post-Incorporation Compliance)',
-    validitySpan: '180 Days Mandatory Milestone',
-    issuedDate: '15 May 2026',
-    expiryDate: '11 Nov 2026',
-    daysRemaining: 0,
-    status: 'COMPLETED',
-    statutoryAct: 'Section 10A, Companies Act, 2013',
-    riskDescription: 'Mandatory proof of paid-up capital deposit by subscribers within 180 days. Successfully filed and certified by CRC.',
-    penaltyAmount: 'Zero Penalty (Saved ₹50,000 corporate penalty + ₹1,000/day director fine)',
-    renewalFee: 'Completed',
+    riskDescription: 'Required for exporters to invoice international clients at 0% IGST. Expires March 31 each financial year.',
+    penaltyAmount: '18% IGST blocked upfront on foreign export invoices',
+    renewalFee: '₹1,499 Annual Filing',
+    actionUrl: '/services/gst-lut-filing',
   },
 ];
 
@@ -109,10 +104,29 @@ export default function StatutoryExpiryRadar({
   userPhone?: string | null;
   userEmail?: string;
 }) {
-  const [items, setItems] = useState<TrackedStatutoryItem[]>(DEFAULT_TRACKED_ITEMS);
+  const storageKey = `nyayalink:expiry_radar:${userEmail || 'guest'}`;
+  const [items, setItems] = useState<TrackedStatutoryItem[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'WARNING' | 'SAFE'>('ALL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setItems(JSON.parse(saved));
+    } catch {
+      /* ignore storage errors */
+    }
+  }, [storageKey]);
+
+  const persistItems = (next: TrackedStatutoryItem[]) => {
+    setItems(next);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch {
+      /* ignore storage errors */
+    }
+  };
 
   // Form State
   const [formCategory, setFormCategory] = useState<TrackedStatutoryItem['category']>('TRADEMARK');
@@ -158,10 +172,10 @@ export default function StatutoryExpiryRadar({
       riskDescription: 'Monitored by NyayaLink Automated Radar with WhatsApp and email alerts before deadlines.',
       penaltyAmount: 'Protected against statutory late fines',
       renewalFee: '₹999 Token',
-      actionUrl: '/#catalog-section',
+      actionUrl: CATEGORY_RENEWAL_ROUTE[formCategory] || '/packages',
     };
 
-    setItems([newItem, ...items]);
+    persistItems([newItem, ...items]);
     setShowAddModal(false);
     setFormTitle('');
     setFormIdentifier('');
@@ -186,7 +200,7 @@ export default function StatutoryExpiryRadar({
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-cyan-800/60 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2.5 py-0.5 rounded-full tracking-wide">
+              <span className="bg-[#F4B942] text-[#073B5C] font-black text-[11px] uppercase px-2.5 py-0.5 rounded-full tracking-wide">
                 LIFETIME COMPLIANCE RADAR
               </span>
               <span className="text-xs text-cyan-200">MCA V3 · IP India · FoSCoS · GSTN</span>
@@ -210,26 +224,26 @@ export default function StatutoryExpiryRadar({
         {/* METRIC STRIP */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
-            <span className="text-[10px] text-cyan-200 uppercase font-black block">Active Licenses</span>
+            <span className="text-[11px] text-cyan-200 uppercase font-black block">Active Licenses</span>
             <strong className="text-xl font-black text-white">{items.length}</strong>
           </div>
           <div className="bg-amber-500/20 backdrop-blur-md rounded-2xl p-3 border border-amber-400/30">
-            <span className="text-[10px] text-amber-200 uppercase font-black block">Window Open (Soon)</span>
+            <span className="text-[11px] text-amber-200 uppercase font-black block">Window Open (Soon)</span>
             <strong className="text-xl font-black text-[#F4B942]">{warningCount}</strong>
           </div>
           <div className="bg-emerald-500/20 backdrop-blur-md rounded-2xl p-3 border border-emerald-400/30">
-            <span className="text-[10px] text-emerald-200 uppercase font-black block">Safe / Protected</span>
+            <span className="text-[11px] text-emerald-200 uppercase font-black block">Safe / Protected</span>
             <strong className="text-xl font-black text-emerald-300">{safeCount}</strong>
           </div>
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
-            <span className="text-[10px] text-cyan-200 uppercase font-black block">Late Fines Incurred</span>
+            <span className="text-[11px] text-cyan-200 uppercase font-black block">Late Fines Incurred</span>
             <strong className="text-xl font-black text-white">₹0.00</strong>
           </div>
         </div>
       </div>
 
       {/* WHATSAPP & MULTI-CHANNEL DISPATCH RADAR STATUS */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shrink-0 font-bold">
             📱
@@ -237,17 +251,17 @@ export default function StatutoryExpiryRadar({
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <strong className="text-xs font-black text-slate-900">Multi-Channel Compliance Notification Radar</strong>
-              <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+              <span className="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-full uppercase">
                 Active
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Direct notifications scheduled for WhatsApp <span className="font-mono text-slate-700 font-bold">{userPhone || '+91 9920054785'}</span> and Email <span className="font-mono text-slate-700 font-bold">{userEmail || 'admin@business.in'}</span>.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
+        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
           <span>🔔 90-Day Warning</span>
           <span>&bull;</span>
           <span>⚡ 30-Day Urgent</span>
@@ -292,6 +306,30 @@ export default function StatutoryExpiryRadar({
 
       {/* TRACKED ITEMS GRID */}
       <div className="space-y-4">
+        {filteredItems.length === 0 && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center space-y-3">
+            <h3 className="font-extrabold text-[#073B5C] text-base">No Licenses Linked Yet</h3>
+            <p className="text-xs text-slate-600 max-w-md mx-auto">
+              Add your existing FSSAI, Trademark, DIN KYC, or GST LUT expiry dates to track renewal windows in one place.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                + Add License / Registration
+              </button>
+              <button
+                type="button"
+                onClick={() => persistItems(DEFAULT_TRACKED_ITEMS)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                Load Sample Reminders
+              </button>
+            </div>
+          </div>
+        )}
         {filteredItems.map((item) => {
           const isWarning = item.status === 'WARNING';
           const isSafe = item.status === 'SAFE';
@@ -309,24 +347,24 @@ export default function StatutoryExpiryRadar({
               <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2.5 py-0.5 rounded-md">
+                    <span className="font-mono text-[11px] font-black bg-[#073B5C] text-[#F4B942] px-2.5 py-0.5 rounded-md">
                       {item.category}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-bold">
+                    <span className="text-xs text-slate-500 font-bold">
                       Cycle: {item.validitySpan}
                     </span>
                     {isWarning && (
-                      <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
+                      <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
                         ⚠️ Early Renewal Window Open ({item.daysRemaining} Days Left)
                       </span>
                     )}
                     {isSafe && (
-                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-md">
                         🟢 Active &bull; {item.daysRemaining} Days Remaining
                       </span>
                     )}
                     {isCompleted && (
-                      <span className="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                      <span className="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold px-2 py-0.5 rounded-md">
                         ✓ Milestone Certified
                       </span>
                     )}
@@ -336,16 +374,16 @@ export default function StatutoryExpiryRadar({
                 </div>
 
                 <div className="shrink-0 flex flex-col sm:items-end gap-1">
-                  <span className="text-[10px] text-slate-400 uppercase font-black">Statutory Expiration</span>
+                  <span className="text-xs text-slate-400 uppercase font-black">Statutory Expiration</span>
                   <strong className="text-sm font-extrabold text-slate-900">{item.expiryDate}</strong>
-                  <span className="text-[10px] text-slate-500">Issued: {item.issuedDate}</span>
+                  <span className="text-xs text-slate-500">Issued: {item.issuedDate}</span>
                 </div>
               </div>
 
               {/* Progress bar for validity */}
               {!isCompleted && (
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-slate-500 font-bold">
+                  <div className="flex justify-between text-xs text-slate-500 font-bold">
                     <span>Statutory Life Span</span>
                     <span className={isWarning ? 'text-amber-700 font-black' : 'text-slate-600'}>
                       {item.daysRemaining} Days Remaining Before Penalties
@@ -367,18 +405,18 @@ export default function StatutoryExpiryRadar({
               {/* Legal & Penalty Context */}
               <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase text-slate-500 block">
+                  <span className="text-[11px] font-black uppercase text-slate-500 block">
                     Statutory Rule &amp; Consequence
                   </span>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed">
                     <strong>{item.statutoryAct}:</strong> {item.riskDescription}
                   </p>
                 </div>
                 <div className="space-y-1 md:border-l md:border-slate-200 md:pl-3">
-                  <span className="text-[10px] font-black uppercase text-rose-700 block">
+                  <span className="text-[11px] font-black uppercase text-rose-700 block">
                     Non-Compliance Penalty If Missed
                   </span>
-                  <p className="text-[11px] font-bold text-rose-900 leading-relaxed">
+                  <p className="text-xs font-bold text-rose-900 leading-relaxed">
                     {item.penaltyAmount}
                   </p>
                 </div>
@@ -396,7 +434,7 @@ export default function StatutoryExpiryRadar({
                 <div className="flex items-center gap-2">
                   {isWarning ? (
                     <Link
-                      href="/#catalog-section"
+                      href={item.actionUrl || CATEGORY_RENEWAL_ROUTE[item.category] || '/packages'}
                       className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5"
                     >
                       <span>⚡</span> Renew License with CA Desk &rarr;
@@ -425,7 +463,7 @@ export default function StatutoryExpiryRadar({
       {/* HOW NYAYALINK REVENUE & RENEWAL MODEL PROTECTS YOU */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
         <div className="border-b border-slate-100 pb-3">
-          <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+          <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
             HOW THE LIFETIME RENEWAL ENGINE WORKS
           </span>
           <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
@@ -436,39 +474,39 @@ export default function StatutoryExpiryRadar({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-1">
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+              <span className="font-mono text-[11px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
                 Stage 1
               </span>
               <span className="text-base">🗄️</span>
             </div>
             <strong className="text-slate-900 font-bold block">Permanent Vault Custody</strong>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               When an order completes, our engine extracts the Government ARN/SRN, registration date, and statutory validity (e.g. 10 years for Trademarks, 1-5 years for FSSAI). Every asset is cataloged with statutory penalty metrics.
             </p>
           </div>
 
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] font-black bg-[#0E7490] text-white px-2 py-0.5 rounded">
+              <span className="font-mono text-[11px] font-black bg-[#0E7490] text-white px-2 py-0.5 rounded">
                 Stage 2
               </span>
               <span className="text-base">📡</span>
             </div>
             <strong className="text-slate-900 font-bold block">T-90, T-30, T-7 Day Radar</strong>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               No founder remembers dates 1, 5, or 10 years later. Automated WhatsApp reminders, emails, and telecall alerts are fired proactively before the government penalty window opens.
             </p>
           </div>
 
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] font-black bg-emerald-700 text-white px-2 py-0.5 rounded">
+              <span className="font-mono text-[11px] font-black bg-emerald-700 text-white px-2 py-0.5 rounded">
                 Stage 3
               </span>
               <span className="text-base">💰</span>
             </div>
             <strong className="text-slate-900 font-bold block">1-Click Token Renewal</strong>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Clients don&apos;t look for another portal. They tap &quot;Renew for ₹999 Token&quot; directly on WhatsApp or in their Vault. Zero CAC (Customer Acquisition Cost) for NyayaLink, 80%+ margin recurring revenue.
             </p>
           </div>
@@ -477,11 +515,11 @@ export default function StatutoryExpiryRadar({
 
       {/* MODAL: LINK EXISTING LICENSE */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                   FREE LIFETIME CUSTODY
                 </span>
                 <h3 className="text-lg font-black text-[#073B5C]">Link an Existing License or Trademark</h3>
@@ -504,7 +542,7 @@ export default function StatutoryExpiryRadar({
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value as TrackedStatutoryItem['category'])}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#0E7490]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                 >
                   <option value="TRADEMARK">Trademark (Form TM-A · 10 Years)</option>
                   <option value="FSSAI">FSSAI Food License (FoSCoS · 1-5 Years)</option>
@@ -522,7 +560,7 @@ export default function StatutoryExpiryRadar({
                   placeholder="e.g. NyayaLink Technologies Private Limited"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#0E7490]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                   required
                 />
               </div>
@@ -536,7 +574,7 @@ export default function StatutoryExpiryRadar({
                   placeholder="e.g. TM-5910248 or FSSAI-11524034000891"
                   value={formIdentifier}
                   onChange={(e) => setFormIdentifier(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#0E7490]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                   required
                 />
               </div>
@@ -549,7 +587,7 @@ export default function StatutoryExpiryRadar({
                   type="date"
                   value={formExpiryDate}
                   onChange={(e) => setFormExpiryDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#0E7490]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
                   required
                 />
               </div>

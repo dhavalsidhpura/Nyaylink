@@ -48,7 +48,7 @@ export default function StagingPaySimulateButton({
         <span>🧪</span>
         <span>{busy ? 'Simulating…' : 'Sandbox: Simulate Token Pay'}</span>
       </button>
-      {error && <p className="text-[10px] text-rose-600 font-bold">{error}</p>}
+      {error && <p className="text-xs text-rose-600 font-bold">{error}</p>}
     </div>
   );
 }
@@ -93,7 +93,7 @@ export function StagingOrderResetButton({ orderNumber }: { orderNumber: string }
         <span>🔄</span>
         <span>{busy ? 'Resetting…' : 'Reset Demo Order (Sandbox)'}</span>
       </button>
-      {error && <p className="text-[10px] text-rose-600 font-bold">{error}</p>}
+      {error && <p className="text-xs text-rose-600 font-bold">{error}</p>}
     </div>
   );
 }

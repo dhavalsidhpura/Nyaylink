@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 const TOOLS = [
   {
@@ -76,6 +77,7 @@ const TOOLS = [
 export default function ToolsIndexPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24">
+      <Header />
       {/* Hero Section */}
       <section className="bg-[#073B5C] text-white pt-12 pb-16 px-4 border-b border-slate-700/60 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#0E7490]/20 rounded-full blur-3xl pointer-events-none" />
@@ -105,7 +107,7 @@ export default function ToolsIndexPage() {
                   <span className="text-3xl p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:scale-110 transition-transform">
                     {tool.icon}
                   </span>
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${tool.badgeClass}`}>
+                  <span className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${tool.badgeClass}`}>
                     {tool.badge}
                   </span>
                 </div>
@@ -122,7 +124,7 @@ export default function ToolsIndexPage() {
                   {tool.highlights.map((h, i) => (
                     <span
                       key={i}
-                      className="text-[10px] font-semibold bg-slate-50 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/80"
+                      className="text-[11px] font-semibold bg-slate-50 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/80"
                     >
                       ✓ {h}
                     </span>

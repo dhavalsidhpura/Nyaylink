@@ -31,21 +31,21 @@ export default function ComparisonMatrix() {
                   <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
                     Execution Dimension
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium">Standard Operating Model</span>
+                  <span className="text-xs text-slate-400 font-medium">Standard Operating Model</span>
                 </th>
 
                 {/* Column 2: NyayaLink Winner */}
-                <th className="py-4 px-5 align-middle w-[32%] bg-gradient-to-b from-[#0E7490]/15 to-cyan-50/70 border-x-2 border-[#0E7490] relative shadow-xs">
+                <th className="py-4 px-5 align-middle w-[32%] bg-gradient-to-b from-[#0E7490]/15 to-cyan-50/70 border-x-2 border-[#0E7490] relative shadow-sm">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="inline-flex items-center gap-1 bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs border border-amber-300">
+                    <span className="inline-flex items-center gap-1 bg-[#F4B942] text-[#073B5C] text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm border border-amber-300">
                       ⚡ Recommended for Founders
                     </span>
-                    <span className="text-[10px] font-bold text-[#0E7490] uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-[#0E7490] uppercase tracking-wider">
                       Pure Agent ₹0
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-base font-black text-[#073B5C]">
-                    <span className="w-6 h-6 rounded-lg bg-[#073B5C] text-[#F4B942] flex items-center justify-center text-xs shadow-xs">
+                    <span className="w-6 h-6 rounded-lg bg-[#073B5C] text-[#F4B942] flex items-center justify-center text-xs shadow-sm">
                       ⚖️
                     </span>
                     <span>NyayaLink Portal</span>
@@ -55,13 +55,13 @@ export default function ComparisonMatrix() {
                 {/* Column 3: Big Portals */}
                 <th className="py-4 px-5 align-middle w-[22%] border-r border-slate-200/80 bg-slate-50/60">
                   <div className="text-xs font-black text-slate-700">Big Legal Portals</div>
-                  <div className="text-[10px] text-slate-400 font-normal">Online Legal India / IndiaFilings</div>
+                  <div className="text-xs text-slate-400 font-normal">Online Legal India / IndiaFilings</div>
                 </th>
 
                 {/* Column 4: Offline CA / Lawyer */}
                 <th className="py-4 px-5 align-middle w-[22%] bg-slate-50/60">
                   <div className="text-xs font-black text-slate-700">Traditional Offline CA</div>
-                  <div className="text-[10px] text-slate-400 font-normal">Independent Practice</div>
+                  <div className="text-xs text-slate-400 font-normal">Independent Practice</div>
                 </th>
               </tr>
             </thead>
@@ -70,14 +70,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       💳
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Advance Booking Model
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         Client cashflow risk &amp; commitment
                       </span>
                     </div>
@@ -90,7 +90,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         Flat ₹999 Advance Token
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         Pay ₹999 to start name approval &amp; draft documents. Settle remaining professional fee only after drafting verification.
                       </p>
                     </div>
@@ -101,7 +101,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">100% Upfront (₹7,999+)</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Full payment demanded upfront before name search or drafting begins. Zero refund safety.
                       </p>
                     </div>
@@ -112,7 +112,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">⚠️</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">50% Advance (₹10,000+)</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         High cash outlay required upfront, often without formalized receipt or milestone SLA tracking.
                       </p>
                     </div>
@@ -124,14 +124,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       📜
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Statutory Stamp Duty
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         State MoA/AoA treasury fees
                       </span>
                     </div>
@@ -144,7 +144,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         Pure Agent Rule 33 Pass-Through
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         State-specific stamp duty itemized to the exact rupee at checkout with zero markup. Actual Bharatkosh challan uploaded to Vault.
                       </p>
                     </div>
@@ -155,7 +155,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Hidden &quot;+ Govt Fee&quot; Trap</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Quoted as &quot;₹7,999 + Govt Fee&quot;; customer is contacted days later for surprise payments of ₹3,500 to ₹6,500.
                       </p>
                     </div>
@@ -166,7 +166,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none text-emerald-600">✓</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">At Actuals (Manual Challan)</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Paid at actuals, but requires manual reimbursement trips or cash disbursement coordination.
                       </p>
                     </div>
@@ -178,14 +178,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       ⚖️
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Legal Supervision &amp; Desk
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         Who actually handles your file
                       </span>
                     </div>
@@ -198,7 +198,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         Named CA &amp; High Court Advocate
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         Direct Order Room access to certified CAs and advocates in Mumbai with direct WhatsApp communication. Zero sales rep gatekeepers.
                       </p>
                     </div>
@@ -209,7 +209,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Call Center Telemarketers</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Customer interacts solely with sales reps on commission. Filings outsourced to low-bid freelance data-entry desks.
                       </p>
                     </div>
@@ -220,7 +220,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✓</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Qualified Professional</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Professional handling, but consultation is strictly limited to office visits or intermittent phone calls.
                       </p>
                     </div>
@@ -232,14 +232,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       📡
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Live Status Tracking
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         Transparency into filing stages
                       </span>
                     </div>
@@ -252,7 +252,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         Real-Time Government SRN Portal
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         Official MCA SRN &amp; GST ARN tracking with instant WhatsApp milestone notifications at each verification stage.
                       </p>
                     </div>
@@ -263,7 +263,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Generic Dashboard</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Static progress bars with delayed manual updates; SRN/ARN numbers often withheld until full settlement.
                       </p>
                     </div>
@@ -274,7 +274,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Zero Online Tracking</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Requires regular follow-up calls or office visits to check if the registrar has approved the file.
                       </p>
                     </div>
@@ -286,14 +286,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       🔒
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Document Security &amp; Vault
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         Client KYC &amp; PAN safety
                       </span>
                     </div>
@@ -306,7 +306,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         AES-256 Encrypted Vault + S3 Direct
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         Strict role-based access. KYC documents are stored encrypted; zero selling of client phone numbers or email lists.
                       </p>
                     </div>
@@ -317,7 +317,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Shared Unencrypted Storage</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         KYC documents handled over unencrypted shared inboxes and passed to third-party telemarketing lead brokers.
                       </p>
                     </div>
@@ -328,7 +328,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">⚠️</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Physical Photocopies</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Documents stored in physical paper folders or local office hard drives with varying backup and security rigor.
                       </p>
                     </div>
@@ -340,14 +340,14 @@ export default function ComparisonMatrix() {
               <tr className="hover:bg-slate-50/50 transition">
                 <td className="py-4 px-5 align-top border-r border-slate-200/80 bg-slate-50/30">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-xs shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
                       ⚡
                     </span>
                     <div>
                       <span className="font-black text-[#073B5C] text-xs block leading-snug">
                         Turnaround SLA Guarantee
                       </span>
-                      <span className="text-[10px] text-slate-400 leading-snug block mt-0.5">
+                      <span className="text-xs text-slate-400 leading-snug block mt-0.5">
                         Filing velocity &amp; execution
                       </span>
                     </div>
@@ -360,7 +360,7 @@ export default function ComparisonMatrix() {
                       <strong className="block text-xs font-extrabold text-emerald-900">
                         5–7 Working Days (Pvt Ltd)
                       </strong>
-                      <p className="text-[11px] text-emerald-800 leading-relaxed">
+                      <p className="text-xs text-emerald-800 leading-relaxed">
                         Deterministic 4-hour document review SLA with automated escalation if unassigned past compliance thresholds.
                       </p>
                     </div>
@@ -371,7 +371,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">✕</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Unpredictable (2–6 Weeks)</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Files frequently stall across departments due to bureaucratic ticket handoffs and priority queue upsells.
                       </p>
                     </div>
@@ -382,7 +382,7 @@ export default function ComparisonMatrix() {
                     <span className="font-black text-base shrink-0 leading-none">⚠️</span>
                     <div className="space-y-0.5">
                       <strong className="block text-xs font-bold text-slate-700">Variable (7–21 Days)</strong>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Subject to practitioner workload during tax audit and GST filing deadlines (July, September, October).
                       </p>
                     </div>
@@ -402,7 +402,7 @@ export default function ComparisonMatrix() {
               onClick={() => setComparisonCompetitor('portals')}
               className={`flex-1 py-2 rounded-xl transition text-center cursor-pointer ${
                 comparisonCompetitor === 'portals'
-                  ? 'bg-white text-[#073B5C] shadow-xs font-black'
+                  ? 'bg-white text-[#073B5C] shadow-sm font-black'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -413,7 +413,7 @@ export default function ComparisonMatrix() {
               onClick={() => setComparisonCompetitor('offline')}
               className={`flex-1 py-2 rounded-xl transition text-center cursor-pointer ${
                 comparisonCompetitor === 'offline'
-                  ? 'bg-white text-[#073B5C] shadow-xs font-black'
+                  ? 'bg-white text-[#073B5C] shadow-sm font-black'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -487,7 +487,7 @@ export default function ComparisonMatrix() {
                       <span>NyayaLink</span>
                     </div>
                     <strong className="block text-slate-800 font-bold leading-tight">{item.nyayaTitle}</strong>
-                    <p className="text-[10px] text-slate-600 leading-snug">{item.nyayaDesc}</p>
+                    <p className="text-xs text-slate-600 leading-snug">{item.nyayaDesc}</p>
                   </div>
 
                   {/* Competitor */}
@@ -505,7 +505,7 @@ export default function ComparisonMatrix() {
                       <span className="truncate">{comparisonCompetitor === 'portals' ? 'Online Portals' : 'Traditional CA'}</span>
                     </div>
                     <strong className="block font-bold leading-tight">{item.compTitle}</strong>
-                    <p className="text-[10px] leading-snug opacity-90">{item.compDesc}</p>
+                    <p className="text-xs leading-snug opacity-90">{item.compDesc}</p>
                   </div>
                 </div>
               </div>

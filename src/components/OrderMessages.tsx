@@ -77,7 +77,7 @@ export default function OrderMessages({ orderNumber, mode }: { orderNumber: stri
                     : 'bg-slate-100 text-slate-800'
                 }`}
               >
-                <div className="flex gap-2 items-center text-[10px] opacity-80 font-bold">
+                <div className="flex gap-2 items-center text-[11px] opacity-80 font-bold">
                   <span>{m.author.name}</span>
                   {m.isInternal && <span className="uppercase">· Internal note</span>}
                   {m.isQuery && <span className="uppercase">· Query</span>}
@@ -125,7 +125,7 @@ export default function OrderMessages({ orderNumber, mode }: { orderNumber: stri
             {sending ? '…' : 'Send'}
           </button>
         </div>
-        {error && <p className="text-[11px] text-rose-700 font-semibold">{error}</p>}
+        {error && <p className="text-xs text-rose-700 font-semibold">{error}</p>}
       </form>
     </div>
   );

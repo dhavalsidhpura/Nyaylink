@@ -377,7 +377,7 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         type="button"
         disabled={locked || busyKey !== null}
         onClick={() => inputs.current[key]?.click()}
-        className="bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-bold text-xs sm:text-[11px] px-4 py-2.5 sm:py-2 rounded-xl cursor-pointer whitespace-nowrap min-h-[42px] sm:min-h-0 flex items-center justify-center gap-1.5 transition shadow-xs w-full sm:w-auto"
+        className="bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-bold text-xs sm:text-[11px] px-4 py-2.5 sm:py-2 rounded-xl cursor-pointer whitespace-nowrap min-h-[42px] sm:min-h-0 flex items-center justify-center gap-1.5 transition shadow-sm w-full sm:w-auto"
       >
         {busyKey === key ? (
           <>
@@ -405,27 +405,27 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         <div className="min-w-0 space-y-1.5 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <strong className="text-xs sm:text-sm text-[#073B5C] font-extrabold">{title}</strong>
-            {required && <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full uppercase">Required</span>}
-            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${ui.style}`}>{ui.label}</span>
+            {required && <span className="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full uppercase">Required</span>}
+            <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${ui.style}`}>{ui.label}</span>
             {(() => {
               const lower = title.toLowerCase();
               if (lower.includes('bill') || lower.includes('electricity') || lower.includes('utility')) {
                 return (
-                  <span className="text-[9px] font-black bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-black bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-md">
                     ⚡ &lt; 60 Days Old
                   </span>
                 );
               }
               if (lower.includes('pan')) {
                 return (
-                  <span className="text-[9px] font-black bg-cyan-50 text-cyan-900 border border-cyan-200 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-black bg-cyan-50 text-cyan-900 border border-cyan-200 px-2 py-0.5 rounded-md">
                     🪪 Color Scan
                   </span>
                 );
               }
               if (lower.includes('noc')) {
                 return (
-                  <span className="text-[9px] font-black bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-black bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-md">
                     ✍️ Owner Signed
                   </span>
                 );
@@ -434,13 +434,13 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
             })()}
           </div>
           {doc && (
-            <p className="text-[11px] text-slate-500 truncate">
+            <p className="text-xs text-slate-500 truncate">
               {doc.originalName} · v{doc.version} · {new Date(doc.uploadedAt).toLocaleDateString('en-IN')}
             </p>
           )}
           {doc?.status === 'REJECTED' && doc.rejectNote && (
             <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-[11px] space-y-0.5">
-              <span className="font-bold block uppercase text-[9px] tracking-wider text-rose-700">CA Desk Re-Upload Remark:</span>
+              <span className="font-bold block uppercase text-[11px] tracking-wider text-rose-700">CA Desk Re-Upload Remark:</span>
               <span>{doc.rejectNote}</span>
             </div>
           )}
@@ -458,7 +458,7 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
                     key={preset}
                     type="button"
                     onClick={() => setRejectNote(preset)}
-                    className="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2.5 py-1 rounded-lg transition text-left cursor-pointer"
+                    className="text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2.5 py-1 rounded-lg transition text-left cursor-pointer"
                   >
                     + {preset}
                   </button>
@@ -543,7 +543,7 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
                   : `${requirements.length - uploaded} Document${requirements.length - uploaded > 1 ? 's' : ''} Remaining`}
               </strong>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               {done === requirements.length
                 ? 'Your filing docket is fully documented and queued for government submission.'
                 : uploaded === requirements.length
@@ -554,7 +554,7 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
           <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
             <div className="text-right">
               <span className="text-xs font-black text-[#073B5C] font-mono">{done}/{requirements.length}</span>
-              <span className="text-[10px] text-slate-500 block uppercase font-bold">Verified</span>
+              <span className="text-xs text-slate-500 block uppercase font-bold">Verified</span>
             </div>
             <div className="w-14 h-2 bg-slate-200 rounded-full overflow-hidden">
               <div
@@ -578,28 +578,28 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
         {/* OFFICIAL DRAFTING TEMPLATES */}
         {mode === 'client' && (
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-            <span className="text-[10px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
+            <span className="text-[11px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
               📄 Official Drafting Templates (Downloadable Formats)
             </span>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] -mx-1 px-1 text-xs">
               <button
                 type="button"
                 onClick={() => downloadTemplate('noc')}
-                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               >
                 <span>🏢</span> Landlord NOC Template ↓
               </button>
               <button
                 type="button"
                 onClick={() => downloadTemplate('dir2')}
-                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               >
                 <span>✍️</span> Form DIR-2 (Consent) ↓
               </button>
               <button
                 type="button"
                 onClick={() => downloadTemplate('board_res')}
-                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
+                className="bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               >
                 <span>📜</span> Board Resolution Format ↓
               </button>
@@ -607,14 +607,14 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
           </div>
         )}
 
-        {locked && lockedReason && <p className="text-[11px] font-bold text-amber-700">{lockedReason}</p>}
+        {locked && lockedReason && <p className="text-xs font-bold text-amber-700">{lockedReason}</p>}
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-bold flex items-center gap-2">
             <span>⚠️</span> {error}
           </div>
         )}
         {preValidationSuccess && (
-          <p className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl">
+          <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl">
             {preValidationSuccess}
           </p>
         )}
@@ -636,10 +636,10 @@ export default function DocumentChecklist({ orderId, requirements, documents, mo
 
       {/* STATUTORY IN-APP CONFIRMATION MODAL (MOBILE BOTTOM-SHEET / DESKTOP DIALOG) */}
       {confirmDialog && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 animate-fadeIn">
             <div className="flex items-center gap-2">
-              <span className="bg-amber-100 text-amber-900 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+              <span className="bg-amber-100 text-amber-900 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full">
                 {confirmDialog.badge}
               </span>
             </div>

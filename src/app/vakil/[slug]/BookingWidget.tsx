@@ -166,7 +166,7 @@ export default function BookingWidget({ slug, modes, total, minutes }: { slug: s
                   active ? 'bg-[#073B5C] text-[#F4B942] border-[#073B5C]' : 'bg-slate-50 border-slate-200 text-slate-700'
                 }`}
               >
-                <span className="block text-[10px]">{weekday}</span>
+                <span className="block text-[11px]">{weekday}</span>
                 <span className="block font-bold text-[11px]">{day}</span>
               </button>
             );
@@ -233,7 +233,7 @@ export default function BookingWidget({ slug, modes, total, minutes }: { slug: s
       </div>
 
       {error && (
-        <p className="text-[11px] font-semibold text-rose-700" role="alert">
+        <p className="text-xs font-semibold text-rose-700" role="alert">
           {error}
         </p>
       )}

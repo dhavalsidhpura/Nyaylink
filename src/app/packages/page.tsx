@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { MASTER_PACKAGES, PackageItem } from '@/data/packages';
 import Header from '@/components/Header';
 import CompanyTierSelector, { TierKey } from '@/components/CompanyTierSelector';
+import ComparisonMatrix from '@/components/home/ComparisonMatrix';
 
 export default function PackagesPage() {
   const router = useRouter();
@@ -92,11 +93,11 @@ export default function PackagesPage() {
             <h2 className="text-base sm:text-xl font-black text-[#073B5C]">
               Browse Bundled Suites
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500">
+            <p className="text-xs sm:text-xs text-slate-500">
               Select your business archetype or growth stage
             </p>
           </div>
-          <div className="self-start sm:self-auto text-[11px] sm:text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="self-start sm:self-auto text-[11px] sm:text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
             Showing <strong className="text-[#073B5C] font-black">{filteredPackages.length}</strong> of {MASTER_PACKAGES.length} Packages
           </div>
         </div>
@@ -121,7 +122,7 @@ export default function PackagesPage() {
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                 activeCategory === tab.id ? 'bg-[#0E7490] text-white' : 'bg-slate-100 text-slate-500'
               }`}>
                 {tab.count}
@@ -176,14 +177,14 @@ export default function PackagesPage() {
                   
                   {/* Meta Strip: Category label on left, badges on right */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-[#0E7490] bg-[#0E7490]/10 px-2.5 py-1 rounded-full border border-[#0E7490]/20">
+                    <span className="text-[11px] sm:text-[11px] font-black uppercase tracking-wider text-[#0E7490] bg-[#0E7490]/10 px-2.5 py-1 rounded-full border border-[#0E7490]/20">
                       {pkg.categoryLabel}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200">
+                      <span className="bg-[#FFF4D9] text-[#073B5C] text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200">
                         ⚡ {pkg.badge}
                       </span>
-                      <span className="bg-emerald-50 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
+                      <span className="bg-emerald-50 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
                         Save {pkg.savingsPercent}%
                       </span>
                     </div>
@@ -191,7 +192,7 @@ export default function PackagesPage() {
 
                   {/* Icon + Title block (Full horizontal breathing room on all screens) */}
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl sm:text-3xl p-2 sm:p-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-xs shrink-0 mt-0.5">
+                    <span className="text-2xl sm:text-3xl p-2 sm:p-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm shrink-0 mt-0.5">
                       {pkg.icon}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -211,7 +212,7 @@ export default function PackagesPage() {
 
                   {/* Included Services Checklist */}
                   <div className="space-y-1.5 pt-1">
-                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                    <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider block">
                       Services Included ({pkg.includedServices.length} Filings):
                     </span>
                     <div className="space-y-1.5">
@@ -226,7 +227,7 @@ export default function PackagesPage() {
                               {srv.name}
                             </span>
                           </div>
-                          <span className="text-[10px] sm:text-[11px] text-slate-400 line-through shrink-0 font-mono">
+                          <span className="text-[11px] sm:text-[11px] text-slate-400 line-through shrink-0 font-mono">
                             ₹{srv.standalonePrice.toLocaleString()}
                           </span>
                         </div>
@@ -246,7 +247,7 @@ export default function PackagesPage() {
                     </button>
 
                     {isDeliverablesOpen && (
-                      <div className="mt-2 p-3 sm:p-3.5 bg-cyan-50/50 rounded-2xl border border-cyan-200/70 space-y-1.5 text-xs text-slate-700 animate-in fade-in duration-150">
+                      <div className="mt-2 p-3 sm:p-3.5 bg-cyan-50/50 rounded-2xl border border-cyan-200/70 space-y-1.5 text-xs text-slate-700 animate-fadeIn">
                         {pkg.deliverables.map((item, dIdx) => (
                           <div key={dIdx} className="flex items-start gap-2 text-[11px] sm:text-xs leading-relaxed">
                             <span className="text-emerald-600 font-black shrink-0 mt-0.5">✓</span>
@@ -262,7 +263,7 @@ export default function PackagesPage() {
                 <div className="p-4 sm:p-6 lg:p-7 bg-slate-50 border-t border-slate-200/80 space-y-3 shrink-0">
                   <div className="flex items-baseline justify-between gap-2">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-semibold block uppercase tracking-wider">
+                      <span className="text-xs text-slate-400 font-semibold block uppercase tracking-wider">
                         Standalone: <span className="line-through">₹{pkg.standaloneTotal.toLocaleString()}</span>
                       </span>
                       <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
@@ -276,7 +277,7 @@ export default function PackagesPage() {
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
+                      <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">
                         SLA Timeline
                       </span>
                       <span className="text-xs font-extrabold text-[#073B5C]">
@@ -294,7 +295,7 @@ export default function PackagesPage() {
                     <span className="hidden sm:inline">Start This Package for ₹999 Token →</span>
                   </Link>
 
-                  <p className="text-[10px] text-slate-400 text-center leading-tight">
+                  <p className="text-xs text-slate-400 text-center leading-tight">
                     🔒 ₹999 advance locks in parallel CA execution. Remaining balance billed after documentation approval.
                   </p>
                 </div>
@@ -310,7 +311,7 @@ export default function PackagesPage() {
       <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
         <div className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#0E7490] text-white rounded-3xl p-5 sm:p-8 lg:p-10 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl text-center md:text-left">
-            <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-1 rounded-full inline-block">
+            <span className="bg-[#F4B942] text-[#073B5C] text-[11px] font-black uppercase px-3 py-1 rounded-full inline-block">
               Enterprise &amp; Custom Scopes
             </span>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-black">
@@ -341,8 +342,10 @@ export default function PackagesPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* 5. PACKAGES FAQ ACCORDION                                */}
+      {/* 5. WHY NYAYALINK COMPARISON & PACKAGES FAQ ACCORDION     */}
       {/* ======================================================== */}
+      <ComparisonMatrix />
+
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-6">
         <div className="text-center space-y-2">
           <h3 className="text-xl sm:text-3xl font-black text-[#073B5C]">
@@ -388,7 +391,7 @@ export default function PackagesPage() {
               a: 'Absolutely. You can initiate any bundled package with a ₹999 advance token. Our CA desk immediately begins company name approval, digital signatures (DSC), and legal drafting. You settle the remaining package fee only after preliminary verification is complete.',
             },
           ].map((faq, idx) => (
-            <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
+            <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}

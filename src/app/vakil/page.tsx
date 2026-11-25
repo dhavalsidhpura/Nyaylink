@@ -71,7 +71,7 @@ export default async function VakilSearchPage({ searchParams }: Props) {
 
       <section className="bg-[#073B5C] text-white px-4 sm:px-6 py-10">
         <div className="max-w-6xl mx-auto space-y-3">
-          <span className="bg-[#0E7490] text-[#F4B942] text-[10px] font-extrabold uppercase px-3 py-1 rounded-full">
+          <span className="bg-[#0E7490] text-[#F4B942] text-[11px] font-extrabold uppercase px-3 py-1 rounded-full">
             ⚖️ Bar Council verified advocates
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold">वकील Search</h1>
@@ -151,15 +151,15 @@ export default async function VakilSearchPage({ searchParams }: Props) {
                 <div className="flex justify-between items-start gap-3">
                   <div>
                     <h2 className="text-base font-extrabold text-[#073B5C]">{l.user.name}</h2>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-xs text-slate-500">
                       {l.city} · Enrolled {l.enrollmentYear} · {l.barCouncil}
                     </p>
                   </div>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full shrink-0">✓ Verified</span>
+                  <span className="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full shrink-0">✓ Verified</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {l.practiceAreas?.map((a: any) => (
-                    <span key={a.slug} className="text-[10px] bg-cyan-50 text-[#0E7490] border border-cyan-200 font-bold px-2 py-0.5 rounded-full">
+                    <span key={a.slug} className="text-[11px] bg-cyan-50 text-[#0E7490] border border-cyan-200 font-bold px-2 py-0.5 rounded-full">
                       {a.name}
                     </span>
                   ))}

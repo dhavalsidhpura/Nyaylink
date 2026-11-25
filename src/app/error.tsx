@@ -48,7 +48,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           </div>
 
           {error.digest && (
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] text-slate-500">
+            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-xs text-slate-500">
               Reference ID: {error.digest}
             </div>
           )}

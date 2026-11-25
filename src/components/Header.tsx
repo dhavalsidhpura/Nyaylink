@@ -1,109 +1,157 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { BRAND } from '@/lib/constants';
 
-const MENU_COMPANY_REG = {
-  column1: {
-    title: 'Incorporation & Setup',
-    items: [
-      { name: 'Private Limited Company', slug: 'private-limited-company' },
-      { name: 'US Delaware C-Corp (YC Ready)', slug: 'us-delaware-company-registration' },
-      { name: 'LLP Registration', slug: 'llp-registration' },
-      { name: 'One Person Company (OPC)', slug: 'one-person-company' },
-      { name: 'Public Limited Company', slug: 'public-limited-company' },
-      { name: 'Section 8 Company (NGO)', slug: 'section-8-company' },
-      { name: 'Nidhi Company Registration', slug: 'nidhi-company-registration' },
-      { name: 'Indian Subsidiary Registration', slug: 'indian-subsidiary-registration' },
-      { name: 'Proprietorship / Shop Act Setup', slug: 'business-registration-license' },
-    ],
-  },
-  column2: {
-    title: 'Governance & Compliance',
-    items: [
-      { name: 'Director DIR-3 KYC Annual Filing', slug: 'dir-3-kyc-director-filing' },
-      { name: 'MCA Form INC-20A Commencement', slug: 'mca-inc-20a-commencement-of-business' },
-      { name: 'Startup India DPIIT Recognition', slug: 'startup-india-dpiit-recognition' },
-      { name: 'MSME Udyam Registration', slug: 'msme-udyam-registration' },
-      { name: 'Shop & Establishment (Gumasta)', slug: 'shop-and-establishment-license' },
-      { name: 'ISO 9001/27001 Certification', slug: 'iso-certification' },
-      { name: 'Annual 360° Corporate Retainer', href: '/packages' },
-    ],
-  },
-};
+interface NavLinkItem {
+  name: string;
+  slug?: string;
+  href?: string;
+}
 
-const MENU_TRADEMARK = {
-  column1: {
-    title: 'Trademark & Brand Protection',
-    items: [
-      { name: 'Trademark Registration', slug: 'trademark-registration' },
-      { name: 'Trademark Hearing Representation', slug: 'trademark-hearing-representation' },
-      { name: 'Trademark Watch & Gazette Monitoring', slug: 'trademark-watch-monitoring' },
-      { name: 'Trademark Renewal', slug: 'trademark-renewal' },
-      { name: 'Trademark Objection Reply', slug: 'trademark-objection-reply' },
-      { name: 'Trademark Opposition', slug: 'trademark-opposition' },
-      { name: 'Trademark Assignment', slug: 'trademark-assignment' },
-      { name: 'Series & Logo Trademark', slug: 'series-trademark' },
-    ],
-  },
-  column2: {
-    title: 'Copyright & IPR Rights',
-    items: [
-      { name: 'Copyright Registration', slug: 'copyright-registration' },
-      { name: 'Consult an IP Advocate', href: '/vakil' },
-    ],
-  },
-};
+interface NavDropdownColumn {
+  title: string;
+  icon: string;
+  items: NavLinkItem[];
+}
 
-const MENU_TAX_GST = {
-  column1: {
-    title: 'GST & Business Taxation',
-    items: [
-      { name: 'GST Registration (New GSTIN)', slug: 'gst-registration' },
-      { name: 'Monthly / Quarterly GST Return', slug: 'gst-return-filing' },
-      { name: 'GST Nil Return Filing', slug: 'gst-nil-return-filing' },
-      { name: 'GSTR-9 Annual Return', slug: 'gstr-9-annual-filing' },
-      { name: 'GST LUT Filing for Exporters', slug: 'gst-lut-filing' },
-    ],
-  },
-  column2: {
-    title: 'TDS & Direct Taxation',
-    items: [
-      { name: 'Virtual CFO (vCFO) Advisory', slug: 'virtual-cfo-services' },
-      { name: 'TDS Quarterly Return (26Q/24Q)', slug: 'tds-return-filing' },
-      { name: 'Income Tax Return (ITR-1 to 7)', slug: 'income-tax-return-itr' },
-      { name: 'Online Bookkeeping & Accounting', slug: 'online-bookkeeping' },
-      { name: 'Scale Your Business & SOPs', slug: 'scale-your-business' },
-    ],
-  },
-};
+interface NavMenu {
+  id: string;
+  label: string;
+  alignRight?: boolean;
+  columns: [NavDropdownColumn, NavDropdownColumn];
+}
 
+const resolveMenuHref = (item: NavLinkItem) => item.href || `/services/${item.slug}`;
 
-const MENU_TOOLS = {
-  column1: {
-    title: 'Statutory Calculators & Checks',
-    items: [
-      { name: '🏛️ All-India Incorporation Cost Calculator', href: '/tools/incorporation-calculator' },
-      { name: '🇮🇳 Startup India & 80-IAC Diagnostic', href: '/tools/startup-india-checker' },
-      { name: '🔍 MCA Company Name Search (Rule 8)', href: '/tools/company-name-search' },
-      { name: '™️ Trademark Class & Conflict Search', href: '/tools/trademark-search' },
+const NAV_MENUS: NavMenu[] = [
+  {
+    id: 'company',
+    label: 'Business Setup',
+    columns: [
+      {
+        title: 'Incorporation & Entities',
+        icon: '🏢',
+        items: [
+          { name: 'Private Limited Company', slug: 'private-limited-company' },
+          { name: 'LLP Registration', slug: 'llp-registration' },
+          { name: 'One Person Company (OPC)', slug: 'one-person-company' },
+          { name: 'Public Limited Company', slug: 'public-limited-company' },
+          { name: 'Section 8 Company (NGO)', slug: 'section-8-company' },
+          { name: 'Indian Subsidiary (FDI)', slug: 'indian-subsidiary-registration' },
+          { name: 'US Delaware C-Corp', slug: 'us-delaware-company-registration' },
+          { name: 'Proprietorship / Shop Setup', slug: 'business-registration-license' },
+        ],
+      },
+      {
+        title: 'Licenses & Governance',
+        icon: '📜',
+        items: [
+          { name: 'FSSAI Food License', slug: 'fssai-food-license' },
+          { name: 'Shop & Establishment (Gumasta)', slug: 'shop-and-establishment-license' },
+          { name: 'Import Export Code (IEC)', slug: 'import-export-code-iec' },
+          { name: 'Startup India DPIIT Recognition', slug: 'startup-india-dpiit-recognition' },
+          { name: 'MSME Udyam Registration', slug: 'msme-udyam-registration' },
+          { name: 'Director DIR-3 KYC Filing', slug: 'dir-3-kyc-director-filing' },
+          { name: 'MCA Form INC-20A Commencement', slug: 'mca-inc-20a-commencement-of-business' },
+          { name: 'Bundled Founder Packages →', href: '/packages' },
+        ],
+      },
     ],
   },
-  column2: {
-    title: 'Verification & Legal Engines',
-    items: [
-      { name: '📊 GSTIN Verification & Returns', href: '/tools/gst-search' },
-      { name: '📡 Track MCA SRN / TM / GST Status', href: '/tools/track-status' },
-      { name: '📝 Automated Legal Agreement Generator', href: '/tools/agreement-generator' },
-      { name: '⚡ All Founder Tools Hub', href: '/tools' },
+  {
+    id: 'tax',
+    label: 'Tax & GST',
+    columns: [
+      {
+        title: 'GST Filings & Registrations',
+        icon: '🧾',
+        items: [
+          { name: 'GST Registration (New GSTIN)', slug: 'gst-registration' },
+          { name: 'GST Return Filing (GSTR-1 & 3B)', slug: 'gst-return-filing' },
+          { name: 'GST Nil Return Filing', slug: 'gst-nil-return-filing' },
+          { name: 'GSTR-9 Annual Return', slug: 'gstr-9-annual-filing' },
+          { name: 'GST LUT Filing for Exporters', slug: 'gst-lut-filing' },
+          { name: 'GST Modification / Amendment', slug: 'gst-modification' },
+        ],
+      },
+      {
+        title: 'Direct Tax & Accounting',
+        icon: '📊',
+        items: [
+          { name: 'Income Tax Return (ITR 1–6)', slug: 'income-tax-return-itr' },
+          { name: 'TDS Quarterly Return (24Q/26Q)', slug: 'tds-return-filing' },
+          { name: 'Online Bookkeeping & Retainer', slug: 'online-bookkeeping' },
+          { name: 'Virtual CFO (vCFO) Advisory', slug: 'virtual-cfo-services' },
+          { name: 'PF & ESIC Registration', slug: 'pf-esic-registration' },
+        ],
+      },
     ],
   },
-};
+  {
+    id: 'trademark',
+    label: 'Trademark & Legal',
+    columns: [
+      {
+        title: 'Trademark & IPR',
+        icon: '™️',
+        items: [
+          { name: 'Trademark Registration', slug: 'trademark-registration' },
+          { name: 'Trademark Objection Reply', slug: 'trademark-objection-reply' },
+          { name: 'Trademark Hearing Representation', slug: 'trademark-hearing-representation' },
+          { name: 'Trademark Renewal', slug: 'trademark-renewal' },
+          { name: 'Trademark Opposition', slug: 'trademark-opposition' },
+          { name: 'Copyright Registration', slug: 'copyright-registration' },
+        ],
+      },
+      {
+        title: 'Notices & Disputes (ODR)',
+        icon: '⚖️',
+        items: [
+          { name: 'Consumer Complaint Notice', slug: 'consumer-complaint-notice' },
+          { name: 'Formal Legal Demand Notice', slug: 'legal-demand-notice' },
+          { name: 'Section 138 Cheque Bounce Notice', slug: 'cheque-bounce-notice-138' },
+          { name: 'Consumer Forum Petition (e-Daakhil)', slug: 'consumer-court-petition' },
+          { name: 'Consult an Advocate (वकील Search) →', href: '/vakil' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tools',
+    label: 'Free Tools',
+    alignRight: true,
+    columns: [
+      {
+        title: 'Calculators & Generators',
+        icon: '🧮',
+        items: [
+          { name: 'Incorporation Cost Calculator', href: '/tools/incorporation-calculator' },
+          { name: 'Startup India 80-IAC Checker', href: '/tools/startup-india-checker' },
+          { name: 'Legal Agreement Generator', href: '/tools/agreement-generator' },
+          { name: 'All 7 Free Tools Hub →', href: '/tools' },
+        ],
+      },
+      {
+        title: 'Search & Verification',
+        icon: '🔍',
+        items: [
+          { name: 'MCA Company Name Check', href: '/tools/company-name-search' },
+          { name: 'Trademark Class & Brand Check', href: '/tools/trademark-search' },
+          { name: 'GSTIN Format Decoder', href: '/tools/gst-search' },
+          { name: 'Track Filing / SRN Status', href: '/tools/track-status' },
+        ],
+      },
+    ],
+  },
+];
 
 export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -119,515 +167,243 @@ export default function Header() {
     };
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveDropdown(null);
+        setMobileMenuOpen(false);
+      }
+    };
+    const onClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onClickOutside);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onClickOutside);
+    };
+  }, []);
+
   const toggleMobileSection = (sec: string) => {
     setOpenMobileSection(openMobileSection === sec ? null : sec);
   };
 
   return (
     <>
-      {/* Top Utility Bar */}
-      <div className="bg-nyaya-navy text-slate-300 text-xs py-2 px-4 border-b border-slate-700/50 relative z-50">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-6">
-            <a href="tel:+919920054785" className="flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              📞 <strong className="text-white">+91 9920054785</strong> (Mon–Sat 9AM–7PM IST)
+      {/* Slim Utility Bar (Desktop & Tablet) */}
+      <div className="hidden sm:block bg-[#052A42] text-slate-300 text-xs py-1.5 px-4 border-b border-slate-700/50 relative z-40">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
+          <div className="flex items-center gap-5">
+            <a href={`tel:${BRAND.phoneTel}`} className="hover:text-[#F4B942] transition-colors">
+              📞 <strong className="text-white">{BRAND.phone}</strong> <span className="hidden md:inline text-slate-400">(Mon–Sat 9AM–7PM)</span>
             </a>
-            <a href="mailto:info@nyaylink.com" className="hidden sm:flex items-center gap-1.5 hover:text-nyaya-gold transition-colors">
-              ✉️ info@nyaylink.com
+            <a href={`mailto:${BRAND.supportEmail}`} className="hidden md:inline hover:text-[#F4B942] transition-colors">
+              ✉️ {BRAND.supportEmail}
             </a>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4 text-xs">
-            <span className="text-slate-400 hidden md:inline">For Experts:</span>
-            <Link
-              href="/ca/dashboard"
-              className="text-slate-300 hover:text-nyaya-gold transition-colors"
-            >
-              CA Partner Portal
-            </Link>
-            <span className="text-slate-600">•</span>
-            <Link
-              href="/lawyer/join"
-              className="text-slate-300 hover:text-white transition-colors"
-            >
-              Advocates
-            </Link>
-            <span className="text-slate-600">•</span>
-            <Link
-              href="/tools/track-status"
-              className="text-slate-300 hover:text-white transition-colors"
-            >
+          <div className="flex items-center gap-4">
+            <Link href="/tools/track-status" className="hover:text-[#F4B942] transition-colors">
               Track Filing
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link href="/ca/dashboard" className="hover:text-[#F4B942] transition-colors">
+              CA Portal
+            </Link>
+            <span className="text-slate-600">•</span>
+            <Link href="/lawyer/join" className="hover:text-white transition-colors">
+              Advocates
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Header & Branding */}
-      <header className="bg-nyaya-navy text-white sticky top-0 z-40 shadow-lg border-b border-nyaya-teal/30">
+      {/* Main Sticky Header */}
+      <header className="bg-[#073B5C] text-white sticky top-0 z-40 shadow-md border-b border-[#0E7490]/40">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4 relative">
-          
-          {/* Logo & Tagline */}
-          <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <div className="bg-nyaya-teal text-white font-extrabold text-2xl px-3.5 py-1 rounded-xl font-mono tracking-wider shadow border border-cyan-500/30 flex items-center gap-1">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="bg-[#0E7490] text-white font-extrabold text-xl px-3.5 py-1 rounded-xl font-mono tracking-wider shadow-sm border border-cyan-400/30 flex items-center gap-0.5">
               <span>Nyaya</span>
-              <span className="text-nyaya-gold">Link</span>
+              <span className="text-[#F4B942]">Link</span>
             </div>
-            <div className="hidden lg:block border-l border-slate-700 pl-3">
-              <span className="block text-xs font-bold leading-none uppercase tracking-wider text-white">
-                Nyaya<span className="text-nyaya-gold">Link</span>
-              </span>
-              <span className="block text-[10px] text-nyaya-gold font-semibold tracking-wide mt-0.5">
-                Your Link to Justice
-              </span>
-            </div>
+            <span className="hidden xl:inline text-xs text-cyan-200/90 font-medium border-l border-slate-600 pl-2.5">
+              {BRAND.tagline}
+            </span>
           </Link>
 
-          {/* Navigation Links with Mega Dropdowns */}
-          <nav className="hidden md:flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-slate-200">
-            
-            {/* Company Registration Dropdown */}
-            <div
-              className="relative py-2"
-              onMouseEnter={() => setActiveDropdown('company')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all flex items-center gap-1 cursor-pointer">
-                Company Registration ▾
-              </button>
+          {/* Desktop Navigation */}
+          <nav ref={navRef} aria-label="Main navigation" className="hidden lg:flex items-center gap-1 text-xs font-bold text-slate-100">
+            {NAV_MENUS.map((menu) => {
+              const isOpen = activeDropdown === menu.id;
+              return (
+                <div
+                  key={menu.id}
+                  className="relative py-1"
+                  onMouseEnter={() => setActiveDropdown(menu.id)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    onClick={() => setActiveDropdown(isOpen ? null : menu.id)}
+                    className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                      isOpen ? 'bg-[#0E7490]/50 text-[#F4B942]' : 'hover:bg-[#0E7490]/40 hover:text-[#F4B942]'
+                    }`}
+                  >
+                    <span>{menu.label}</span>
+                    <span className="text-[11px] opacity-75">▾</span>
+                  </button>
 
-              {activeDropdown === 'company' && (
-                <div className="absolute top-full -left-4 w-[680px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 grid grid-cols-2 gap-6 z-50 animate-fadeIn">
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>💼</span> {MENU_COMPANY_REG.column1.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_COMPANY_REG.column1.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
+                  {isOpen && (
+                    <div
+                      className={`absolute top-full ${
+                        menu.alignRight ? 'right-0' : 'left-0'
+                      } w-[560px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-5 grid grid-cols-2 gap-6 z-50 animate-fadeIn`}
+                    >
+                      {menu.columns.map((col, cIdx) => (
+                        <div key={cIdx}>
+                          <div className="flex items-center gap-2 text-[#0E7490] font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
+                            <span>{col.icon}</span>
+                            <span>{col.title}</span>
+                          </div>
+                          <ul className="space-y-2 text-xs font-medium text-slate-700">
+                            {col.items.map((item, idx) => (
+                              <li key={idx}>
+                                <Link
+                                  href={resolveMenuHref(item)}
+                                  onClick={() => setActiveDropdown(null)}
+                                  className="hover:text-[#0E7490] hover:underline block py-0.5 transition-colors"
+                                >
+                                  {item.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>🏛️</span> {MENU_COMPANY_REG.column2.title}
                     </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_COMPANY_REG.column2.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })}
 
-            {/* Trademark Dropdown */}
-            <div
-              className="relative py-2"
-              onMouseEnter={() => setActiveDropdown('trademark')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all flex items-center gap-1 cursor-pointer">
-                Trademark & IPR ▾
-              </button>
-
-              {activeDropdown === 'trademark' && (
-                <div className="absolute top-full -left-10 w-[550px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 grid grid-cols-2 gap-6 z-50 animate-fadeIn">
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>™️</span> {MENU_TRADEMARK.column1.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TRADEMARK.column1.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>©️</span> {MENU_TRADEMARK.column2.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TRADEMARK.column2.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tax & GST Dropdown */}
-            <div
-              className="relative py-2"
-              onMouseEnter={() => setActiveDropdown('tax')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all flex items-center gap-1 cursor-pointer">
-                Tax & Compliance ▾
-              </button>
-
-              {activeDropdown === 'tax' && (
-                <div className="absolute top-full -left-20 w-[580px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 grid grid-cols-2 gap-6 z-50 animate-fadeIn">
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>📊</span> {MENU_TAX_GST.column1.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TAX_GST.column1.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>📑</span> {MENU_TAX_GST.column2.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TAX_GST.column2.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={`/services/${item.slug}`} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            
-            {/* Tools Dropdown */}
-            <div
-              className="relative py-2"
-              onMouseEnter={() => setActiveDropdown('tools')}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all flex items-center gap-1 cursor-pointer">
-                Founder Tools ▾
-              </button>
-
-              {activeDropdown === 'tools' && (
-                <div className="absolute top-full -left-20 w-[600px] bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 p-6 grid grid-cols-2 gap-6 z-50 animate-fadeIn">
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>⚙️</span> {MENU_TOOLS.column1.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TOOLS.column1.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={item.href} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 text-nyaya-teal font-extrabold text-xs uppercase mb-3 border-b border-slate-100 pb-1.5">
-                      <span>🛠️</span> {MENU_TOOLS.column2.title}
-                    </div>
-                    <ul className="space-y-2 text-xs font-medium text-slate-700">
-                      {MENU_TOOLS.column2.items.map((item, idx) => (
-                        <li key={idx}>
-                          <Link href={item.href} className="hover:text-nyaya-teal block transition-colors">
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Link
-              href="/#catalog-section"
-              className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
-            >
-              All Services
+            <Link href="/packages" className="px-3 py-2 hover:bg-[#0E7490]/40 hover:text-[#F4B942] rounded-lg transition-colors whitespace-nowrap">
+              Bundles
             </Link>
-            <Link
-              href="/vakil"
-              className="px-3 py-2 hover:bg-nyaya-teal/40 hover:text-nyaya-gold rounded-lg transition-all"
-            >
+            <Link href="/vakil" className="px-3 py-2 hover:bg-[#0E7490]/40 hover:text-[#F4B942] rounded-lg transition-colors whitespace-nowrap">
               वकील Search
             </Link>
           </nav>
 
-          {/* Action Button */}
-          <div className="flex items-center gap-2">
-            <Link
-              href="/tools/track-status"
-              className="hidden lg:inline-flex items-center gap-1 text-slate-200 hover:text-nyaya-gold text-xs font-bold px-2 py-1 transition"
-            >
-              Track Filing
-            </Link>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-nyaya-gold text-white hover:text-nyaya-gold font-bold text-xs px-3 py-1.5 rounded-xl transition shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#F4B942] text-white hover:text-[#F4B942] font-bold text-xs px-3 py-2 rounded-xl transition"
             >
-              <span>🔑</span>
               <span>Log In</span>
             </Link>
             <Link
               href="/dashboard"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-nyaya-gold hover:bg-amber-500 text-nyaya-navy font-black text-xs px-3.5 py-2 rounded-xl shadow transition uppercase tracking-wider"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-xs px-3.5 py-2 rounded-xl shadow-sm transition"
             >
-              <span>📁</span>
               <span>Client Vault</span>
             </Link>
 
-            {/* Mobile Menu Hamburger Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden w-9 h-9 rounded-xl bg-nyaya-teal text-white flex items-center justify-center font-bold text-base hover:bg-nyaya-teal/80 transition"
+              className="lg:hidden w-9 h-9 rounded-xl bg-[#0E7490] text-white flex items-center justify-center font-bold text-base hover:bg-[#0E7490]/80 transition cursor-pointer"
               aria-label="Toggle Navigation"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? '✕' : '☰'}
             </button>
           </div>
         </div>
-      
+
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-nyaya-navy/98 border-t border-slate-700/80 px-4 py-5 max-h-[80vh] overflow-y-auto space-y-4 animate-in fade-in slide-in-from-top-2 text-xs">
-            
-            {/* Quick Actions at Top */}
-            <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-700/60">
+          <div className="lg:hidden bg-[#073B5C] border-t border-slate-700/80 px-4 py-5 max-h-[82vh] overflow-y-auto space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-2.5 pb-3 border-b border-slate-700/60">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-nyaya-gold text-nyaya-navy font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px] flex items-center justify-center gap-1 shadow-sm"
+                className="bg-[#F4B942] text-[#073B5C] font-black text-center py-2.5 px-3 rounded-xl text-xs"
               >
-                <span>🔑</span> Client Login
+                Client Login
               </Link>
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-white/10 hover:bg-white/20 text-white font-extrabold text-center py-2.5 px-3 rounded-xl uppercase tracking-wider text-[11px] flex items-center justify-center gap-1"
+                className="bg-white/10 hover:bg-white/20 text-white font-bold text-center py-2.5 px-3 rounded-xl text-xs"
               >
-                <span>👤</span> My Dashboard
+                Client Vault
               </Link>
-              <a
-                href="https://wa.me/919920054785?text=Hello%20NyayaLink%2C%20I%20need%20assistance."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-center py-2.5 px-3 rounded-xl text-[11px] flex items-center justify-center gap-1.5"
-              >
-                <span>💬</span> WhatsApp CA
-              </a>
             </div>
 
-            {/* Accordion 1: Founder Tools */}
-            <div className="border-b border-slate-700/60 pb-3">
-              <button
-                type="button"
-                onClick={() => toggleMobileSection('tools')}
-                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-[#F4B942] uppercase tracking-wider py-1.5"
-              >
-                <span className="flex items-center gap-2">
-                  <span>⚙️</span> Founder Tools &amp; Calculators
-                </span>
-                <span className="text-xs">{openMobileSection === 'tools' ? '▲' : '▼'}</span>
-              </button>
+            {NAV_MENUS.map((menu) => (
+              <div key={menu.id} className="border-b border-slate-700/60 pb-3">
+                <button
+                  type="button"
+                  onClick={() => toggleMobileSection(menu.id)}
+                  className="w-full flex items-center justify-between text-left font-bold text-sm text-slate-100 py-1.5 cursor-pointer"
+                  aria-expanded={openMobileSection === menu.id}
+                >
+                  <span>{menu.label}</span>
+                  <span className="text-xs text-[#F4B942]">{openMobileSection === menu.id ? '▲' : '▼'}</span>
+                </button>
 
-              {openMobileSection === 'tools' && (
-                <div className="pt-2 pl-3 space-y-2 text-slate-300">
-                  <Link
-                    href="/tools/incorporation-calculator"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block text-[#F4B942] font-bold py-1 hover:underline"
-                  >
-                    🏛️ All-India Incorporation Cost Calculator (NEW)
-                  </Link>
-                  <Link
-                    href="/tools/startup-india-checker"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block text-[#F4B942] font-bold py-1 hover:underline"
-                  >
-                    🇮🇳 Startup India &amp; 80-IAC Diagnostic (NEW)
-                  </Link>
-                  <Link
-                    href="/tools/company-name-search"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-1 hover:text-white"
-                  >
-                    🔍 MCA Company Name Availability (Rule 8)
-                  </Link>
-                  <Link
-                    href="/tools/trademark-search"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-1 hover:text-white"
-                  >
-                    ™️ Trademark Class &amp; Similarity Search
-                  </Link>
-                  <Link
-                    href="/tools/gst-search"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-1 hover:text-white"
-                  >
-                    📊 GSTIN Verification &amp; Filing History
-                  </Link>
-                  <Link
-                    href="/tools"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block text-cyan-300 font-bold py-1 hover:underline"
-                  >
-                    ⚡ All 7 Founder Tools Hub →
-                  </Link>
-                </div>
-              )}
-            </div>
+                {openMobileSection === menu.id && (
+                  <div className="pt-2 pl-2 space-y-3 text-xs text-slate-200">
+                    {menu.columns.map((col, idx) => (
+                      <div key={idx} className="space-y-1.5">
+                        <span className="block text-[11px] font-bold uppercase text-[#F4B942] tracking-wider">
+                          {col.title}
+                        </span>
+                        {col.items.map((item, i) => (
+                          <Link
+                            key={i}
+                            href={resolveMenuHref(item)}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block py-1 hover:text-[#F4B942]"
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
 
-            {/* Accordion 2: Company Registration */}
-            <div className="border-b border-slate-700/60 pb-3">
-              <button
-                type="button"
-                onClick={() => toggleMobileSection('company')}
-                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
-              >
-                <span className="flex items-center gap-2">
-                  <span>💼</span> Company Registration
-                </span>
-                <span className="text-xs">{openMobileSection === 'company' ? '▲' : '▼'}</span>
-              </button>
-
-              {openMobileSection === 'company' && (
-                <div className="pt-2 pl-3 space-y-2 text-slate-300">
-                  {MENU_COMPANY_REG.column1.items.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={`/services/${item.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block py-1 hover:text-nyaya-gold"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Accordion 3: Trademark & IPR */}
-            <div className="border-b border-slate-700/60 pb-3">
-              <button
-                type="button"
-                onClick={() => toggleMobileSection('trademark')}
-                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
-              >
-                <span className="flex items-center gap-2">
-                  <span>™️</span> Trademark &amp; IPR
-                </span>
-                <span className="text-xs">{openMobileSection === 'trademark' ? '▲' : '▼'}</span>
-              </button>
-
-              {openMobileSection === 'trademark' && (
-                <div className="pt-2 pl-3 space-y-2 text-slate-300">
-                  {MENU_TRADEMARK.column1.items.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={`/services/${item.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block py-1 hover:text-nyaya-gold"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Accordion 4: Tax & Compliance */}
-            <div className="border-b border-slate-700/60 pb-3">
-              <button
-                type="button"
-                onClick={() => toggleMobileSection('tax')}
-                className="w-full flex items-center justify-between text-left font-extrabold text-sm text-slate-100 uppercase tracking-wider py-1.5"
-              >
-                <span className="flex items-center gap-2">
-                  <span>📊</span> Tax &amp; GST Compliance
-                </span>
-                <span className="text-xs">{openMobileSection === 'tax' ? '▲' : '▼'}</span>
-              </button>
-
-              {openMobileSection === 'tax' && (
-                <div className="pt-2 pl-3 space-y-2 text-slate-300">
-                  {MENU_TAX_GST.column1.items.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={`/services/${item.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block py-1 hover:text-nyaya-gold"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Direct Links */}
-            <div className="space-y-2.5 pt-1">
-              <Link
-                href="/packages"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-[#F4B942] font-extrabold text-sm py-1.5"
-              >
-                📦 Bundled Founder Packages (Save 42%)
+            <div className="space-y-2 pt-1 text-sm font-bold">
+              <Link href="/packages" onClick={() => setMobileMenuOpen(false)} className="block text-[#F4B942] py-1">
+                📦 Bundled Founder Packages
               </Link>
-              <Link
-                href="/vakil"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-emerald-400 font-extrabold text-sm py-1.5"
-              >
-                👨‍⚖️ वकील Search (Verified Advocates)
+              <Link href="/vakil" onClick={() => setMobileMenuOpen(false)} className="block text-emerald-300 py-1">
+                ⚖️ वकील Search (Verified Advocates)
               </Link>
-              <Link
-                href="/#catalog-section"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-slate-300 font-bold text-sm py-1.5"
-              >
+              <Link href="/#catalog-section" onClick={() => setMobileMenuOpen(false)} className="block text-slate-200 py-1">
                 📋 Browse All Services
               </Link>
             </div>
 
-            {/* Contact Footer */}
-            <div className="pt-3 border-t border-slate-700/60 space-y-1 text-slate-400 text-[11px]">
-              <div>📞 Helpline: <a href="tel:+919920054785" className="text-white font-bold">+91 9920054785</a></div>
-              <div>✉️ Email: <a href="mailto:info@nyayalink.com" className="text-white">info@nyayalink.com</a></div>
+            <div className="pt-3 border-t border-slate-700/60 space-y-1.5 text-slate-300 text-xs">
+              <div>
+                📞 Helpline: <a href={`tel:${BRAND.phoneTel}`} className="text-white font-bold">{BRAND.phone}</a>
+              </div>
+              <div>
+                ✉️ Email: <a href={`mailto:${BRAND.supportEmail}`} className="text-white">{BRAND.supportEmail}</a>
+              </div>
             </div>
-
           </div>
         )}
       </header>
-
     </>
   );
 }

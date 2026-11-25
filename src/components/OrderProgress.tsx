@@ -25,7 +25,7 @@ export default function OrderProgress({ status }: { status: string }) {
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div className={`h-full ${tone} transition-all`} style={{ width: `${percent}%` }} />
       </div>
-      <ol className="grid grid-cols-4 gap-1 text-[10px] sm:text-[11px] font-bold">
+      <ol className="grid grid-cols-4 gap-1 text-[11px] sm:text-[11px] font-bold">
         {STEPS.map((step, i) => (
           <li key={step.key} className={`text-center ${i < current ? 'text-emerald-700' : i === current ? 'text-[#073B5C]' : 'text-slate-400'}`}>
             {i < current ? '✓ ' : ''}
@@ -34,9 +34,9 @@ export default function OrderProgress({ status }: { status: string }) {
         ))}
       </ol>
       {status === 'QUERY_RAISED' && (
-        <p className="text-[11px] font-bold text-orange-700">⚠️ Your compliance desk needs a response from you — see Messages below.</p>
+        <p className="text-xs font-bold text-orange-700">⚠️ Your compliance desk needs a response from you — see Messages below.</p>
       )}
-      {status === 'REJECTED' && <p className="text-[11px] font-bold text-rose-700">This application was rejected. See the remarks in the history.</p>}
+      {status === 'REJECTED' && <p className="text-xs font-bold text-rose-700">This application was rejected. See the remarks in the history.</p>}
     </div>
   );
 }

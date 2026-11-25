@@ -6,10 +6,22 @@ import { INDIAN_STATES, STATE_STAMP_RULES, getStateStampDuty, formatINR } from '
 interface Props {
   baseProfFee?: number;
   initialState?: string;
+  selectedState?: string;
+  onSelectState?: (state: string) => void;
 }
 
-export default function StampDutyCalculator({ baseProfFee = 6999, initialState = 'MH' }: Props) {
-  const [selectedState, setSelectedState] = useState(initialState);
+export default function StampDutyCalculator({
+  baseProfFee = 6999,
+  initialState = 'MH',
+  selectedState: controlledState,
+  onSelectState,
+}: Props) {
+  const [internalState, setInternalState] = useState(initialState);
+  const selectedState = controlledState ?? internalState;
+  const setSelectedState = (s: string) => {
+    setInternalState(s);
+    if (onSelectState) onSelectState(s);
+  };
   const [authorizedCapital, setAuthorizedCapital] = useState(100000);
 
   const stateRule = STATE_STAMP_RULES[selectedState] || {
@@ -45,11 +57,11 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
               Dynamic State Stamp Duty & Incorporation Estimator
             </h3>
           </div>
-          <p className="text-slate-500 font-medium text-[11px] mt-0.5">
+          <p className="text-slate-500 font-medium text-xs mt-0.5">
             Transparent Pure Agent breakdown: Professional Fee + 18% GST + Exact Government Stamp Duty.
           </p>
         </div>
-        <span className="bg-emerald-50 text-emerald-800 border border-emerald-300/60 font-black px-3 py-1 rounded-full uppercase tracking-wider text-[10px] self-start sm:self-auto">
+        <span className="bg-emerald-50 text-emerald-800 border border-emerald-300/60 font-black px-3 py-1 rounded-full uppercase tracking-wider text-[11px] self-start sm:self-auto">
           ✓ Rule 33 Pure Agent Compliant
         </span>
       </div>
@@ -87,7 +99,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
               className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-7 pr-3 py-2.5 font-extrabold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490] text-xs"
             />
           </div>
-          <span className="text-[10px] text-slate-400 mt-1 block">
+          <span className="text-xs text-slate-400 mt-1 block">
             Standard startup default: ₹1,00,000 (MCA Govt Fee is ₹0 for authorized capital ≤ ₹15 Lakhs).
           </span>
         </div>
@@ -95,7 +107,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
 
       {/* Itemized Pure Agent Fee Breakdown Table */}
       <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-2.5">
-        <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+        <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
           Itemized Fee Demarcation (Zero Drip Pricing)
         </span>
 
@@ -103,7 +115,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
           <div>
             <span className="font-bold text-slate-800">Chartered Accountant Professional Fee:</span>
-            <p className="text-[10px] text-slate-500">Includes 2 DSC tokens, DIN drafting, SPICe+ Part B & Certificate</p>
+            <p className="text-xs text-slate-500">Includes 2 DSC tokens, DIN drafting, SPICe+ Part B & Certificate</p>
           </div>
           <strong className="text-slate-900 text-sm">{formatINR(baseProfFee)}</strong>
         </div>
@@ -112,7 +124,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
           <div>
             <span className="font-bold text-slate-800">GST on Professional Fee (18%):</span>
-            <p className="text-[10px] text-slate-500">Official tax invoice eligible for 100% Input Tax Credit (ITC)</p>
+            <p className="text-xs text-slate-500">Official tax invoice eligible for 100% Input Tax Credit (ITC)</p>
           </div>
           <strong className="text-slate-900 font-mono text-sm">{formatINR(gstAmount)}</strong>
         </div>
@@ -121,7 +133,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
           <div>
             <span className="font-bold text-slate-800">{stateRule.name} State Stamp Duty (MoA / AoA):</span>
-            <p className="text-[10px] text-slate-500">State e-Stamp paper duty payable to the state treasury</p>
+            <p className="text-xs text-slate-500">State e-Stamp paper duty payable to the state treasury</p>
           </div>
           <strong className="text-amber-800 font-mono text-sm">{formatINR(stateStampEstimate)}</strong>
         </div>
@@ -129,7 +141,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
           <div>
             <span className="font-bold text-slate-800">MCA SPICe+ Filing Fee:</span>
-            <p className="text-[10px] text-slate-500">Government filing fee on MCA V3 Portal</p>
+            <p className="text-xs text-slate-500">Government filing fee on MCA V3 Portal</p>
           </div>
           <strong className="text-emerald-700 font-mono text-xs">
             {mcaGovtFee === 0 ? '₹0 (Waived for ≤ ₹15L Capital)' : formatINR(mcaGovtFee)}
@@ -139,7 +151,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center py-1 border-b border-slate-200 text-slate-700">
           <div>
             <span className="font-bold text-slate-800">NSDL / UTI PAN & TAN Issuance Fee:</span>
-            <p className="text-[10px] text-slate-500">Official government e-PAN & TAN processing fee</p>
+            <p className="text-xs text-slate-500">Official government e-PAN & TAN processing fee</p>
           </div>
           <strong className="text-slate-800 font-mono text-xs">{formatINR(panTanGovtFee)}</strong>
         </div>
@@ -148,7 +160,7 @@ export default function StampDutyCalculator({ baseProfFee = 6999, initialState =
         <div className="flex justify-between items-center pt-2 font-black text-[#073B5C] text-sm sm:text-base">
           <div>
             <span>Total Landed Outlay to the Rupee (GST-Inclusive):</span>
-            <p className="text-[10px] text-slate-500 font-normal">
+            <p className="text-xs text-slate-500 font-normal">
               No surprise calls. Professional fee billed with GST invoice; government fees passed through at actuals.
             </p>
           </div>

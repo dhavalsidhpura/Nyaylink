@@ -62,7 +62,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-extrabold text-[#073B5C]">{profile.user.name}</h1>
-              <span className="bg-slate-200 text-[#073B5C] text-[10px] font-mono font-bold px-2 py-0.5 rounded">
+              <span className="bg-slate-200 text-[#073B5C] text-[11px] font-mono font-bold px-2 py-0.5 rounded">
                 Advocate Hub
               </span>
             </div>
@@ -87,14 +87,14 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
         {/* BCI Rule 36 Ethics Shield */}
         <div className="bg-slate-900 text-slate-200 rounded-2xl p-3.5 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border border-slate-700">
           <div className="flex items-center gap-2">
-            <span className="bg-[#F4B942] text-[#073B5C] font-black text-[9px] uppercase px-2 py-0.5 rounded">
+            <span className="bg-[#F4B942] text-[#073B5C] font-black text-[11px] uppercase px-2 py-0.5 rounded">
               BCI Rule 36 Compliant
             </span>
             <span className="text-[11px] text-slate-300">
               Direct client-advocate engagement. Zero fee-splitting or commissions. Platform facilitation fee is billed separately.
             </span>
           </div>
-          <span className="text-[10px] text-emerald-400 font-mono font-bold whitespace-nowrap">
+          <span className="text-[11px] text-emerald-400 font-mono font-bold whitespace-nowrap">
             &bull; Section 194J TDS Compliant
           </span>
         </div>
@@ -185,7 +185,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
                         {p.reference ? ` · UTR ${p.reference}` : ''}
                       </span>
                     </div>
-                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                    <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                       {p.status}
                     </span>
                   </div>
@@ -202,7 +202,7 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
           <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                   Statutory Advocate Drafting Suite
                 </span>
                 <h3 className="font-extrabold text-base text-[#073B5C]">
@@ -235,11 +235,11 @@ export default function LawyerDashboardClient({ profile, consultations, payouts,
                     <strong className="text-xs font-extrabold text-[#073B5C]">
                       Statutory Notice u/s 138 of Negotiable Instruments Act, 1881
                     </strong>
-                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded">
+                    <span className="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded">
                       15-Day Demand Ceiling
                     </span>
                   </div>
-                  <p className="text-slate-600 leading-relaxed font-mono text-[11px] whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
+                  <p className="text-slate-600 leading-relaxed font-mono text-xs whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
 {`LEGAL DEMAND NOTICE
 (Under Section 138 of the Negotiable Instruments Act, 1881)
 
@@ -261,7 +261,8 @@ Bar Council: ${profile.barCouncil}`}
                   </p>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`LEGAL DEMAND NOTICE u/s 138 NI Act... (Generated from NyayaLink Advocate Hub by ${profile.user.name})`);
+                      const text = `LEGAL DEMAND NOTICE\n(Under Section 138 of the Negotiable Instruments Act, 1881)\n\nTo,\n[Name of Drawer / Accused],\n[Full Postal Address]\n\nUnder instructions and on behalf of my client, [Client Name], residing at [Client Address], I hereby serve upon you the following legal notice:\n\n1. That you issued Cheque No. [Cheque Number] dated [Cheque Date] drawn on [Bank Name] for an amount of Rs. [Amount in Figures] (Rupees [Amount in Words]) towards the discharge of your legally enforceable debt.\n\n2. That the said cheque was presented by my client through their banker, but the same was returned unpaid with the bank memo dated [Memo Date] endorsing the reason: "FUNDS INSUFFICIENT" / "EXCEEDS ARRANGEMENT".\n\n3. You are hereby called upon to pay the said amount of Rs. [Amount in Figures] within FIFTEEN (15) DAYS from the receipt of this notice, failing which my client shall initiate criminal prosecution against you under Section 138 read with Section 142 of the Negotiable Instruments Act, 1881, without further notice, holding you liable for all costs and consequences.\n\nAdvocate ${profile.user.name}\nEnrolment No: ${profile.enrollmentNo}\nBar Council: ${profile.barCouncil}`;
+                      navigator.clipboard.writeText(text);
                       alert('Section 138 Notice template copied to clipboard!');
                     }}
                     className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer"
@@ -279,11 +280,11 @@ Bar Council: ${profile.barCouncil}`}
                     <strong className="text-xs font-extrabold text-[#073B5C]">
                       Cease and Desist Notice &bull; Trade Marks Act, 1999
                     </strong>
-                    <span className="bg-cyan-100 text-cyan-800 text-[10px] font-black px-2 py-0.5 rounded">
+                    <span className="bg-cyan-100 text-cyan-800 text-[11px] font-black px-2 py-0.5 rounded">
                       Section 29 Infringement
                     </span>
                   </div>
-                  <p className="text-slate-600 leading-relaxed font-mono text-[11px] whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
+                  <p className="text-slate-600 leading-relaxed font-mono text-xs whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
 {`CEASE AND DESIST NOTICE
 (Pursuant to Section 29 & 134 of the Trade Marks Act, 1999)
 
@@ -307,7 +308,8 @@ Enrolment No: ${profile.enrollmentNo}`}
                   </p>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`CEASE AND DESIST NOTICE... (Generated from NyayaLink Advocate Hub)`);
+                      const text = `CEASE AND DESIST NOTICE\n(Pursuant to Section 29 & 134 of the Trade Marks Act, 1999)\n\nTo,\n[Infringing Entity Name],\n[Registered Address / Domain URL]\n\nUnder instructions from my client, [Client Brand Name / Proprietor], I state as under:\n\n1. My client is the lawful registered proprietor of the trade mark "[Trademark Name]" registered under Class [Class Number] bearing Application No. [Application Number] in the Register of Trade Marks.\n\n2. It has recently come to my client's notice that you have been unauthorizedly using an identical/deceptively similar mark "[Infringing Mark]" in connection with competing goods/services, causing public deception and passing off.\n\n3. You are hereby called upon to immediately:\n   a. Cease and desist from using the mark "[Infringing Mark]" or any deceptive variant.\n   b. Remove all signage, online listings, social media handles, and domains bearing the said mark.\n   c. Furnish an unconditional written undertaking of compliance within SEVEN (7) DAYS.\n\nAdvocate ${profile.user.name}\nEnrolment No: ${profile.enrollmentNo}`;
+                      navigator.clipboard.writeText(text);
                       alert('Cease and Desist template copied to clipboard!');
                     }}
                     className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer"
@@ -325,11 +327,11 @@ Enrolment No: ${profile.enrollmentNo}`}
                     <strong className="text-xs font-extrabold text-[#073B5C]">
                       Legal Notice for Breach of Contract &amp; Recovery of Outstanding Dues
                     </strong>
-                    <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded">
+                    <span className="bg-amber-100 text-amber-900 text-[11px] font-black px-2 py-0.5 rounded">
                       Indian Contract Act, 1872
                     </span>
                   </div>
-                  <p className="text-slate-600 leading-relaxed font-mono text-[11px] whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
+                  <p className="text-slate-600 leading-relaxed font-mono text-xs whitespace-pre-wrap bg-white p-4 rounded-xl border border-slate-200">
 {`LEGAL DEMAND NOTICE FOR RECOVERY OF COMMERCIAL DUES
 (Under the Indian Contract Act, 1872)
 
@@ -350,7 +352,8 @@ Enrolment No: ${profile.enrollmentNo}`}
                   </p>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`DEMAND NOTICE FOR DUES... (Generated from NyayaLink Advocate Hub)`);
+                      const text = `LEGAL DEMAND NOTICE FOR RECOVERY OF COMMERCIAL DUES\n(Under the Indian Contract Act, 1872)\n\nTo,\n[Debtor / Contracting Party],\n[Address]\n\nUnder instructions from my client, [Creditor Entity Name], I state as under:\n\n1. That pursuant to Agreement/Work Order dated [Date], my client satisfactorily delivered professional goods/services and raised Invoices [Invoice Nos] aggregating to Rs. [Outstanding Amount].\n\n2. That despite having acknowledged receipt and quality, you have failed to clear the lawful outstanding balance of Rs. [Amount] despite repeated reminders.\n\n3. Take notice that you are hereby required to pay the outstanding sum of Rs. [Amount] along with interest @ 18% p.a. within FIFTEEN (15) DAYS, failing which my client shall institute civil suit for recovery and summary proceedings under Order XXXVII of the CPC.\n\nAdvocate ${profile.user.name}\nEnrolment No: ${profile.enrollmentNo}`;
+                      navigator.clipboard.writeText(text);
                       alert('Contract Breach template copied to clipboard!');
                     }}
                     className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer"
@@ -393,7 +396,7 @@ Enrolment No: ${profile.enrollmentNo}`}
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4">
-      <span className="text-[10px] font-bold uppercase text-slate-400 block">{label}</span>
+      <span className="text-[11px] font-bold uppercase text-slate-400 block">{label}</span>
       <strong className="text-lg font-extrabold text-[#073B5C]">{value}</strong>
     </div>
   );
@@ -440,7 +443,7 @@ function ConsultationRow({ c, closable }: { c: Consultation; closable?: boolean 
             {' '}
             · {c.client.name} · {c.mode.replace('_', ' ').toLowerCase()} · {c.number}
           </span>
-          {c.status !== 'CONFIRMED' && <span className="ml-2 text-[10px] font-bold uppercase text-slate-400">{c.status.replace('_', ' ')}</span>}
+          {c.status !== 'CONFIRMED' && <span className="ml-2 text-[11px] font-bold uppercase text-slate-400">{c.status.replace('_', ' ')}</span>}
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setOpen(!open)} className="text-[#0E7490] font-bold hover:underline cursor-pointer">
@@ -470,7 +473,7 @@ function ConsultationRow({ c, closable }: { c: Consultation; closable?: boolean 
       {open && (
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
           <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Client intake</span>
+            <span className="text-[11px] font-bold uppercase text-slate-400">Client intake</span>
             <p className="whitespace-pre-wrap text-slate-700">{c.clientNotes || '—'}</p>
             <p className="text-slate-500 mt-1">
               {c.client.email}
@@ -479,12 +482,12 @@ function ConsultationRow({ c, closable }: { c: Consultation; closable?: boolean 
           </div>
           {c.status === 'CONFIRMED' && c.mode === 'VIDEO' && (
             <label className="block">
-              <span className="text-[10px] font-bold uppercase text-slate-400">Meeting link (shared with client)</span>
+              <span className="text-[11px] font-bold uppercase text-slate-400">Meeting link (shared with client)</span>
               <input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://meet.google.com/…" className="w-full bg-white border border-slate-300 rounded-xl p-2 mt-1" />
             </label>
           )}
           <label className="block">
-            <span className="text-[10px] font-bold uppercase text-slate-400">Private notes (only you can see these)</span>
+            <span className="text-[11px] font-bold uppercase text-slate-400">Private notes (only you can see these)</span>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full bg-white border border-slate-300 rounded-xl p-2 mt-1" />
           </label>
           <button
@@ -594,7 +597,7 @@ function AvailabilityEditor({
           >
             + Add time off
           </button>
-          <p className="text-[11px] text-slate-400">Existing confirmed bookings are not affected — cancel them individually if needed.</p>
+          <p className="text-xs text-slate-400">Existing confirmed bookings are not affected — cancel them individually if needed.</p>
         </div>
       </Section>
 

@@ -177,7 +177,7 @@ export default function CompanyTierSelector({
       <div className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#0E7490] text-white rounded-3xl p-5 sm:p-7 shadow-lg border border-cyan-800/60 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 bg-[#0E7490]/70 border border-cyan-300/30 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold text-[#F4B942]">
+            <div className="inline-flex items-center gap-2 bg-[#0E7490]/70 border border-cyan-300/30 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold text-[#F4B942]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Rule 33 Pure Agent Transparency • Zero Hidden Stamp Duty Markup</span>
             </div>
@@ -190,7 +190,7 @@ export default function CompanyTierSelector({
           </div>
 
           {/* Interactive State Selector Inside Module */}
-          <div className="bg-white/10 backdrop-blur-xs border border-white/20 p-3 sm:p-4 rounded-2xl shrink-0 space-y-1.5 self-start md:self-auto min-w-[240px]">
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 p-3 sm:p-4 rounded-2xl shrink-0 space-y-1.5 self-start md:self-auto min-w-[240px]">
             <label htmlFor="tier-state-select" className="text-[11px] font-bold text-cyan-200 block">
               📍 State of Incorporation:
             </label>
@@ -206,7 +206,7 @@ export default function CompanyTierSelector({
                 </option>
               ))}
             </select>
-            <div className="text-[10px] text-cyan-300 flex items-center justify-between pt-0.5">
+            <div className="text-[11px] text-cyan-300 flex items-center justify-between pt-0.5">
               <span>Govt Stamp Duty:</span>
               <strong className="text-white font-mono">₹{(stampDuty.amount).toLocaleString()}</strong>
             </div>
@@ -225,7 +225,7 @@ export default function CompanyTierSelector({
               }}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 billingPeriod === 'onetime'
-                  ? 'bg-[#F4B942] text-[#073B5C] shadow-xs'
+                  ? 'bg-[#F4B942] text-[#073B5C] shadow-sm'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
@@ -239,12 +239,12 @@ export default function CompanyTierSelector({
               }}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                 billingPeriod === 'retainer'
-                  ? 'bg-[#F4B942] text-[#073B5C] shadow-xs'
+                  ? 'bg-[#F4B942] text-[#073B5C] shadow-sm'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
               <span>📊 Annual CA Retainer</span>
-              <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 rounded-full font-black">
+              <span className="bg-emerald-500 text-white text-[11px] px-1.5 py-0.2 rounded-full font-black">
                 Save 72%
               </span>
             </button>
@@ -289,7 +289,7 @@ export default function CompanyTierSelector({
                 {/* Top Badge */}
                 {tier.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-xs ${
+                    <span className={`text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm ${
                       tier.isRecommended
                         ? 'bg-[#F4B942] text-[#073B5C] border border-amber-500'
                         : 'bg-[#0E7490] text-white'
@@ -304,10 +304,10 @@ export default function CompanyTierSelector({
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xl font-black text-[#073B5C]">{tier.name}</h3>
-                      <p className="text-[11px] text-slate-500 font-medium">{tier.tagline}</p>
+                      <p className="text-xs text-slate-500 font-medium">{tier.tagline}</p>
                     </div>
                     {isSelected && (
-                      <span className="w-6 h-6 rounded-full bg-[#0E7490] text-white text-xs font-black flex items-center justify-center shadow-xs">
+                      <span className="w-6 h-6 rounded-full bg-[#0E7490] text-white text-xs font-black flex items-center justify-center shadow-sm">
                         ✓
                       </span>
                     )}
@@ -315,13 +315,13 @@ export default function CompanyTierSelector({
 
                   {/* Competitor Benchmark Callout */}
                   <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-1">
-                    <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-500 line-through">Competitors: {tier.competitorPrice}</span>
-                      <span className="bg-emerald-600 text-white font-extrabold px-1.5 py-0.2 rounded text-[9px]">
+                      <span className="bg-emerald-600 text-white font-extrabold px-1.5 py-0.2 rounded text-[11px]">
                         Save ₹
                       </span>
                     </div>
-                    <p className="text-[11px] font-bold text-emerald-800 leading-tight">
+                    <p className="text-xs font-bold text-emerald-800 leading-tight">
                       {tier.competitorSavings}
                     </p>
                   </div>
@@ -356,7 +356,7 @@ export default function CompanyTierSelector({
 
                   {/* Feature Checklist */}
                   <div className="space-y-1.5 pt-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
                       Deliverables Included:
                     </span>
                     <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
@@ -404,7 +404,7 @@ export default function CompanyTierSelector({
                     <span>Start for ₹999 Token →</span>
                   </button>
 
-                  <p className="text-[10px] text-slate-400 text-center leading-tight">
+                  <p className="text-xs text-slate-400 text-center leading-tight">
                     Zero lock-in. Pay ₹999 today, remaining balance billed after CA document vetting.
                   </p>
                 </div>
@@ -424,22 +424,22 @@ export default function CompanyTierSelector({
                   <th className="p-4 font-bold text-xs sm:text-sm max-w-[200px]">Service / Feature Deliverable</th>
                   <th className="p-4 text-center font-bold">
                     <div>Launch</div>
-                    <div className="text-[10px] text-cyan-200 font-normal">₹6,999 + Stamp</div>
+                    <div className="text-[11px] text-cyan-200 font-normal">₹6,999 + Stamp</div>
                   </th>
                   <th className="p-4 text-center font-bold bg-[#0A4E7A] border-x border-cyan-700">
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2 py-0.5 rounded-full block mb-1">
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[11px] font-black uppercase px-2 py-0.5 rounded-full block mb-1">
                       Recommended
                     </span>
                     <div>Growth (Launchpad)</div>
-                    <div className="text-[10px] text-amber-200 font-normal">₹8,999 + Stamp</div>
+                    <div className="text-[11px] text-amber-200 font-normal">₹8,999 + Stamp</div>
                   </th>
                   <th className="p-4 text-center font-bold">
                     <div>Complete (Venture)</div>
-                    <div className="text-[10px] text-cyan-200 font-normal">₹14,999 + Stamp</div>
+                    <div className="text-[11px] text-cyan-200 font-normal">₹14,999 + Stamp</div>
                   </th>
                   <th className="p-4 text-center font-bold bg-[#041E30]">
                     <div>Start &amp; Grow</div>
-                    <div className="text-[10px] text-emerald-300 font-normal">₹19,999 / Year</div>
+                    <div className="text-[11px] text-emerald-300 font-normal">₹19,999 / Year</div>
                   </th>
                 </tr>
               </thead>
@@ -499,7 +499,7 @@ export default function CompanyTierSelector({
                         onSelectTier('growth');
                         onCheckout('growth');
                       }}
-                      className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] px-3 py-2 rounded-xl text-xs font-black transition shadow-xs"
+                      className="bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] px-3 py-2 rounded-xl text-xs font-black transition shadow-sm"
                     >
                       Choose Growth →
                     </button>
@@ -537,32 +537,32 @@ export default function CompanyTierSelector({
 
       {/* 4. THE 3-PILLAR FOUNDER ADVANTAGE VS COMPETITOR CALLOUT */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-base">📜</span>
             <strong className="text-xs text-[#073B5C]">Pure Agent Rule 33</strong>
           </div>
-          <p className="text-[11px] text-slate-500 leading-snug">
+          <p className="text-xs text-slate-500 leading-snug">
             Zero markup on MCA and State Stamp Duty challans. The exact government receipt is filed to your encrypted Vault.
           </p>
         </div>
 
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-base">💳</span>
             <strong className="text-xs text-[#073B5C]">Split-Ticket ₹999 Advance</strong>
           </div>
-          <p className="text-[11px] text-slate-500 leading-snug">
+          <p className="text-xs text-slate-500 leading-snug">
             No upfront financial risk. We reserve your name and verify identity before you pay the remaining balance.
           </p>
         </div>
 
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-base">🚫</span>
             <strong className="text-xs text-[#073B5C]">Zero Telemarketing Calls</strong>
           </div>
-          <p className="text-[11px] text-slate-500 leading-snug">
+          <p className="text-xs text-slate-500 leading-snug">
             We do not sell your data or trigger automated call centers. Direct communication with your practicing CA via WhatsApp.
           </p>
         </div>

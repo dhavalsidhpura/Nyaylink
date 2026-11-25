@@ -2,15 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface SearchResult {
   query: string;
   isAvailable: boolean;
-  score: number;
+  label: string;
   conflicts: string[];
   recommendation: string;
   suggestedNames: string[];
 }
+
+const KNOWN_BRANDS = ['TATA', 'RELIANCE', 'INFOSYS', 'NYAYALINK', 'MOBIZ', 'WIPRO', 'HDFC', 'ICICI', 'BIRLA', 'FLIPKART', 'AMAZON', 'ZOMATO', 'SWIGGY', 'PAYTM', 'RAZORPAY'];
+const RESTRICTED_WORDS = ['NATIONAL', 'BHARAT', 'FEDERAL', 'RESERVE', 'MINISTRY', 'GOVERNMENT', 'PARLIAMENT', 'REPUBLIC', 'UNION', 'BANK', 'INSURANCE', 'EXCHANGE'];
 
 export default function CompanyNameSearchTool() {
   const [companyName, setCompanyName] = useState('');
@@ -27,58 +31,50 @@ export default function CompanyNameSearchTool() {
     setIsSearching(true);
     setResult(null);
 
-    // Simulating Sandbox.co.in / MCA V3 Registry API call
     setTimeout(() => {
       const cleanName = companyName.trim().toUpperCase();
-      const isConflicting = ['TATA', 'RELIANCE', 'INFOSYS', 'NYAYALINK', 'MOBIZ'].some((brand) =>
-        cleanName.includes(brand)
-      );
+      const tokens = cleanName.split(/\s+/).filter(Boolean);
+      const matchedBrand = KNOWN_BRANDS.find((brand) => cleanName.includes(brand));
+      const matchedRestricted = RESTRICTED_WORDS.find((w) => tokens.includes(w));
+      const isTooShort = tokens.length === 1 && cleanName.length < 4;
 
-      if (isConflicting) {
+      if (matchedBrand || matchedRestricted || isTooShort) {
+        const conflicts: string[] = [];
+        if (matchedBrand) conflicts.push(`Matches well-known registered mark/entity containing "${matchedBrand}" (Rule 8A/8B conflict risk).`);
+        if (matchedRestricted) conflicts.push(`Contains restricted term "${matchedRestricted}" requiring Central Government approval under Rule 8B.`);
+        if (isTooShort) conflicts.push('Single short word under 4 characters is typically rejected unless paired with an activity descriptor.');
+
         setResult({
           query: `${companyName.trim()} ${suffix}`,
           isAvailable: false,
-          score: 35,
-          conflicts: [
-            `${companyName.trim()} TECHNOLOGIES PVT LTD (CIN: U72900MH2021PTC369123)`,
-            `${companyName.trim()} VENTURES LLP (LLPIN: AAB-9921)`,
-          ],
+          label: 'Rule 8 Risk Flagged',
+          conflicts,
           recommendation:
-            'This name shares high phonetic similarity with existing registered entities or protected trademarks. Under Rule 8 of Companies Act 2013, ROC may reject this application.',
+            'Our Rule 8 preliminary screen detected a naming restriction or brand clash risk. Consider adding a distinctive coined prefix and activity descriptor before filing SPICe+ Part A.',
           suggestedNames: [
             `${companyName.trim()} Global Systems ${suffix}`,
-            `NextGen ${companyName.trim()} Solutions ${suffix}`,
-            `${companyName.trim()} Enterprise Innovations ${suffix}`,
+            `Nexa ${companyName.trim()} Solutions ${suffix}`,
+            `${companyName.trim()} Enterprise Ventures ${suffix}`,
           ],
         });
       } else {
         setResult({
           query: `${companyName.trim()} ${suffix}`,
           isAvailable: true,
-          score: 95,
+          label: 'Passes Rule 8 Pre-Screen',
           conflicts: [],
           recommendation:
-            'Excellent! No phonetically identical company or active trademark conflict found in the MCA registry. This name qualifies for RUN / SPICe+ Part A reservation.',
+            'Structure looks compliant with MCA Rule 8 formatting (no restricted words or major brand clashes flagged). Note: live MCA V3 & IP India database lookup is still required before final filing.',
           suggestedNames: [],
         });
       }
       setIsSearching(false);
-    }, 1200);
+    }, 350);
   };
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased">
-      {/* Navigation Header */}
-      <header className="bg-[#073B5C] text-white py-3.5 px-4 sm:px-8 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3.5 py-1 rounded-xl font-mono shadow border border-cyan-400/30">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <Link href="/#catalog-section" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Explore All Services
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero & Search Tool */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full flex-grow space-y-8">
@@ -162,16 +158,21 @@ export default function CompanyNameSearchTool() {
             <div className="pt-4 border-t border-slate-100 space-y-4 animate-fadeIn">
               {result.isAvailable ? (
                 <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">✅</span>
                       <strong className="text-emerald-900 font-extrabold text-sm sm:text-base">
-                        {result.query} is Available!
+                        {result.query} — {result.label}
                       </strong>
                     </div>
-                    <span className="bg-emerald-200 text-emerald-900 font-bold px-2.5 py-0.5 rounded text-[10px]">
-                      Score: {result.score}/100
-                    </span>
+                    <a
+                      href="https://www.mca.gov.in/mcafoportal/showCheckCompanyName.do"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white border border-emerald-300 text-emerald-900 font-bold px-2.5 py-1 rounded-lg text-[11px] hover:underline"
+                    >
+                      Verify on MCA Portal ↗
+                    </a>
                   </div>
                   <p className="text-xs text-emerald-800 leading-relaxed">{result.recommendation}</p>
 
@@ -199,7 +200,7 @@ export default function CompanyNameSearchTool() {
                           </Link>
                           <a
                             href={`https://wa.me/919920054785?text=${encodeURIComponent(
-                              `Hi NyayaLink Team, I ran the MCA Name Availability Checker for "${companyName.trim()} ${suffix}" in ${state}. Result: Available (Score: ${result.score}/100). I want to reserve this name on MCA SPICe+ Part A with the ₹999 token.`
+                              `Hi NyayaLink Team, I ran the MCA Rule 8 pre-screen for "${companyName.trim()} ${suffix}" in ${state}. Please verify availability on MCA V3 and reserve this name with the ₹999 token.`
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -218,15 +219,15 @@ export default function CompanyNameSearchTool() {
                 </div>
               ) : (
                 <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">⚠️</span>
                       <strong className="text-rose-900 font-extrabold text-sm sm:text-base">
-                        Potential Conflicts Detected for &quot;{result.query}&quot;
+                        Rule 8 Flags for &quot;{result.query}&quot;
                       </strong>
                     </div>
-                    <span className="bg-rose-200 text-rose-900 font-bold px-2.5 py-0.5 rounded text-[10px]">
-                      Score: {result.score}/100
+                    <span className="bg-rose-200 text-rose-900 font-bold px-2.5 py-0.5 rounded text-[11px]">
+                      {result.label}
                     </span>
                   </div>
                   <p className="text-xs text-rose-800 leading-relaxed">{result.recommendation}</p>

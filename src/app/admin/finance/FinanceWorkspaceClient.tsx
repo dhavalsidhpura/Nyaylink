@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { Role, TxnType } from '@prisma/client';
 import { formatINR, stateName } from '@/lib/pricing';
 import type { FinanceData } from './page';
+import AdminNav from '@/components/admin/AdminNav';
 
 type Props = FinanceData & { role: Role };
 
@@ -136,83 +137,43 @@ export default function FinanceWorkspaceClient({
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex flex-col">
-      {/* Top Header */}
-      <header className="bg-[#073B5C] text-white border-b border-cyan-900/60 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow-inner border border-cyan-400/30">
-              Nyaya<span className="text-[#F4B942]">Link</span>
-            </Link>
-            <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-              Finance &amp; Pure Agent Desk
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/admin"
-              className="bg-slate-800 hover:bg-slate-700 text-[#F4B942] font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all border border-slate-700 shadow-sm"
-            >
-              ← Super Controller HQ
-            </Link>
-            <button
-              onClick={() => setShowAddLedgerModal(true)}
-              className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>+</span> Post Ledger Entry
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Cross-Department Subnav */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2 sticky top-[53px] z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
-            <span className="font-extrabold text-slate-400 uppercase text-[10px] tracking-wider mr-1">Workspaces:</span>
-            <Link href="/admin/crm" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              💼 Sales CRM
-            </Link>
-            <Link href="/admin/orders" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              📋 CA Operations Desk
-            </Link>
-            <span className="bg-[#073B5C] text-[#F4B942] font-black px-3 py-1 rounded-lg">
-              🏛️ Pure Agent &amp; Tax Desk
-            </span>
-            <Link href="/admin/lawyers" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              ⚖️ Advocate Console
-            </Link>
-            <Link href="/admin/pricing" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              🏷️ Rates &amp; Catalog
-            </Link>
-          </div>
-
+      <AdminNav
+        active="finance"
+        subtitle="Finance & Pure Agent Desk"
+        role={role}
+        actions={
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportGstr1Csv}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-3.5 py-1.5 rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
               <span>📥</span> Export GSTR-1 CSV
             </button>
+            <button
+              onClick={() => setShowAddLedgerModal(true)}
+              className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
+            >
+              <span>+</span> Post Entry
+            </button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow space-y-6">
         {/* Rule 33 Pure Agent Statutory Escrow Health Card */}
         <div className="bg-gradient-to-br from-[#073B5C] to-[#0A4E78] text-white rounded-3xl p-6 shadow-md space-y-4">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-cyan-800/80 pb-3">
             <div>
-              <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+              <span className="text-[11px] font-black uppercase text-[#F4B942] tracking-wider block">
                 Statutory Compliance &amp; CGST Act 2017
               </span>
               <h2 className="text-lg font-black">Rule 33 Pure Agent Dual-Ledger &amp; Escrow Health</h2>
             </div>
             <div className="flex items-center gap-2">
-              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase">
+              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[11px] font-black px-2.5 py-1 rounded-lg uppercase">
                 100% Tax Compliant
               </span>
-              <span className="bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase">
+              <span className="bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 text-[11px] font-black px-2.5 py-1 rounded-lg uppercase">
                 Zero GST on Govt Fees
               </span>
             </div>
@@ -222,32 +183,32 @@ export default function FinanceWorkspaceClient({
             <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
               <span className="text-slate-300 font-semibold block text-[11px]">Gross Invoiced Volume</span>
               <strong className="text-2xl font-black text-white block">₹{formatINR(totalInvoicedVolume)}</strong>
-              <span className="text-[10px] text-slate-300">Total customer collections</span>
+              <span className="text-[11px] text-slate-300">Total customer collections</span>
             </div>
 
             <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
               <span className="text-emerald-300 font-semibold block text-[11px]">Operating Platform Fee</span>
               <strong className="text-2xl font-black text-emerald-400 block">₹{formatINR(totalTaxable)}</strong>
-              <span className="text-[10px] text-emerald-200">Taxable revenue (Facilitation)</span>
+              <span className="text-[11px] text-emerald-200">Taxable revenue (Facilitation)</span>
             </div>
 
             <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
               <span className="text-[#F4B942] font-semibold block text-[11px]">Govt Pass-Through Escrow</span>
               <strong className="text-2xl font-black text-[#F4B942] block">₹{formatINR(totalPureAgentGovt)}</strong>
-              <span className="text-[10px] text-amber-200">ROC / Stamp Treasury / TM</span>
+              <span className="text-[11px] text-amber-200">ROC / Stamp Treasury / TM</span>
             </div>
 
             <div className="bg-white/10 p-4 rounded-2xl border border-white/10 space-y-1">
               <span className="text-cyan-300 font-semibold block text-[11px]">Output GST Liability (18%)</span>
               <strong className="text-2xl font-black text-cyan-300 block">₹{formatINR(totalGSTLiability)}</strong>
-              <span className="text-[10px] text-cyan-200">CGST + SGST + IGST liability</span>
+              <span className="text-[11px] text-cyan-200">CGST + SGST + IGST liability</span>
             </div>
           </div>
 
           <div className="bg-white/5 rounded-2xl p-4 border border-white/10 flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-xs">
             <div className="space-y-1">
               <span className="text-slate-300 font-semibold block">Pure Agent Statutory Challan Reconciliation:</span>
-              <p className="text-[11px] text-slate-300">
+              <p className="text-xs text-slate-300">
                 Total statutory advances collected: <strong className="text-white">₹{formatINR(totalPureAgentGovt)}</strong> · Disbursed on Bharatkosh / MCA Challans:{' '}
                 <strong className="text-emerald-300">₹{formatINR(totalGovtDebited)}</strong> · Remaining Escrow:{' '}
                 <strong className="text-[#F4B942]">₹{formatINR(escrowRemaining)}</strong>
@@ -289,35 +250,35 @@ export default function FinanceWorkspaceClient({
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs space-y-2">
+              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
                 <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider block">
                   Net Operating Cash Balance
                 </span>
                 <strong className="text-3xl font-black text-[#073B5C]">₹{formatINR(balance)}</strong>
-                <p className="text-[11px] text-slate-500">Live bank balance after gateway fees and govt pass-throughs.</p>
+                <p className="text-xs text-slate-500">Live bank balance after gateway fees and govt pass-throughs.</p>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs space-y-2">
+              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
                 <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider block">
                   Total Tax Invoices Issued
                 </span>
                 <strong className="text-3xl font-black text-[#0E7490]">{invoices.length}</strong>
-                <p className="text-[11px] text-slate-500">Auto-generated Section 31 tax receipts with place of supply.</p>
+                <p className="text-xs text-slate-500">Auto-generated Section 31 tax receipts with place of supply.</p>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs space-y-2">
+              <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
                 <span className="text-[11px] text-slate-400 font-extrabold uppercase tracking-wider block">
                   Pending CA/Advocate TDS
                 </span>
                 <strong className="text-3xl font-black text-amber-600">
                   {pendingPayouts.length + payableConsultations.length} Cases
                 </strong>
-                <p className="text-[11px] text-slate-500">Section 194J 10% withholding tax pending disbursement.</p>
+                <p className="text-xs text-slate-500">Section 194J 10% withholding tax pending disbursement.</p>
               </div>
             </div>
 
             {/* Recent Orders with Financial Reconciliation */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-5 border-b border-slate-100 flex justify-between items-center">
                 <div>
                   <h3 className="font-extrabold text-sm text-[#073B5C]">Recent Paid Orders &amp; Tax Split</h3>
@@ -331,7 +292,7 @@ export default function FinanceWorkspaceClient({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Order / Service</th>
                       <th className="p-4">Client</th>
                       <th className="p-4">Place of Supply</th>
@@ -350,7 +311,7 @@ export default function FinanceWorkspaceClient({
                         </td>
                         <td className="p-4 font-bold text-slate-900">{o.client.name}</td>
                         <td className="p-4">
-                          <span className="bg-slate-100 text-slate-800 font-bold px-2 py-0.5 rounded text-[10px]">
+                          <span className="bg-slate-100 text-slate-800 font-bold px-2 py-0.5 rounded text-[11px]">
                             {o.clientState} - {stateName(o.clientState)}
                           </span>
                         </td>
@@ -369,7 +330,7 @@ export default function FinanceWorkspaceClient({
 
         {/* TAB 2: INVOICES */}
         {activeTab === 'invoices' && (
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs space-y-4">
+          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm space-y-4">
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
               <div>
                 <h3 className="font-extrabold text-sm text-[#073B5C]">Official GST Tax Invoices</h3>
@@ -379,7 +340,7 @@ export default function FinanceWorkspaceClient({
               </div>
               <button
                 onClick={handleExportGstr1Csv}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow-xs flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-4 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
               >
                 <span>📥</span> Download All Invoices (CSV)
               </button>
@@ -388,7 +349,7 @@ export default function FinanceWorkspaceClient({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                  <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                     <th className="p-4">Invoice #</th>
                     <th className="p-4">Customer Name &amp; GSTIN</th>
                     <th className="p-4">Place of Supply</th>
@@ -411,13 +372,13 @@ export default function FinanceWorkspaceClient({
                       <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
                         <td className="p-4 font-mono font-bold text-[#073B5C]">
                           {inv.invoiceNo}
-                          <span className="block text-[10px] text-slate-400 font-sans">
+                          <span className="block text-xs text-slate-400 font-sans">
                             {new Date(inv.createdAt).toISOString().slice(0, 10)}
                           </span>
                         </td>
                         <td className="p-4">
                           <strong className="text-slate-900 block">{inv.billedToName}</strong>
-                          <span className="text-[10px] font-mono text-slate-500">{inv.billedToGstin || 'B2C (Unregistered)'}</span>
+                          <span className="text-[11px] font-mono text-slate-500">{inv.billedToGstin || 'B2C (Unregistered)'}</span>
                         </td>
                         <td className="p-4 font-bold text-slate-700">
                           {inv.placeOfSupply} ({stateName(inv.placeOfSupply)})
@@ -441,7 +402,7 @@ export default function FinanceWorkspaceClient({
         {/* TAB 3: GSTR-1 & TAX ENGINE */}
         {activeTab === 'gstr1' && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-3">
                 <div>
                   <h3 className="font-extrabold text-base text-[#073B5C]">GSTR-1 Monthly Tax Return Preparation</h3>
@@ -459,26 +420,26 @@ export default function FinanceWorkspaceClient({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-slate-400 font-extrabold uppercase">Table 4A - B2B Invoices</span>
+                  <span className="text-xs text-slate-400 font-extrabold uppercase">Table 4A - B2B Invoices</span>
                   <strong className="text-xl font-black text-[#073B5C] block">
                     {invoices.filter((i) => i.billedToGstin).length} Invoices
                   </strong>
                   <span className="text-[11px] text-slate-500">Registered taxable supplies</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-slate-400 font-extrabold uppercase">Table 7 - B2C Small</span>
+                  <span className="text-xs text-slate-400 font-extrabold uppercase">Table 7 - B2C Small</span>
                   <strong className="text-xl font-black text-[#073B5C] block">
                     {invoices.filter((i) => !i.billedToGstin).length} Invoices
                   </strong>
                   <span className="text-[11px] text-slate-500">Unregistered retail consumers</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-emerald-700 font-extrabold uppercase">Total Taxable Value</span>
+                  <span className="text-[11px] text-emerald-700 font-extrabold uppercase">Total Taxable Value</span>
                   <strong className="text-xl font-black text-emerald-700 block">₹{formatINR(totalTaxable)}</strong>
                   <span className="text-[11px] text-emerald-600">Net platform fee base</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-cyan-700 font-extrabold uppercase">Total Output Tax</span>
+                  <span className="text-[11px] text-cyan-700 font-extrabold uppercase">Total Output Tax</span>
                   <strong className="text-xl font-black text-cyan-700 block">₹{formatINR(totalGSTLiability)}</strong>
                   <span className="text-[11px] text-cyan-600">Payable in GSTR-3B return</span>
                 </div>
@@ -486,7 +447,7 @@ export default function FinanceWorkspaceClient({
             </div>
 
             {/* Place of Supply Breakdown */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
               <h4 className="font-extrabold text-sm text-[#073B5C]">Place of Supply (State-wise GST Distribution)</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
                 {Object.entries(
@@ -538,11 +499,11 @@ export default function FinanceWorkspaceClient({
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Txn Ref #</th>
                       <th className="p-4">Type</th>
                       <th className="p-4">Description &amp; Order Ref</th>
@@ -563,13 +524,13 @@ export default function FinanceWorkspaceClient({
                         <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 font-mono font-bold text-[#073B5C]">
                             {entry.txnNo}
-                            <span className="block text-[10px] text-slate-400 font-sans">
+                            <span className="block text-xs text-slate-400 font-sans">
                               {new Date(entry.createdAt).toISOString().slice(0, 10)}
                             </span>
                           </td>
                           <td className="p-4">
                             <span
-                              className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                              className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-full ${
                                 entry.type === 'CLIENT_PAYMENT'
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : entry.type === 'GOVT_FEES_DEBIT'
@@ -583,7 +544,7 @@ export default function FinanceWorkspaceClient({
                           <td className="p-4">
                             <strong className="text-slate-900 block">{entry.description}</strong>
                             {entry.order && (
-                              <span className="text-[10px] text-[#0E7490] font-bold">
+                              <span className="text-[11px] text-[#0E7490] font-bold">
                                 Order: {entry.order.orderNumber}
                               </span>
                             )}
@@ -607,7 +568,7 @@ export default function FinanceWorkspaceClient({
 
         {/* TAB 5: SECTION 194J TDS PAYOUTS */}
         {activeTab === 'payouts' && (
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs space-y-4">
+          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm space-y-4">
             <div className="p-5 border-b border-slate-100">
               <h3 className="font-extrabold text-base text-[#073B5C]">
                 Section 194J CA &amp; Advocate Payouts (TDS Withholding)
@@ -620,21 +581,21 @@ export default function FinanceWorkspaceClient({
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-slate-400 font-extrabold uppercase">Pending Advocate Batches</span>
+                  <span className="text-xs text-slate-400 font-extrabold uppercase">Pending Advocate Batches</span>
                   <strong className="text-2xl font-black text-[#073B5C] block">
                     {payableConsultations.length} Advocates
                   </strong>
                   <span className="text-[11px] text-slate-500">Completed consultations ready for payout</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-amber-700 font-extrabold uppercase">Pending Processing</span>
+                  <span className="text-[11px] text-amber-700 font-extrabold uppercase">Pending Processing</span>
                   <strong className="text-2xl font-black text-amber-600 block">
                     {pendingPayouts.length} Batches
                   </strong>
                   <span className="text-[11px] text-amber-700">Bank transfers waiting for release</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                  <span className="text-[10px] text-cyan-700 font-extrabold uppercase">Statutory TDS Rate</span>
+                  <span className="text-[11px] text-cyan-700 font-extrabold uppercase">Statutory TDS Rate</span>
                   <strong className="text-2xl font-black text-[#0E7490] block">10.0%</strong>
                   <span className="text-[11px] text-cyan-700">Form 26Q quarterly compliance</span>
                 </div>
@@ -643,7 +604,7 @@ export default function FinanceWorkspaceClient({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th className="p-4">Professional / Lawyer</th>
                       <th className="p-4">Gross Fee</th>
                       <th className="p-4">TDS (10% u/s 194J)</th>
@@ -674,7 +635,7 @@ export default function FinanceWorkspaceClient({
                             <td className="p-4 text-right">
                               <Link
                                 href="/admin/lawyers"
-                                className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[10px] px-3 py-1.5 rounded-lg transition inline-block"
+                                className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[11px] px-3 py-1.5 rounded-lg transition inline-block"
                               >
                                 Disburse Payout →
                               </Link>
@@ -693,7 +654,7 @@ export default function FinanceWorkspaceClient({
 
       {/* MODAL: Record Ledger Transaction */}
       {showAddLedgerModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="font-extrabold text-[#073B5C] text-sm">Post Ledger Transaction</h3>

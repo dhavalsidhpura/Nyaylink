@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface GSTData {
   gstin: string;
@@ -57,16 +58,7 @@ export default function GSTSearchTool() {
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 flex flex-col antialiased">
-      <header className="bg-[#073B5C] text-white py-3.5 px-4 sm:px-8 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3.5 py-1 rounded-xl font-mono shadow border border-cyan-400/30">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <Link href="/#catalog-section" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Explore All Services
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full flex-grow space-y-8">
         <div className="text-center space-y-3">
@@ -109,7 +101,7 @@ export default function GSTSearchTool() {
           {/* New GST Registration Prompt for Unregistered Visitors */}
           <div className="bg-gradient-to-r from-[#073B5C]/10 via-[#0E7490]/10 to-transparent p-4 rounded-2xl border border-[#0E7490]/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-              <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+              <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                 Need a New GST Registration?
               </span>
               <p className="text-xs font-bold text-[#073B5C]">
@@ -135,34 +127,34 @@ export default function GSTSearchTool() {
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
                 <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-3">
                   <div>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">GSTIN:</span>
+                    <span className="text-xs text-slate-400 font-bold uppercase">GSTIN:</span>
                     <h3 className="font-mono text-base font-extrabold text-[#0E7490]">{data.gstin}</h3>
                   </div>
-                  <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full text-[10px] uppercase">
+                  <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full text-[11px] uppercase">
                     ✓ Check digit valid
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Registered State</span>
+                    <span className="text-slate-400 block text-[11px] uppercase">Registered State</span>
                     <strong>{data.stateName} (Code: {data.stateGstCode})</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Embedded PAN</span>
+                    <span className="text-slate-400 block text-[11px] uppercase">Embedded PAN</span>
                     <strong className="font-mono">{data.pan}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Entity Type (from PAN)</span>
+                    <span className="text-slate-400 block text-[11px] uppercase">Entity Type (from PAN)</span>
                     <strong>{data.holderType}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Registration # under this PAN in state</span>
+                    <span className="text-slate-400 block text-[11px] uppercase">Registration # under this PAN in state</span>
                     <strong>{data.registrationNumber}</strong>
                   </div>
                 </div>
 
-                <p className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+                <p className="pt-2 border-t border-slate-200 text-xs text-slate-500 leading-relaxed">
                   A valid format does not confirm the registration is active. For the legal name, status and return filing
                   history, search on the{' '}
                   <a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" className="text-[#0E7490] font-bold underline">
@@ -180,7 +172,7 @@ export default function GSTSearchTool() {
                       <span>📑 File Monthly GST Returns (GSTR-1 &amp; 3B) →</span>
                     </Link>
                     <Link
-                      href="/services/gst-modifications-amendment"
+                      href="/services/gst-modification"
                       className="bg-white hover:bg-slate-100 text-[#073B5C] font-bold text-xs px-4 py-3 rounded-xl transition border border-slate-300 text-center shrink-0"
                     >
                       <span>🛠️ Core Amendment</span>

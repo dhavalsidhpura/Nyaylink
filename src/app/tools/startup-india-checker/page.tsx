@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 type EntityChoice = 'pvt-ltd' | 'llp' | 'partnership' | 'proprietorship';
 type DateChoice = 'after-2016' | 'before-2016' | 'older-10yrs';
@@ -67,6 +68,7 @@ export default function StartupIndiaCheckerPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-20">
+      <Header />
       {/* Header */}
       <section className="bg-[#073B5C] text-white pt-10 pb-16 px-4 border-b border-slate-700/60 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#0E7490]/20 rounded-full blur-3xl pointer-events-none" />
@@ -74,7 +76,7 @@ export default function StartupIndiaCheckerPage() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#F4B942] mb-3">
             <Link href="/" className="hover:underline">Home</Link>
             <span>/</span>
-            <Link href="/#catalog-section" className="hover:underline">Tools</Link>
+            <Link href="/tools" className="hover:underline">Tools</Link>
             <span>/</span>
             <span>Startup India Diagnostic</span>
           </div>
@@ -117,7 +119,7 @@ export default function StartupIndiaCheckerPage() {
               <span className="text-xs font-black uppercase text-[#0E7490] tracking-wider">
                 Interactive Diagnostic Wizard
               </span>
-              <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-slate-200 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
                 Step {step} of 5
               </span>
             </div>
@@ -173,12 +175,12 @@ export default function StartupIndiaCheckerPage() {
                       }`}
                     >
                       <strong className="block text-sm font-bold text-[#073B5C] mb-1">{item.title}</strong>
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 ${
+                      <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded mb-1.5 ${
                         item.id === 'proprietorship' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
                       }`}>
                         {item.badge}
                       </span>
-                      <p className="text-slate-500 text-[11px]">{item.desc}</p>
+                      <p className="text-slate-500 text-xs">{item.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -214,12 +216,12 @@ export default function StartupIndiaCheckerPage() {
                       }`}
                     >
                       <strong className="block text-sm font-bold text-[#073B5C] mb-1">{item.title}</strong>
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 ${
+                      <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded mb-1.5 ${
                         item.id === 'after-2016' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {item.badge}
                       </span>
-                      <p className="text-slate-500 text-[11px]">{item.desc}</p>
+                      <p className="text-slate-500 text-xs">{item.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -255,12 +257,12 @@ export default function StartupIndiaCheckerPage() {
                       }`}
                     >
                       <strong className="block text-sm font-bold text-[#073B5C] mb-1">{item.title}</strong>
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 ${
+                      <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded mb-1.5 ${
                         item.id === 'under-100cr' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {item.badge}
                       </span>
-                      <p className="text-slate-500 text-[11px]">{item.desc}</p>
+                      <p className="text-slate-500 text-xs">{item.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -320,12 +322,12 @@ export default function StartupIndiaCheckerPage() {
                       }`}
                     >
                       <strong className="block text-sm font-bold text-[#073B5C] mb-1">{item.title}</strong>
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 ${
+                      <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded mb-1.5 ${
                         item.id === 'deeptech' || item.id === 'software' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'
                       }`}>
                         {item.badge}
                       </span>
-                      <p className="text-slate-500 text-[11px]">{item.desc}</p>
+                      <p className="text-slate-500 text-xs">{item.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -402,7 +404,7 @@ export default function StartupIndiaCheckerPage() {
                 <div className="bg-gradient-to-br from-[#073B5C] to-[#0E7490] text-white p-6 rounded-3xl space-y-5 shadow-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
                     <div>
-                      <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
+                      <span className="text-[11px] font-black uppercase text-[#F4B942] tracking-wider block">
                         Official Diagnostic Verdict
                       </span>
                       <h4 className="text-2xl font-black text-white">
@@ -430,13 +432,13 @@ export default function StartupIndiaCheckerPage() {
                     <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 space-y-2">
                       <div className="flex items-center justify-between">
                         <strong className="text-sm font-black text-white">1. DPIIT Recognition</strong>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${
                           evaluation.dpiitEligible ? 'bg-emerald-400 text-[#073B5C]' : 'bg-rose-400 text-[#073B5C]'
                         }`}>
                           {evaluation.dpiitEligible ? 'Eligible' : 'Gaps Identified'}
                         </span>
                       </div>
-                      <p className="text-slate-200 text-[11px] leading-relaxed">
+                      <p className="text-slate-200 text-xs leading-relaxed">
                         {evaluation.dpiitEligible
                           ? 'Your entity meets all criteria for DPIIT Certificate of Recognition under Gazette Notification 127(E).'
                           : 'Entity structure or age prevents direct DPIIT recognition. Check restructuring advice below.'}
@@ -453,18 +455,18 @@ export default function StartupIndiaCheckerPage() {
                     <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 space-y-2">
                       <div className="flex items-center justify-between">
                         <strong className="text-sm font-black text-white">2. Section 80-IAC Tax Holiday</strong>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${
                           evaluation.taxHolidayEligible ? 'bg-amber-300 text-[#073B5C]' : 'bg-slate-400 text-slate-900'
                         }`}>
                           {evaluation.taxHolidayEligible ? 'High Candidate' : 'Ineligible'}
                         </span>
                       </div>
-                      <p className="text-slate-200 text-[11px] leading-relaxed">
+                      <p className="text-slate-200 text-xs leading-relaxed">
                         {evaluation.taxHolidayEligible
                           ? '100% Tax Holiday on Corporate Profits for 3 consecutive financial years out of the first 10 years.'
                           : 'Must be a Private Limited or LLP incorporated after 01/04/2016 with innovative tech proof.'}
                       </p>
-                      <div className="bg-black/20 p-2.5 rounded-xl text-[10px] text-amber-200 font-medium">
+                      <div className="bg-black/20 p-2.5 rounded-xl text-[11px] text-amber-200 font-medium">
                         ⚠️ <strong>Inter-Ministerial Board Warning:</strong> Less than 2% of applicants receive 80-IAC approval without professional dossier drafting.
                       </div>
                     </div>
@@ -475,7 +477,7 @@ export default function StartupIndiaCheckerPage() {
                   <div className="pt-2 space-y-2">
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Link
-                        href="/services/startup-india-seed-fund-registration"
+                        href="/services/startup-india-dpiit-recognition"
                         className="flex-1 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] font-black text-center py-3.5 px-4 rounded-xl shadow transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2"
                       >
                         <span>🚀 Start DPIIT Recognition Dossier (₹999 Token) →</span>
@@ -544,7 +546,7 @@ export default function StartupIndiaCheckerPage() {
           <p className="leading-relaxed text-amber-900/90 text-xs sm:text-[13px]">
             &quot;Department for Promotion of Industry and Internal Trade (DPIIT) has not appointed any Agency, Representative, or Franchise for DPIIT &apos;Certificate of Recognition&apos; or &apos;Certificate of Eligibility&apos; for Startups. Application should be filed by the startup on its own via National Single Window System (<a href="https://www.nsws.gov.in" target="_blank" rel="noopener noreferrer" className="underline font-bold">nsws.gov.in</a>). Ministry does NOT charge any fee for DPIIT Recognition or Tax Exemption.&quot;
           </p>
-          <p className="text-[11px] text-amber-800 font-medium">
+          <p className="text-xs text-amber-800 font-medium">
             🛡️ <strong>NyayaLink Transparency:</strong> You can file directly on NSWS for ₹0. If you require expert Chartered Accountant and Company Secretary assistance to draft your 5-part technical innovation dossier, problem-solution pitch deck, and handle Inter-Ministerial Board inquiries, our professional assistance is ₹3,499.
           </p>
         </section>

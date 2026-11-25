@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 import { INDIAN_STATES, STATE_STAMP_RULES, formatINR } from '@/lib/pricing';
 
 type EntityType = 'pvt-ltd' | 'llp' | 'opc' | 'section-8';
@@ -42,7 +43,7 @@ const ENTITIES: Record<EntityType, EntityMeta> = {
     badge: 'Lowest Annual Compliance',
     slug: 'llp-registration',
     description: 'Ideal for professional services, agencies, consultancies, and lifestyle businesses with low audit overhead.',
-    baseProfFee: 5499,
+    baseProfFee: 4999,
     minDirectors: 2,
     defaultDirectors: 2,
     maxDirectors: 20,
@@ -56,7 +57,7 @@ const ENTITIES: Record<EntityType, EntityMeta> = {
     badge: 'Single Founder Entity',
     slug: 'one-person-company',
     description: 'Corporate shield for solo entrepreneurs without co-founders, requiring 1 director and 1 nominee.',
-    baseProfFee: 5999,
+    baseProfFee: 5499,
     minDirectors: 1,
     defaultDirectors: 1,
     maxDirectors: 1,
@@ -205,6 +206,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-28 lg:pb-20">
+      <Header />
       {/* Hero Header */}
       <section className="bg-[#073B5C] text-white pt-10 pb-16 px-4 border-b border-slate-700/60 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#0E7490]/20 rounded-full blur-3xl pointer-events-none" />
@@ -212,7 +214,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#F4B942] mb-3">
             <Link href="/" className="hover:underline">Home</Link>
             <span>/</span>
-            <Link href="/#catalog-section" className="hover:underline">Tools</Link>
+            <Link href="/tools" className="hover:underline">Tools</Link>
             <span>/</span>
             <span>Incorporation Cost Calculator</span>
           </div>
@@ -281,10 +283,10 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                         </strong>
                         {isSelected && <span className="text-emerald-600 font-black text-sm">✓</span>}
                       </div>
-                      <span className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5">
+                      <span className="inline-block bg-slate-100 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-full mb-1.5">
                         {item.badge}
                       </span>
-                      <p className="text-slate-500 text-[11px] leading-tight">
+                      <p className="text-slate-500 text-xs leading-tight">
                         {item.description}
                       </p>
                     </button>
@@ -325,7 +327,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                 <span className="text-base shrink-0">🏛️</span>
                 <div className="space-y-0.5">
                   <strong className="block font-bold">State Stamp Act Notice for {stateRule.name}:</strong>
-                  <p className="text-[11px] text-slate-600">
+                  <p className="text-xs text-slate-600">
                     {stateRule.note}. State Stamp Duty is directly payable to the state revenue department upon e-MoA/e-AoA generation. NyayaLink remits 100% of this fee as your Pure Agent with zero markup.
                   </p>
                 </div>
@@ -379,7 +381,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                   ))}
                 </div>
 
-                <p className="text-[11px] text-slate-500 italic">
+                <p className="text-xs text-slate-500 italic">
                   💡 Ministry of Corporate Affairs (MCA) SPICe+ rules waive all central ROC filing fees for capital up to ₹15,00,000. 95% of venture-backed startups begin with ₹1 Lakh authorized capital.
                 </p>
               </div>
@@ -408,7 +410,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
 
                 <div className="flex-1 text-center bg-slate-50 border border-slate-200 rounded-xl py-2 font-mono">
                   <span className="text-xl font-black text-[#073B5C]">{directorCount}</span>
-                  <span className="block text-[10px] text-slate-500 font-sans uppercase font-bold">
+                  <span className="block text-xs text-slate-500 font-sans uppercase font-bold">
                     {selectedEntity === 'llp' ? 'Designated Partners' : 'Directors'}
                   </span>
                 </div>
@@ -446,10 +448,10 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                 {/* Card Header */}
                 <div className="bg-[#073B5C] text-white p-5 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-black tracking-wider text-[#F4B942]">
+                    <span className="text-[11px] uppercase font-black tracking-wider text-[#F4B942]">
                       Pure Agent Quotation (Rule 33)
                     </span>
-                    <span className="bg-emerald-400 text-[#073B5C] text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                    <span className="bg-emerald-400 text-[#073B5C] text-[11px] font-black px-2 py-0.5 rounded-full uppercase">
                       Live Calculated
                     </span>
                   </div>
@@ -466,7 +468,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                   
                   {/* Category 1: Professional Fee */}
                   <div className="space-y-2 border-b border-slate-100 pb-3">
-                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                    <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider block">
                       A. Professional Advisory & Filing
                     </span>
                     <div className="flex justify-between items-center">
@@ -482,10 +484,10 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                   {/* Category 2: Government Statutory Pass-Throughs */}
                   <div className="space-y-2 border-b border-slate-100 pb-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                      <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
                         B. Statutory Pass-Throughs (Pure Agent)
                       </span>
-                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                      <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
                         Zero Markup
                       </span>
                     </div>
@@ -494,7 +496,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                       <div className="flex items-center gap-1.5">
                         <span className="text-slate-700 font-medium">MCA Central Filing Fee</span>
                         {calculations.mcaFee === 0 && (
-                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
+                          <span className="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
                             Waived
                           </span>
                         )}
@@ -537,7 +539,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                         <span className="text-2xl font-black text-[#073B5C] font-mono block">
                           {formatINR(calculations.grandTotal)}
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-600">
+                        <span className="text-[11px] font-bold text-emerald-600">
                           Saves ~{formatINR(calculations.savings)} vs competitors
                         </span>
                       </div>
@@ -550,7 +552,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
                       <span>⚡</span>
                       <span>Start Today with Just ₹999 Advance</span>
                     </div>
-                    <p className="text-[11px] text-amber-800 leading-tight">
+                    <p className="text-xs text-amber-800 leading-tight">
                       You do <strong>not</strong> need to pay the full amount today. Pay a ₹999 token to lock your CA desk, draft MoA/AoA, and conduct name reservation. The balance is payable only after your incorporation is ready to file!
                     </p>
                   </div>
@@ -625,7 +627,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <strong className="text-sm font-black text-slate-800">Vakilsearch (Zolvit)</strong>
-                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[10px]">3-Step Lead Trap</span>
+                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[11px]">3-Step Lead Trap</span>
               </div>
               <p className="text-slate-600">
                 Advertises <strong>₹999 on Google Ads</strong>. When you click, checkout is blocked behind a 3-step phone gate (`/onboard`). Once you pay the ₹999 teaser, tele-callers demand <strong>₹5,000 to ₹10,000 extra</strong> for stamp duty and ROC challans.
@@ -639,7 +641,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <strong className="text-sm font-black text-slate-800">IndiaFilings</strong>
-                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[10px]">Heavy SaaS Upsell</span>
+                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[11px]">Heavy SaaS Upsell</span>
               </div>
               <p className="text-slate-600">
                 Base plan is <strong>₹2,899 + GST + Govt Fees</strong>. Mandatory lead form before seeing any total. High-pressure sales calls push the ₹19,899 LEDGERS compliance plan. If you are in high stamp duty states (Maharashtra/Punjab), secondary invoices are sent.
@@ -653,7 +655,7 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <strong className="text-sm font-black text-slate-800">RegisterKaro</strong>
-                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[10px]">₹5,000 DSC Trap</span>
+                <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded text-[11px]">₹5,000 DSC Trap</span>
               </div>
               <p className="text-slate-600">
                 Their cost calculator quotes <strong>₹9,199</strong> for a ₹1L Maharashtra company. When inspected, they markup 2 hardware DSC tokens to <strong>₹5,000</strong> (tokens cost ₹800 to issue). Clicking &quot;Proceed to Pay&quot; opens another mandatory phone capture popup.
@@ -715,14 +717,14 @@ Book online: https://nyayalink.com/services/${entity.slug}?state=${selectedState
       {/* STICKY MOBILE BOTTOM CALCULATOR BAR */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] print:hidden">
         <div className="min-w-0">
-          <span className="text-[10px] uppercase font-bold text-slate-500 block truncate">
+          <span className="text-[11px] uppercase font-bold text-slate-500 block truncate">
             {entity.name} · {stateRule.name}
           </span>
           <div className="flex items-baseline gap-1.5">
             <strong className="text-base font-black text-[#073B5C] font-mono">
               {formatINR(calculations.grandTotal)}
             </strong>
-            <span className="text-[10px] text-emerald-600 font-bold">
+            <span className="text-[11px] text-emerald-600 font-bold">
               (₹999 Token)
             </span>
           </div>

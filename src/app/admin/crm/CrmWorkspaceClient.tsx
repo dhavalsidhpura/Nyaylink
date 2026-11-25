@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Role, LeadStatus } from '@prisma/client';
 import type { CrmData } from './page';
+import AdminNav from '@/components/admin/AdminNav';
 
 type Props = CrmData & {
   currentRole: Role;
@@ -204,59 +205,29 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex flex-col">
-      {/* Top Header */}
-      <header className="bg-[#073B5C] text-white border-b border-cyan-900/60 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow-inner border border-cyan-400/30">
-              Nyaya<span className="text-[#F4B942]">Link</span>
-            </Link>
-            <span className="bg-[#F4B942] text-[#073B5C] font-black text-[10px] uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-              Inbound Sales &amp; Telecalling CRM
-            </span>
-          </div>
+      <AdminNav
+        active="crm"
+        subtitle="Sales & Telecalling CRM"
+        role={currentRole}
+        actions={
+          <button
+            onClick={() => setShowAddLeadModal(true)}
+            className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap"
+          >
+            <span>+</span> Add Walk-in Lead
+          </button>
+        }
+      />
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/admin"
-              className="bg-slate-800 hover:bg-slate-700 text-[#F4B942] font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all border border-slate-700 shadow-sm"
-            >
-              ← Super Controller HQ
-            </Link>
-            <button
-              onClick={() => setShowAddLeadModal(true)}
-              className="bg-[#0E7490] hover:bg-cyan-600 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>+</span> Add Walk-in Lead
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Subnav & Cross-Department Switcher */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2 sticky top-[53px] z-40 shadow-xs">
+      {/* CRM Toolbar */}
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
-            <span className="font-extrabold text-slate-400 uppercase text-[10px] tracking-wider mr-1">Workspaces:</span>
-            <span className="bg-[#073B5C] text-[#F4B942] font-black px-3 py-1 rounded-lg">💼 Sales CRM</span>
-            <Link href="/admin/orders" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              📋 CA Operations Desk
-            </Link>
-            <Link href="/admin/finance" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              🏛️ Pure Agent &amp; Tax Desk
-            </Link>
-            <Link href="/admin/lawyers" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              ⚖️ Advocate Console
-            </Link>
-            <Link href="/admin/pricing" className="text-slate-600 hover:text-[#073B5C] font-bold px-3 py-1 rounded-lg hover:bg-slate-100 transition">
-              🏷️ Rates &amp; Catalog
-            </Link>
-          </div>
+          <span className="font-bold text-[#073B5C]">Inbound Sales &amp; Telecalling Pipeline</span>
 
           <div className="flex items-center gap-3">
             {canSuperAdmin && (
               <div className="flex items-center gap-2">
-                <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition">
                   <input
                     type="checkbox"
                     checked={unmaskPhones}
@@ -272,7 +243,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                   <span>DLP: Opt-in Phone Unmasking</span>
                 </label>
                 {unmaskPhones && (
-                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
+                  <span className="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
                     <span>⚠️</span> PII Unmasked (Audited)
                   </span>
                 )}
@@ -281,16 +252,16 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
             <div className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex">
               <button
                 onClick={() => setViewMode('kanban')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold transition cursor-pointer ${
-                  viewMode === 'kanban' ? 'bg-white text-[#073B5C] shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                className={`px-2.5 py-1 rounded-md text-xs font-extrabold transition cursor-pointer ${
+                  viewMode === 'kanban' ? 'bg-white text-[#073B5C] shadow-sm' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Kanban
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold transition cursor-pointer ${
-                  viewMode === 'table' ? 'bg-white text-[#073B5C] shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                className={`px-2.5 py-1 rounded-md text-xs font-extrabold transition cursor-pointer ${
+                  viewMode === 'table' ? 'bg-white text-[#073B5C] shadow-sm' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Table
@@ -303,30 +274,30 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow space-y-6">
         {/* KPI Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-1">
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Total Pipeline</span>
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+            <span className="text-xs text-slate-400 font-extrabold uppercase tracking-wider block">Total Pipeline</span>
             <strong className="text-2xl font-black text-[#073B5C]">{leads.length}</strong>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs space-y-1">
-            <span className="text-[10px] text-emerald-800 font-extrabold uppercase tracking-wider block">New Inbound</span>
+          <div className="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-sm space-y-1">
+            <span className="text-[11px] text-emerald-800 font-extrabold uppercase tracking-wider block">New Inbound</span>
             <strong className="text-2xl font-black text-emerald-600">{countNew}</strong>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-xs space-y-1">
-            <span className="text-[10px] text-amber-800 font-extrabold uppercase tracking-wider block">In Calling Follow-up</span>
+          <div className="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-sm space-y-1">
+            <span className="text-[11px] text-amber-800 font-extrabold uppercase tracking-wider block">In Calling Follow-up</span>
             <strong className="text-2xl font-black text-amber-600">{countContacted}</strong>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-cyan-200 bg-cyan-50/20 shadow-xs space-y-1">
-            <span className="text-[10px] text-cyan-800 font-extrabold uppercase tracking-wider block">Won (₹999 Token)</span>
+          <div className="bg-white p-4 rounded-2xl border border-cyan-200 bg-cyan-50/20 shadow-sm space-y-1">
+            <span className="text-[11px] text-cyan-800 font-extrabold uppercase tracking-wider block">Won (₹999 Token)</span>
             <strong className="text-2xl font-black text-[#0E7490]">{countConverted}</strong>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-1 col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-purple-700 font-extrabold uppercase tracking-wider block">Token Win Rate</span>
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1 col-span-2 sm:col-span-1">
+            <span className="text-[11px] text-purple-700 font-extrabold uppercase tracking-wider block">Token Win Rate</span>
             <strong className="text-2xl font-black text-purple-700">{conversionRate}%</strong>
           </div>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
             <input
               type="text"
@@ -373,7 +344,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                 <div key={col.key} className="bg-slate-50/80 rounded-2xl border border-slate-200 p-3 space-y-3 flex flex-col min-h-[500px]">
                   <div className="flex items-center justify-between px-1">
                     <span className="font-extrabold text-xs text-[#073B5C]">{col.label}</span>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${col.badgeColor}`}>
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${col.badgeColor}`}>
                       {columnLeads.length}
                     </span>
                   </div>
@@ -387,14 +358,14 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                       columnLeads.map((lead) => (
                         <div
                           key={lead.id}
-                          className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition space-y-3"
+                          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <strong className="text-sm font-extrabold text-[#073B5C] block">{lead.fullName}</strong>
                               <span className="text-[11px] font-bold text-[#0E7490] block">{lead.complianceType}</span>
                             </div>
-                            <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap">
+                            <span className="text-[11px] font-bold text-slate-400 whitespace-nowrap">
                               {formatTimeAgo(lead.createdAt)}
                             </span>
                           </div>
@@ -410,7 +381,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                                 <span className="font-medium text-slate-700 truncate max-w-[140px]">{lead.email}</span>
                               </div>
                             )}
-                            <div className="flex items-center justify-between text-[10px] pt-0.5">
+                            <div className="flex items-center justify-between text-[11px] pt-0.5">
                               <span className="text-slate-400">Source:</span>
                               <span className="text-slate-600 font-semibold">{lead.source}</span>
                             </div>
@@ -418,12 +389,12 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
                           {/* Representative Assignment */}
                           <div className="flex items-center justify-between gap-1 text-[11px]">
-                            <span className="text-slate-400 font-semibold text-[10px]">Rep:</span>
+                            <span className="text-slate-400 font-semibold text-[11px]">Rep:</span>
                             <select
                               value={lead.assignedToId || ''}
                               disabled={busy}
                               onChange={(e) => handleAssignLead(lead.id, e.target.value || null)}
-                              className="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-md px-1.5 py-0.5 text-slate-700 focus:outline-none"
+                              className="text-[11px] font-bold bg-slate-50 border border-slate-200 rounded-md px-1.5 py-0.5 text-slate-700 focus:outline-none"
                             >
                               <option value="">Unassigned</option>
                               {staffMembers.map((m) => (
@@ -439,14 +410,14 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                             <button
                               onClick={() => setSelectedLeadForCall(lead)}
                               title="Click-to-Call & Log Outcome"
-                              className="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-[10px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
+                              className="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>📞</span> Call
                             </button>
                             <button
                               onClick={() => setSelectedLeadForWhatsApp(lead)}
                               title="Official WhatsApp Quick Scripts"
-                              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[10px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
+                              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>💬</span> Script
                             </button>
@@ -456,7 +427,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                                 setGeneratedLinkData(null);
                               }}
                               title="1-Click ₹999 Payment Link Generator"
-                              className="bg-cyan-50 hover:bg-cyan-100 text-[#0E7490] font-black text-[10px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
+                              className="bg-cyan-50 hover:bg-cyan-100 text-[#0E7490] font-black text-[11px] py-1.5 rounded-lg text-center transition flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>⚡</span> ₹999 Link
                             </button>
@@ -468,7 +439,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                               <button
                                 disabled={busy}
                                 onClick={() => handleUpdateStatus(lead.id, col.key === 'DISQUALIFIED' ? 'CONTACTED' : col.key === 'CONVERTED' ? 'CONTACTED' : 'NEW')}
-                                className="text-[10px] text-slate-500 hover:text-slate-800 font-bold px-1.5 py-0.5 rounded hover:bg-slate-100 transition cursor-pointer"
+                                className="text-xs text-slate-500 hover:text-slate-800 font-bold px-1.5 py-0.5 rounded hover:bg-slate-100 transition cursor-pointer"
                               >
                                 ← Prev
                               </button>
@@ -478,7 +449,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                               <button
                                 disabled={busy}
                                 onClick={() => handleUpdateStatus(lead.id, 'CONTACTED')}
-                                className="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-md transition cursor-pointer"
+                                className="text-[11px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-md transition cursor-pointer"
                               >
                                 Call Started →
                               </button>
@@ -487,7 +458,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                               <button
                                 disabled={busy}
                                 onClick={() => handleUpdateStatus(lead.id, 'CONVERTED')}
-                                className="text-[10px] bg-cyan-100 hover:bg-cyan-200 text-[#073B5C] font-black px-2 py-0.5 rounded-md transition cursor-pointer"
+                                className="text-[11px] bg-cyan-100 hover:bg-cyan-200 text-[#073B5C] font-black px-2 py-0.5 rounded-md transition cursor-pointer"
                               >
                                 Won (₹999 Paid) →
                               </button>
@@ -496,7 +467,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                               <button
                                 disabled={busy}
                                 onClick={() => handleUpdateStatus(lead.id, 'DISQUALIFIED')}
-                                className="text-[10px] text-rose-500 hover:text-rose-700 font-bold px-1.5 py-0.5 rounded hover:bg-rose-50 transition cursor-pointer"
+                                className="text-[11px] text-rose-500 hover:text-rose-700 font-bold px-1.5 py-0.5 rounded hover:bg-rose-50 transition cursor-pointer"
                                 title="Mark Junk / Disqualified"
                               >
                                 ✕
@@ -519,7 +490,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                  <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                     <th className="p-4">Applicant Name</th>
                     <th className="p-4">Contact Details</th>
                     <th className="p-4">Filing Intent</th>
@@ -541,7 +512,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                       <tr key={lead.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-4">
                           <strong className="text-slate-900 font-extrabold block">{lead.fullName}</strong>
-                          <span className="text-[10px] text-slate-400">{formatTimeAgo(lead.createdAt)}</span>
+                          <span className="text-xs text-slate-400">{formatTimeAgo(lead.createdAt)}</span>
                         </td>
                         <td className="p-4">
                           <span className="font-mono font-bold text-slate-800 block">{maskPhone(lead.phone)}</span>
@@ -569,7 +540,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                             value={lead.status}
                             disabled={busy}
                             onChange={(e) => handleUpdateStatus(lead.id, e.target.value as LeadStatus)}
-                            className="text-[10px] font-black uppercase px-2 py-1 rounded-full border border-slate-200 bg-white"
+                            className="text-[11px] font-black uppercase px-2 py-1 rounded-full border border-slate-200 bg-white"
                           >
                             <option value="NEW">1. New Inbound</option>
                             <option value="CONTACTED">2. Attempting Contact</option>
@@ -581,13 +552,13 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => setSelectedLeadForCall(lead)}
-                              className="bg-slate-100 hover:bg-slate-200 text-[#073B5C] font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition"
+                              className="bg-slate-100 hover:bg-slate-200 text-[#073B5C] font-bold text-[11px] px-2.5 py-1.5 rounded-lg transition"
                             >
                               📞 Call
                             </button>
                             <button
                               onClick={() => setSelectedLeadForWhatsApp(lead)}
-                              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition"
+                              className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] px-2.5 py-1.5 rounded-lg transition"
                             >
                               💬 WhatsApp
                             </button>
@@ -596,7 +567,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                                 setSelectedLeadForPayment(lead);
                                 setGeneratedLinkData(null);
                               }}
-                              className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[10px] px-3 py-1.5 rounded-lg transition shadow-xs"
+                              className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[11px] px-3 py-1.5 rounded-lg transition shadow-sm"
                             >
                               ⚡ ₹999 Link
                             </button>
@@ -614,11 +585,11 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
       {/* MODAL 1: Click-to-Call & Outcome Disposition */}
       {selectedLeadForCall && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
                   Telephony &amp; Calling Desk
                 </span>
                 <h3 className="font-extrabold text-[#073B5C] text-base">{selectedLeadForCall.fullName}</h3>
@@ -699,11 +670,11 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
       {/* MODAL 2: Pre-Approved WhatsApp Scripts */}
       {selectedLeadForWhatsApp && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-emerald-700 tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-emerald-700 tracking-wider block">
                   Official WhatsApp Desk
                 </span>
                 <h3 className="font-extrabold text-[#073B5C] text-base">{selectedLeadForWhatsApp.fullName}</h3>
@@ -726,12 +697,12 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                   <strong className="text-xs font-bold text-[#073B5C]">Template 1: Introduction &amp; Quotation</strong>
                   <button
                     onClick={() => openWhatsAppDirect(selectedLeadForWhatsApp, 'quote')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] px-3 py-1 rounded-lg transition"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-3 py-1 rounded-lg transition"
                   >
                     Open in WhatsApp →
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   Namaste {selectedLeadForWhatsApp.fullName.split(' ')[0]} ji! Greetings from NyayaLink Legal Operations. We received your request regarding {selectedLeadForWhatsApp.complianceType}...
                 </p>
               </div>
@@ -741,12 +712,12 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                   <strong className="text-xs font-black text-[#073B5C]">Template 2: ₹999 Advance Token Link</strong>
                   <button
                     onClick={() => openWhatsAppDirect(selectedLeadForWhatsApp, 'token')}
-                    className="bg-[#0E7490] hover:bg-cyan-700 text-white font-extrabold text-[10px] px-3 py-1 rounded-lg transition"
+                    className="bg-[#0E7490] hover:bg-cyan-700 text-white font-extrabold text-[11px] px-3 py-1 rounded-lg transition"
                   >
                     Open in WhatsApp →
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   Lock your dedicated CA/CS compliance desk and begin name reservation filing today for just ₹999 advance token...
                 </p>
               </div>
@@ -756,12 +727,12 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
                   <strong className="text-xs font-bold text-[#073B5C]">Template 3: KYC Document Reminder</strong>
                   <button
                     onClick={() => openWhatsAppDirect(selectedLeadForWhatsApp, 'kyc')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] px-3 py-1 rounded-lg transition"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-3 py-1 rounded-lg transition"
                   >
                     Open in WhatsApp →
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   To expedite your filing, please upload your Aadhaar, PAN card, and recent utility bill (&lt; 60 days old) to your vault...
                 </p>
               </div>
@@ -772,11 +743,11 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
       {/* MODAL 3: 1-Click Custom ₹999 Payment Link Generator */}
       {selectedLeadForPayment && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
                   Payment Link Generator
                 </span>
                 <h3 className="font-extrabold text-[#073B5C] text-base">
@@ -864,7 +835,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
               <div className="space-y-4">
                 <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-emerald-800 uppercase">Payment Link Active</span>
+                    <span className="text-[11px] font-black text-emerald-800 uppercase">Payment Link Active</span>
                     <span className="text-xs font-extrabold text-emerald-700">₹{tokenAmount} Advance Token</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -916,7 +887,7 @@ export default function CrmWorkspaceClient({ leads, staffMembers, services, curr
 
       {/* MODAL 4: Add Walk-in Lead */}
       {showAddLeadModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="font-extrabold text-[#073B5C] text-base">Add Inbound / Walk-in Lead</h3>

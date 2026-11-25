@@ -198,7 +198,7 @@ export default function LawyerProfileForm({
       </fieldset>
 
       {mode === 'apply' && (
-        <p className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3">
+        <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3">
           We verify every enrolment with the State Bar Council before your profile goes live (usually 1–2 working days). By applying you
           confirm the details are true and that your listing complies with Bar Council of India Rules (Part VI, Chapter II).
         </p>

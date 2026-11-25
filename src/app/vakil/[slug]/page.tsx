@@ -45,7 +45,7 @@ export default async function LawyerProfilePage({ params }: { params: { slug: st
                 <h1 className="text-2xl font-extrabold text-[#073B5C]">{lawyer.user.name}</h1>
                 <p className="text-xs text-slate-500">Advocate · {lawyer.city}</p>
               </div>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full shrink-0">
+              <span className="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full shrink-0">
                 ✓ Bar Council verified
               </span>
             </div>
@@ -58,7 +58,7 @@ export default async function LawyerProfilePage({ params }: { params: { slug: st
             </dl>
             <div className="flex flex-wrap gap-1.5">
               {lawyer.practiceAreas.map((a) => (
-                <span key={a.slug} className="text-[10px] bg-cyan-50 text-[#0E7490] border border-cyan-200 font-bold px-2 py-0.5 rounded-full">
+                <span key={a.slug} className="text-[11px] bg-cyan-50 text-[#0E7490] border border-cyan-200 font-bold px-2 py-0.5 rounded-full">
                   {a.name}
                 </span>
               ))}
@@ -88,7 +88,7 @@ export default async function LawyerProfilePage({ params }: { params: { slug: st
               <span>Total</span>
               <span>{formatINR(quote.total)}</span>
             </div>
-            <p className="text-[10px] text-slate-400">Free cancellation with full refund up to 24 hours before the consultation.</p>
+            <p className="text-xs text-slate-400">Free cancellation with full refund up to 24 hours before the consultation.</p>
           </section>
         </article>
 
@@ -103,7 +103,7 @@ export default async function LawyerProfilePage({ params }: { params: { slug: st
 function Fact({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-      <dt className="text-[10px] uppercase font-bold text-slate-400">{label}</dt>
+      <dt className="text-[11px] uppercase font-bold text-slate-400">{label}</dt>
       <dd className={`font-bold text-slate-800 ${mono ? 'font-mono' : ''}`}>{value}</dd>
     </div>
   );

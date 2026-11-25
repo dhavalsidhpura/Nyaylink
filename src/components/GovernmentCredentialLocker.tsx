@@ -127,14 +127,14 @@ export default function GovernmentCredentialLocker({
       <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-4">
           <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+            <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
               Official Statutory Asset
             </span>
             <h3 className="text-base sm:text-lg font-black text-[#073B5C] flex items-center gap-2">
               <span>🔐</span> Official Government Portal Credential Locker
             </h3>
           </div>
-          <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
+          <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
             100% Client Owned
           </span>
         </div>
@@ -151,13 +151,13 @@ export default function GovernmentCredentialLocker({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           {/* Portal Name & URL */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-            <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Government Ministry Portal</span>
+            <span className="text-[11px] font-extrabold uppercase text-slate-400 block">Government Ministry Portal</span>
             <strong className="text-sm font-black text-[#073B5C] block">{credentials.portalName}</strong>
             <a
               href={credentials.portalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[11px] px-3.5 py-1.5 rounded-xl transition shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[11px] px-3.5 py-1.5 rounded-xl transition shadow-sm"
             >
               <span>Login to Government Portal</span>
               <span>↗</span>
@@ -167,7 +167,7 @@ export default function GovernmentCredentialLocker({
           {/* ARN / CIN / Reference */}
           {credentials.arnOrCin && (
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-              <span className="text-[10px] font-extrabold uppercase text-slate-400 block">
+              <span className="text-[11px] font-extrabold uppercase text-slate-400 block">
                 Official Registration Reference
               </span>
               <strong className="font-mono text-sm font-black text-slate-900 block">{credentials.arnOrCin}</strong>
@@ -182,12 +182,12 @@ export default function GovernmentCredentialLocker({
 
           {/* User ID / Username */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-            <span className="text-[10px] font-extrabold uppercase text-slate-400 block">Portal User ID / Username</span>
+            <span className="text-[11px] font-extrabold uppercase text-slate-400 block">Portal User ID / Username</span>
             <div className="flex items-center justify-between gap-2 bg-white border border-slate-300 px-3 py-2 rounded-xl">
               <span className="font-mono font-bold text-xs text-slate-900 truncate">{credentials.username}</span>
               <button
                 onClick={() => copyToClipboard(credentials.username, 'username')}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[10px] px-2.5 py-1 rounded-lg transition shrink-0 cursor-pointer"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[11px] px-2.5 py-1 rounded-lg transition shrink-0 cursor-pointer"
               >
                 {copiedField === 'username' ? '✓ Copied' : 'Copy ID'}
               </button>
@@ -197,7 +197,7 @@ export default function GovernmentCredentialLocker({
           {/* Password */}
           {credentials.password && (
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-              <span className="text-[10px] font-extrabold uppercase text-slate-400 block">
+              <span className="text-[11px] font-extrabold uppercase text-slate-400 block">
                 Initial / Temporary Password
               </span>
               <div className="flex items-center justify-between gap-2 bg-white border border-slate-300 px-3 py-2 rounded-xl">
@@ -207,13 +207,13 @@ export default function GovernmentCredentialLocker({
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-slate-500 hover:text-slate-800 text-[10px] font-bold px-1.5 py-1"
+                    className="text-slate-500 hover:text-slate-800 text-[11px] font-bold px-1.5 py-1"
                   >
                     {showPassword ? 'Hide' : 'Reveal'}
                   </button>
                   <button
                     onClick={() => copyToClipboard(credentials.password!, 'password')}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[10px] px-2.5 py-1 rounded-lg transition cursor-pointer"
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-[11px] px-2.5 py-1 rounded-lg transition cursor-pointer"
                   >
                     {copiedField === 'password' ? '✓ Copied' : 'Copy'}
                   </button>
@@ -245,7 +245,7 @@ export default function GovernmentCredentialLocker({
     <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 pb-3">
         <div>
-          <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+          <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
             Government Registry Handover Desk
           </span>
           <h3 className="text-base font-extrabold text-[#073B5C]">Official Portal Credentials &amp; OTP Protocol</h3>
@@ -277,27 +277,27 @@ export default function GovernmentCredentialLocker({
         <div className="space-y-3 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
-              <span className="text-[10px] uppercase text-slate-400 font-bold block">Portal</span>
+              <span className="text-[11px] uppercase text-slate-400 font-bold block">Portal</span>
               <strong className="text-slate-900 block truncate">{credentials.portalName}</strong>
-              <a href={credentials.portalUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#0E7490] hover:underline">
+              <a href={credentials.portalUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#0E7490] hover:underline">
                 Open Portal ↗
               </a>
             </div>
 
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
-              <span className="text-[10px] uppercase text-slate-400 font-bold block">User ID / Username</span>
+              <span className="text-[11px] uppercase text-slate-400 font-bold block">User ID / Username</span>
               <strong className="font-mono text-slate-900 block truncate">{credentials.username}</strong>
             </div>
 
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
-              <span className="text-[10px] uppercase text-slate-400 font-bold block">Vaulted Password</span>
+              <span className="text-[11px] uppercase text-slate-400 font-bold block">Vaulted Password</span>
               <strong className="font-mono text-slate-900 block truncate">
                 {showPassword ? credentials.password : '••••••••••••'}
               </strong>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-[10px] font-bold text-[#0E7490] hover:underline"
+                className="text-[11px] font-bold text-[#0E7490] hover:underline"
               >
                 {showPassword ? 'Hide' : 'Reveal'}
               </button>
@@ -306,7 +306,7 @@ export default function GovernmentCredentialLocker({
 
           <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-[11px] flex items-center justify-between">
             <span>✓ Published to Customer Vault ({clientName} can view and copy credentials on their dashboard).</span>
-            <span className="font-mono font-bold text-[10px] text-emerald-700">Ref: {credentials.arnOrCin || '—'}</span>
+            <span className="font-mono font-bold text-[11px] text-emerald-700">Ref: {credentials.arnOrCin || '—'}</span>
           </div>
         </div>
       ) : (

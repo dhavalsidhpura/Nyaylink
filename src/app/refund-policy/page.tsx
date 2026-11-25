@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'Cancellation & Refund Policy | NyayaLink',
@@ -10,28 +10,11 @@ export const metadata: Metadata = {
 export default function RefundPolicyPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      <header className="bg-[#073B5C] text-white py-4 px-4 sm:px-6 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3 py-1 rounded-xl font-mono shadow">
-            Nyaya<span className="text-[#F4B942]">Link</span>
-          </Link>
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <Link href="/" className="text-[#F4B942] hover:underline">
-              ← Back to Home
-            </Link>
-            <Link href="/terms" className="text-cyan-200 hover:text-white">
-              Terms of Service
-            </Link>
-            <Link href="/privacy" className="text-cyan-200 hover:text-white">
-              Privacy Policy
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8">
         <div className="space-y-2 border-b border-slate-200 pb-5">
-          <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+          <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
             Statutory Transparency & Fair Commercial Practice
           </span>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#073B5C]">
@@ -43,7 +26,7 @@ export default function RefundPolicyPage() {
         </div>
 
         {/* Policy Highlights Card */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div className="space-y-1 border-b sm:border-b-0 sm:border-r border-slate-100 pb-3 sm:pb-0 sm:pr-3">
             <strong className="text-[#073B5C] block text-sm">⏱️ 24-Hour Cancellation</strong>
             <p className="text-slate-500">100% refund of professional fees if cancelled before drafting begins.</p>
@@ -58,7 +41,7 @@ export default function RefundPolicyPage() {
           </div>
         </div>
 
-        <section className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs">
+        <section className="space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
           
           <div className="space-y-2">
             <h2 className="text-base sm:text-lg font-bold text-[#073B5C]">
@@ -150,7 +133,7 @@ export default function RefundPolicyPage() {
               <div><strong>Grievance Officer:</strong> grievance@nyayalink.com</div>
               <div><strong>Escalation Phone:</strong> +91 9920054785 (10:00 AM – 6:30 PM IST, Mon–Fri)</div>
             </div>
-            <p className="text-[11px] text-slate-500 pt-1">
+            <p className="text-xs text-slate-500 pt-1">
               All eligible refunds are reviewed by the finance controller within 24–48 hours and disbursed directly to the original payment source within 5–7 banking days.
             </p>
           </div>

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { getServiceBySlug } from '@/lib/catalog';
 import { num } from '@/lib/serialize';
 import { formatINR } from '@/lib/pricing';
 import { getServiceStructure } from '@/data/serviceDetails';
 import { MASTER_SERVICES } from '@/data/services';
+import { MASTER_PACKAGES } from '@/data/packages';
 import ServiceDetailClient from './ServiceDetailClient';
 
 export const revalidate = 300;
@@ -50,65 +52,62 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-// Pricing and requirements come directly from the Service table (the same source the checkout API charges from),
-// so changes made in the Admin Console reflect instantly.
 export default async function ServicePage({ params }: { params: { slug: string } }) {
   const service = await getServiceBySlug(params.slug);
+  if (!service) notFound();
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nyaylink.vercel.app';
   const structure = getServiceStructure(params.slug);
+  const masterItem = MASTER_SERVICES.find((s) => s.slug === service.slug);
 
-  const serviceData = service
-    ? {
-        slug: service.slug,
-        title: service.title,
-        category: service.category,
-        professionalFee: num(service.professionalFee),
-        govtFee: num(service.govtFee),
-        govtFeeNote: service.govtFeeNote,
-        gstRate: num(service.gstRate),
-        sla: service.sla,
-        sacCode: service.sacCode,
-        isActive: service.isActive,
-        requirements: service.requirements?.map((r) => ({
-          id: r.id,
-          key: r.key,
-          label: r.label,
-          required: r.required,
-        })) ?? [],
-      }
-    : null;
+  const serviceData = {
+    slug: service.slug,
+    title: service.title,
+    category: service.category,
+    professionalFee: num(service.professionalFee),
+    govtFee: num(service.govtFee),
+    govtFeeNote: service.govtFeeNote,
+    gstRate: num(service.gstRate),
+    sla: service.sla,
+    sacCode: service.sacCode,
+    isActive: service.isActive,
+    requirements:
+      service.requirements?.map((r) => ({
+        id: r.id,
+        key: r.key,
+        label: r.label,
+        required: r.required,
+      })) ?? [],
+  };
 
-  // Schema.org Structured Data (Service + FAQPage + BreadcrumbList)
-  const jsonLdService = service
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Service',
-        name: service.title,
-        description: structure.whyShouldBuy || `${service.title} with dedicated CA/CS supervision`,
-        serviceType: service.category,
-        provider: {
-          '@type': 'LegalService',
-          name: 'NyayaLink',
-          url: baseUrl,
-          telephone: '+919920054785',
-          priceRange: '₹₹',
-          address: {
-            '@type': 'PostalAddress',
-            addressLocality: 'Mumbai',
-            addressRegion: 'Maharashtra',
-            postalCode: '400067',
-            addressCountry: 'IN',
-          },
-        },
-        offers: {
-          '@type': 'Offer',
-          price: num(service.professionalFee),
-          priceCurrency: 'INR',
-          availability: 'https://schema.org/InStock',
-          url: `${baseUrl}/services/${service.slug}`,
-        },
-      }
-    : null;
+  const jsonLdService = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: service.title,
+    description: structure.whyShouldBuy || `${service.title} with dedicated CA/CS supervision`,
+    serviceType: service.category,
+    provider: {
+      '@type': 'LegalService',
+      name: 'NyayaLink',
+      url: baseUrl,
+      telephone: '+919920054785',
+      priceRange: '₹₹',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Mumbai',
+        addressRegion: 'Maharashtra',
+        postalCode: '400067',
+        addressCountry: 'IN',
+      },
+    },
+    offers: {
+      '@type': 'Offer',
+      price: num(service.professionalFee),
+      priceCurrency: 'INR',
+      availability: 'https://schema.org/InStock',
+      url: `${baseUrl}/services/${service.slug}`,
+    },
+  };
 
   const jsonLdFaq = structure?.faqs?.length
     ? {
@@ -144,7 +143,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
       {
         '@type': 'ListItem',
         position: 3,
-        name: service?.title || 'Service Detail',
+        name: service.title,
         item: `${baseUrl}/services/${params.slug}`,
       },
     ],
@@ -152,12 +151,10 @@ export default async function ServicePage({ params }: { params: { slug: string }
 
   return (
     <>
-      {jsonLdService && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdService) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdService) }}
+      />
       {jsonLdFaq && (
         <script
           type="application/ld+json"
@@ -168,7 +165,12 @@ export default async function ServicePage({ params }: { params: { slug: string }
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
       />
-      <ServiceDetailClient serviceData={serviceData} />
+      <ServiceDetailClient
+        serviceData={serviceData}
+        structure={structure}
+        packages={MASTER_PACKAGES}
+        masterMeta={{ badge: masterItem?.badge ?? 'NyayaLink Assured', icon: masterItem?.icon ?? '🏢' }}
+      />
     </>
   );
 }

@@ -201,7 +201,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               <span className="text-xs font-bold text-[#F4B942] uppercase tracking-wider block">
                 CA & Compliance Partner Portal
               </span>
-              <span className="text-[10px] text-slate-300">Empanelled Professional Desk</span>
+              <span className="text-[11px] text-slate-300">Empanelled Professional Desk</span>
             </div>
           </div>
 
@@ -212,7 +212,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               </div>
               <div className="hidden sm:block text-left">
                 <span className="text-xs font-bold text-white block leading-tight">{user.name}</span>
-                <span className="text-[9px] text-[#F4B942] font-semibold block uppercase">
+                <span className="text-[11px] text-[#F4B942] font-semibold block uppercase">
                   {user.role.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -231,7 +231,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       {user.role === 'SUPER_ADMIN' ? (
         <div className="bg-amber-500/15 border-b border-amber-500/40 text-amber-950 px-4 py-2.5 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="bg-amber-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider shadow-xs">
+            <span className="bg-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider shadow-sm">
               👁️ Super Admin Preview
             </span>
             <span className="text-slate-800">
@@ -248,7 +248,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       ) : user.email?.endsWith('.local') ? (
         <div className="bg-cyan-50 border-b border-cyan-200 text-[#073B5C] px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="bg-[#0E7490] text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-xs">
+            <span className="bg-[#0E7490] text-white text-[11px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">
               ICAI Practitioner Desk
             </span>
             <span>
@@ -260,8 +260,8 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       ) : null}
 
 
-            {/* MOBILE TAB BAR (STICKY, HORIZONTAL SCROLL) */}
-      <div className="lg:hidden sticky top-0 z-30 bg-[#073B5C] text-white px-4 py-2.5 shadow-md">
+            {/* MOBILE TAB BAR (STICKY BELOW HEADER, HORIZONTAL SCROLL) */}
+      <div className="lg:hidden sticky top-[57px] z-30 bg-[#073B5C] text-white px-4 py-2.5 shadow-md border-t border-white/10">
         <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] -mx-1 px-1">
           {[
             ['assigned', '📋', 'Dockets', myOrders.length],
@@ -277,7 +277,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               onClick={() => setActiveTab(key as any)}
               className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === key
-                  ? 'bg-[#F4B942] text-[#073B5C] shadow-xs'
+                  ? 'bg-[#F4B942] text-[#073B5C] shadow-sm'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
@@ -285,7 +285,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               <span>{label}</span>
               {typeof count === 'number' && count > 0 && (
                 <span
-                  className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                  className={`text-[11px] font-black px-1.5 py-0.2 rounded-full ${
                     activeTab === key ? 'bg-[#073B5C] text-white' : 'bg-[#F4B942] text-[#073B5C]'
                   }`}
                 >
@@ -301,7 +301,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 w-full">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">My Active Dockets</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">My Active Dockets</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-black text-[#073B5C] font-mono">{metrics.activeDocketsCount}</span>
               <span className="text-xs text-cyan-600 font-semibold">in progress</span>
@@ -309,7 +309,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Unclaimed Docket Pool</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Unclaimed Docket Pool</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-black text-amber-600 font-mono">{metrics.unclaimedCount}</span>
               <span className="text-xs text-amber-700 font-semibold">ready to claim</span>
@@ -317,7 +317,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Docs Awaiting Review</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Docs Awaiting Review</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-black text-orange-600 font-mono">{metrics.pendingDocsCount}</span>
               <span className="text-xs text-orange-700 font-semibold">KYC / Filings</span>
@@ -325,7 +325,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Earned Partner Retainer</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Earned Partner Retainer</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-black text-emerald-700 font-mono">₹{formatINR(metrics.earnedRetainer)}</span>
               <span className="text-xs text-emerald-600 font-semibold">({metrics.approvedCount} completed)</span>
@@ -362,7 +362,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                 </div>
                 {badge && (
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
+                    className={`text-[11px] px-2 py-0.5 rounded-full font-extrabold ${
                       activeTab === key ? 'bg-[#F4B942] text-[#073B5C]' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
@@ -378,7 +378,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
             <div className="flex items-center gap-2 text-[#0E7490] font-bold">
               <span>💡</span> Professional Standards
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 text-xs leading-relaxed">
               Ensure all MCA V3 challans, GST ARNs, and Trade Marks Examination replies are cross-verified with official government portals before issuing final approval.
             </p>
           </div>
@@ -438,11 +438,11 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-mono font-black text-sm text-[#073B5C]">{o.orderNumber}</span>
-                              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${st.badge}`}>
+                              <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase ${st.badge}`}>
                                 {st.label}
                               </span>
                               {hasPendingDocs && (
-                                <span className="bg-orange-100 text-orange-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase animate-pulse">
+                                <span className="bg-orange-100 text-orange-800 text-[11px] font-black px-2 py-0.5 rounded-full uppercase animate-pulse">
                                   Docs Need Review
                                 </span>
                               )}
@@ -454,10 +454,10 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                           </div>
 
                           <div className="text-right sm:shrink-0 space-y-1">
-                            <span className="text-[10px] font-bold text-slate-400 block uppercase">SLA Window</span>
+                            <span className="text-[11px] font-bold text-slate-400 block uppercase">SLA Window</span>
                             <span className="text-xs font-extrabold text-[#0E7490]">{o.service.sla}</span>
                             {o.srn && (
-                              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md mt-1">
+                              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-mono font-bold px-2 py-0.5 rounded-md mt-1">
                                 SRN: {o.srn}
                               </div>
                             )}
@@ -524,7 +524,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                   type="button"
                   disabled={busy}
                   onClick={handleEscalateOrphans}
-                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-xs"
+                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-extrabold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-sm"
                 >
                   <span>⚡</span> Auto-Escalate Unclaimed (&gt;4h SLA)
                 </button>
@@ -552,7 +552,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-black text-sm text-[#073B5C]">{o.orderNumber}</span>
-                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                          <span className="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-full uppercase">
                             Pre-Paid Client
                           </span>
                         </div>
@@ -602,7 +602,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <strong className="text-xs text-[#073B5C] truncate">{doc.name}</strong>
-                          <span className="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                          <span className="bg-amber-100 text-amber-800 text-[11px] font-black px-2 py-0.5 rounded-full uppercase">
                             Pending Review
                           </span>
                         </div>
@@ -610,7 +610,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                           File: <span className="font-mono text-slate-800">{doc.originalName}</span> · Uploaded by: {doc.owner.name} ({doc.owner.email})
                         </p>
                         {doc.order && (
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-xs text-slate-400">
                             Docket: <span className="font-mono font-bold text-slate-600">{doc.order.orderNumber}</span> ({doc.order.service.title})
                           </p>
                         )}
@@ -669,7 +669,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                     </p>
                     <button
                       onClick={() => setActiveTab('pool')}
-                      className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow-xs cursor-pointer"
+                      className="inline-block bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
                     >
                       Browse Claimable Open Dockets →
                     </button>
@@ -723,7 +723,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase block">Total Earned Retainer</span>
+                  <span className="text-[11px] font-bold text-emerald-700 uppercase block">Total Earned Retainer</span>
                   <span className="text-2xl font-black text-emerald-900 font-mono mt-1 block">
                     ₹{formatINR(metrics.earnedRetainer)}
                   </span>
@@ -731,7 +731,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                 </div>
 
                 <div className="bg-cyan-50 border border-cyan-200 rounded-2xl p-4">
-                  <span className="text-[10px] font-bold text-cyan-700 uppercase block">Projected In-Progress Fees</span>
+                  <span className="text-[11px] font-bold text-cyan-700 uppercase block">Projected In-Progress Fees</span>
                   <span className="text-2xl font-black text-cyan-900 font-mono mt-1 block">
                     ₹{formatINR(metrics.pendingRetainer)}
                   </span>
@@ -739,7 +739,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Average Fee / Docket</span>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Average Fee / Docket</span>
                   <span className="text-2xl font-black text-slate-800 font-mono mt-1 block">
                     ₹{metrics.approvedCount > 0 ? formatINR(Math.round(metrics.earnedRetainer / metrics.approvedCount)) : '0'}
                   </span>
@@ -750,7 +750,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               {/* Statement Table */}
               <div className="border border-slate-200 rounded-2xl overflow-hidden">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
                     <tr>
                       <th className="p-3">Docket Number</th>
                       <th className="p-3">Service</th>
@@ -769,7 +769,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                           <td className="p-3 font-mono text-slate-600">{o.srn || 'Pending'}</td>
                           <td className="p-3">
                             <span
-                              className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${
+                              className={`text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${
                                 o.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'
                               }`}
                             >
@@ -804,16 +804,16 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="bg-[#073B5C] text-white font-mono font-extrabold text-[10px] px-2 py-0.5 rounded-md">
+                        <span className="bg-[#073B5C] text-white font-mono font-extrabold text-[11px] px-2 py-0.5 rounded-md">
                           {d.day}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">{d.category}</span>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase">{d.category}</span>
                       </div>
                       <h4 className="font-extrabold text-slate-800 text-xs">{d.title}</h4>
                     </div>
 
                     <span
-                      className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase shrink-0 ${
+                      className={`text-[11px] font-black px-2 py-0.5 rounded-full uppercase shrink-0 ${
                         d.urgency === 'Critical'
                           ? 'bg-rose-100 text-rose-800'
                           : d.urgency === 'High'
@@ -833,10 +833,10 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
 
       {/* UPDATE STATUS & SRN MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Docket Workspace</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">Docket Workspace</span>
               <h3 className="text-base font-extrabold text-[#073B5C]">{selectedOrder.orderNumber}</h3>
               <p className="text-xs text-slate-600 font-medium">{selectedOrder.service.title}</p>
             </div>
@@ -871,7 +871,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-bold text-slate-700">Audit Remarks (Sent to Client in Email Update)</label>
-                  <span className="text-[10px] text-slate-400">Click preset to auto-fill:</span>
+                  <span className="text-xs text-slate-400">Click preset to auto-fill:</span>
                 </div>
                 <div className="flex flex-wrap gap-1 pb-1">
                   {[
@@ -884,7 +884,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                       key={preset}
                       type="button"
                       onClick={() => setRemarksInput(preset)}
-                      className="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
+                      className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
                     >
                       + {preset.slice(0, 35)}…
                     </button>
@@ -922,7 +922,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
 
       {/* REJECT DOCUMENT MODAL */}
       {rejectingDocId && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div>
               <h3 className="text-sm font-extrabold text-rose-700">Raise Defect / Re-upload Notice</h3>
@@ -933,7 +933,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
 
             <form onSubmit={handleDocReject} className="space-y-3">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 block">Click quick defect reason:</span>
+                <span className="text-[11px] font-bold text-slate-400 block">Click quick defect reason:</span>
                 <div className="flex flex-wrap gap-1">
                   {[
                     'Utility bill is older than 60 days. Please upload a bill dated within the last 2 months.',
@@ -946,7 +946,7 @@ export default function CADashboardClient({ user, myOrders, unclaimedOrders, pen
                       key={preset}
                       type="button"
                       onClick={() => setRejectReason(preset)}
-                      className="text-[9px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
+                      className="text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-md transition text-left cursor-pointer"
                     >
                       + {preset.slice(0, 38)}…
                     </button>

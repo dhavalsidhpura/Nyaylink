@@ -81,12 +81,12 @@ export default function WhatsAppNotificationCard({
               <h3 className="text-sm sm:text-base font-extrabold text-[#073B5C]">
                 WhatsApp Milestone Alert Engine
               </h3>
-              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full text-[10px] uppercase">
+              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold px-2.5 py-0.5 rounded-full text-[11px] uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Live Sync
               </span>
             </div>
-            <p className="text-slate-500 text-[11px] mt-0.5">
+            <p className="text-slate-500 text-xs mt-0.5">
               Automated milestone alerts dispatched to your WhatsApp at every statutory step. Zero black box.
             </p>
           </div>
@@ -112,11 +112,11 @@ export default function WhatsAppNotificationCard({
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-1">
         <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-emerald-800 tracking-wider">Milestone 1</span>
+            <span className="text-[11px] font-black uppercase text-emerald-800 tracking-wider">Milestone 1</span>
             <span className="text-emerald-700 font-bold text-xs">✓ Sent</span>
           </div>
           <strong className="block text-[#073B5C] text-xs font-bold">Booking &amp; CA Desk</strong>
-          <p className="text-[10px] text-slate-500 leading-tight">
+          <p className="text-xs text-slate-500 leading-tight">
             Token confirmed, senior CA assigned, and KYC requirements sent.
           </p>
         </div>
@@ -127,13 +127,13 @@ export default function WhatsAppNotificationCard({
             : 'bg-slate-50 border-slate-200 opacity-80'
         }`}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Milestone 2</span>
+            <span className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Milestone 2</span>
             <span className="text-xs font-bold text-[#0E7490]">
               {currentStatus !== 'PENDING_PAYMENT' && currentStatus !== 'DOCS_PENDING' ? '✓ Processed' : '⏳ Next'}
             </span>
           </div>
           <strong className="block text-[#073B5C] text-xs font-bold">Name Approval (ROC)</strong>
-          <p className="text-[10px] text-slate-500 leading-tight">
+          <p className="text-xs text-slate-500 leading-tight">
             MCA Rule 8 clearance letter and draft e-MOA/AoA dispatch.
           </p>
         </div>
@@ -142,13 +142,13 @@ export default function WhatsAppNotificationCard({
           isFiled ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-80'
         }`}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Milestone 3</span>
+            <span className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Milestone 3</span>
             <span className="text-xs font-bold text-[#0E7490]">
               {isFiled ? '✓ Submitted' : '⏳ Queued'}
             </span>
           </div>
           <strong className="block text-[#073B5C] text-xs font-bold">Portal SRN Challan</strong>
-          <p className="text-[10px] text-slate-500 leading-tight">
+          <p className="text-xs text-slate-500 leading-tight">
             Official government filing challan and live SRN tracker link.
           </p>
         </div>
@@ -157,13 +157,13 @@ export default function WhatsAppNotificationCard({
           isComplete ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-80'
         }`}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Milestone 4</span>
+            <span className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Milestone 4</span>
             <span className="text-xs font-bold text-[#0E7490]">
               {isComplete ? '🎉 Delivered' : '⏳ Final'}
             </span>
           </div>
           <strong className="block text-[#073B5C] text-xs font-bold">COI &amp; Tax Kit</strong>
-          <p className="text-[10px] text-slate-500 leading-tight">
+          <p className="text-xs text-slate-500 leading-tight">
             21-digit CIN, certificate download link, and corporate e-PAN.
           </p>
         </div>
@@ -193,7 +193,7 @@ export default function WhatsAppNotificationCard({
               <button
                 type="submit"
                 disabled={isSending}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-xs transition disabled:opacity-50 text-xs shrink-0"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition disabled:opacity-50 text-xs shrink-0"
               >
                 {isSending ? 'Sending...' : 'Save & Send Test Alert'}
               </button>
@@ -248,7 +248,7 @@ export default function WhatsAppNotificationCard({
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl shadow-xs transition"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl shadow-sm transition"
             >
               <span>💬</span> Chat with Assigned CA
             </a>

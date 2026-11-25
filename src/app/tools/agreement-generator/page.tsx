@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 type AgreementType = 'nda' | 'founder' | 'msa';
 
@@ -270,6 +271,7 @@ ${party1Name}                                   ${party2Name}
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased flex flex-col">
+      <Header />
       {/* TOOL HERO BAR */}
       <section className="bg-[#073B5C] text-white py-10 px-4 sm:px-6 border-b border-[#0E7490]/40">
         <div className="max-w-7xl mx-auto space-y-4">
@@ -302,7 +304,7 @@ ${party1Name}                                   ${party2Name}
                 <div className="flex items-center justify-between">
                   <span className="text-xl">{t.icon}</span>
                   <span
-                    className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                    className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-full ${
                       agreementType === t.type ? 'bg-[#073B5C] text-white' : 'bg-slate-700 text-slate-300'
                     }`}
                   >
@@ -310,7 +312,7 @@ ${party1Name}                                   ${party2Name}
                   </span>
                 </div>
                 <h3 className="font-extrabold text-xs sm:text-sm mt-2 leading-tight">{t.title}</h3>
-                <p className="text-[11px] opacity-80 mt-1 line-clamp-2">{t.tagline}</p>
+                <p className="text-xs opacity-80 mt-1 line-clamp-2">{t.tagline}</p>
               </button>
             ))}
           </div>

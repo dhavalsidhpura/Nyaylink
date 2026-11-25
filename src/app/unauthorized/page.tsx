@@ -19,13 +19,13 @@ function UnauthorizedContent() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6 text-center animate-in fade-in duration-300">
-        <div className="w-16 h-16 bg-rose-50 border-2 border-rose-200 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-xs">
+      <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6 text-center animate-fadeIn">
+        <div className="w-16 h-16 bg-rose-50 border-2 border-rose-200 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-sm">
           🔒
         </div>
 
         <div className="space-y-2">
-          <span className="bg-rose-100 text-rose-800 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">
+          <span className="bg-rose-100 text-rose-800 text-[11px] font-black uppercase px-2.5 py-1 rounded-full">
             403 • Role Access Denied
           </span>
           <h1 className="text-xl sm:text-2xl font-black text-[#073B5C]">
@@ -41,7 +41,7 @@ function UnauthorizedContent() {
           <div className="font-bold text-[#073B5C] flex items-center gap-1.5">
             <span>🛡️</span> Multi-Tenant RBAC Guard
           </div>
-          <p className="text-[11px] leading-relaxed">
+          <p className="text-xs leading-relaxed">
             Client data, advocate consultations, CA dockets, and finance ledgers are isolated in accordance with the Advocates Act and Indian IT Act rules.
           </p>
         </div>

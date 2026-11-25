@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 import { BRAND } from '@/lib/constants';
 
 interface FAQItem {
@@ -150,7 +151,9 @@ export default function FAQPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 pb-20 lg:pb-12">
+    <>
+      <Header />
+      <main className="min-h-screen bg-[#F0F4F8] font-sans text-slate-800 pb-20 lg:pb-12">
       {/* Header Banner */}
       <section className="bg-gradient-to-r from-[#031522] via-[#073B5C] to-[#031522] text-white py-12 px-4 sm:px-8 border-b border-cyan-800/40">
         <div className="max-w-4xl mx-auto space-y-4 text-center">
@@ -172,7 +175,7 @@ export default function FAQPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions (e.g. ₹999 token, stamp duty, GST, trademark)..."
-                className="w-full bg-white text-slate-800 text-xs sm:text-sm py-3 pl-10 pr-4 rounded-2xl shadow-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#F4B942]"
+                className="w-full bg-white text-slate-800 text-xs sm:text-sm py-3 pl-10 pr-4 rounded-2xl shadow-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#F4B942]"
                 aria-label="Search frequently asked questions"
               />
               <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
@@ -202,7 +205,7 @@ export default function FAQPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`shrink-0 snap-start text-xs font-bold px-3.5 py-1.5 rounded-xl transition cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[#073B5C] text-[#F4B942] shadow-xs'
+                  ? 'bg-[#073B5C] text-[#F4B942] shadow-sm'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-[#0E7490]'
               }`}
             >
@@ -235,7 +238,7 @@ export default function FAQPage() {
             return (
               <div
                 key={idx}
-                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs transition-all"
+                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all"
               >
                 <button
                   type="button"
@@ -244,7 +247,7 @@ export default function FAQPage() {
                   aria-expanded={isOpen}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#0E7490] block">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-[#0E7490] block">
                       {faq.category}
                     </span>
                     <span>{faq.q}</span>
@@ -274,7 +277,7 @@ export default function FAQPage() {
                   href="https://wa.me/919920054785?text=Hi%20NyayaLink%2C%20I%20have%20a%20question%20not%20covered%20in%20the%20FAQ"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5 shadow-xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5 shadow-sm"
                 >
                   <span>💬</span> Ask a CA on WhatsApp
                 </a>
@@ -319,5 +322,6 @@ export default function FAQPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

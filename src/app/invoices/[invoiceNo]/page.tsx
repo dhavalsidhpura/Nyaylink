@@ -65,19 +65,19 @@ export default async function InvoicePage({ params }: { params: { invoiceNo: str
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400">Billed to</span>
+            <span className="text-[11px] font-bold uppercase text-slate-400">Billed to</span>
             <p className="font-bold text-slate-900">{inv.billedToName}</p>
             {inv.billedToGstin && <p className="font-mono">GSTIN: {inv.billedToGstin}</p>}
           </div>
           <div className="sm:text-right">
-            <span className="text-[10px] font-bold uppercase text-slate-400">Place of supply</span>
+            <span className="text-[11px] font-bold uppercase text-slate-400">Place of supply</span>
             <p className="font-bold text-slate-900">{stateLabel(inv.placeOfSupply)}</p>
           </div>
         </div>
 
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b-2 border-[#073B5C] text-[10px] uppercase text-[#073B5C]">
+            <tr className="border-b-2 border-[#073B5C] text-[11px] uppercase text-[#073B5C]">
               <th className="py-2">Description</th>
               <th className="py-2">SAC</th>
               <th className="py-2 text-right">Amount</th>
@@ -130,8 +130,8 @@ export default async function InvoicePage({ params }: { params: { invoiceNo: str
           </tfoot>
         </table>
 
-        {inv.payment?.gatewayPaymentId && <p className="text-[11px] text-slate-500">Paid online · Ref {inv.payment.gatewayPaymentId}</p>}
-        <p className="text-[10px] text-slate-400">This is a computer-generated invoice and does not require a signature.</p>
+        {inv.payment?.gatewayPaymentId && <p className="text-xs text-slate-500">Paid online · Ref {inv.payment.gatewayPaymentId}</p>}
+        <p className="text-xs text-slate-400">This is a computer-generated invoice and does not require a signature.</p>
         <div className="print:hidden">
           <PrintButton />
         </div>

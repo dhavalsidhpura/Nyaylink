@@ -5,6 +5,7 @@ import { getSessionUser, ROLE_GROUPS } from '@/lib/authz';
 import { plain, num } from '@/lib/serialize';
 import { formatINR } from '@/lib/pricing';
 import { CreatePayoutButton, MarkPaidButton, VerificationActions } from './LawyerAdminActions';
+import AdminNav from '@/components/admin/AdminNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,14 +48,7 @@ export default async function AdminLawyersPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 font-sans text-slate-800">
-      <header className="bg-[#073B5C] text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-          <Link href="/admin" className="text-xs text-[#F4B942] font-bold hover:underline">
-            ← Operations Console
-          </Link>
-          <span className="text-xs font-bold">वकील Search · Advocate Console</span>
-        </div>
-      </header>
+      <AdminNav active="lawyers" subtitle="Advocate Console" role={user.role} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {canVerify && (
@@ -62,7 +56,7 @@ export default async function AdminLawyersPage() {
             <h2 className="px-5 py-3 border-b border-slate-100 text-sm font-extrabold text-[#073B5C]">
               Verification queue ({queue.length})
             </h2>
-            <p className="px-5 pt-3 text-[11px] text-slate-500">
+            <p className="px-5 pt-3 text-xs text-slate-500">
               Check each enrolment number against the State Bar Council roll (or the BCI verification portal) before approving.
             </p>
             <ul className="divide-y divide-slate-100">
@@ -120,7 +114,7 @@ export default async function AdminLawyersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-50 text-[10px] uppercase text-[#073B5C]">
+                <tr className="bg-slate-50 text-[11px] uppercase text-[#073B5C]">
                   <th className="p-3">Advocate</th>
                   <th className="p-3">Enrolment</th>
                   <th className="p-3">Status</th>
@@ -137,7 +131,7 @@ export default async function AdminLawyersPage() {
                     <td className="p-3 font-mono">{l.enrollmentNo}</td>
                     <td className="p-3 font-bold">
                       {l.verification}
-                      {!l.isListed && <span className="block text-[10px] text-slate-400">hidden by advocate</span>}
+                      {!l.isListed && <span className="block text-xs text-slate-400">hidden by advocate</span>}
                     </td>
                     <td className="p-3 text-right">{canVerify && <VerificationActions lawyerId={l.id} verified={l.verification === 'VERIFIED'} />}</td>
                   </tr>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface TrackingData {
   source: string;
@@ -13,6 +14,7 @@ interface TrackingData {
   sla: string;
   lastUpdated: string;
   stageNumber: number;
+  externalUrl?: string;
   recommendation: string;
   history: Array<{ stage: string; remarks: string; date: string }>;
 }
@@ -60,6 +62,7 @@ export default function TrackStatusPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased flex flex-col">
+      <Header />
       {/* TOOL HEADER BANNER */}
       <section className="bg-[#073B5C] text-white py-12 px-4 sm:px-6 border-b border-[#0E7490]/40">
         <div className="max-w-4xl mx-auto space-y-4 text-center">
@@ -186,7 +189,7 @@ export default function TrackStatusPage() {
 
               {/* 5-STAGE PROGRESS STEPPER */}
               <div className="space-y-3">
-                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider block">
                   Statutory Progression Lifecycle
                 </span>
                 <div className="grid grid-cols-5 gap-2 text-center">
@@ -206,7 +209,7 @@ export default function TrackStatusPage() {
                           }`}
                         />
                         <span
-                          className={`text-[10px] font-bold block leading-tight ${
+                          className={`text-[11px] font-bold block leading-tight ${
                             isCurrent
                               ? 'text-[#073B5C] font-black'
                               : isCompleted
@@ -224,7 +227,7 @@ export default function TrackStatusPage() {
 
               {/* ACTIONABLE NEXT STEP MEMO */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-                <span className="text-[10px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-[#0E7490] tracking-wider block">
                   Legal Advice & Next Action
                 </span>
                 <p className="text-xs text-slate-700 leading-relaxed font-medium">
@@ -253,7 +256,7 @@ export default function TrackStatusPage() {
                 ) : data.status === 'APPROVED' ? (
                   <div className="pt-2 flex flex-wrap gap-2.5">
                     <Link
-                      href="/services/corporate-compliance-governance"
+                      href="/services/mca-inc-20a-commencement-of-business"
                       className="inline-block bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-4 py-2.5 rounded-xl transition shadow"
                     >
                       File Form INC-20A Commencement (₹999 Token) →
@@ -275,6 +278,23 @@ export default function TrackStatusPage() {
                       <span>💬 WhatsApp Support</span>
                     </a>
                   </div>
+                ) : data.externalUrl ? (
+                  <div className="pt-2 flex flex-wrap gap-2.5">
+                    <a
+                      href={data.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl transition shadow"
+                    >
+                      <span>Check Live on Official Portal ↗</span>
+                    </a>
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-[#073B5C] border border-slate-300 font-bold text-xs px-4 py-2.5 rounded-xl transition"
+                    >
+                      <span>Sign In to View Vault Orders →</span>
+                    </Link>
+                  </div>
                 ) : (
                   <div className="pt-2">
                     <a
@@ -293,7 +313,7 @@ export default function TrackStatusPage() {
 
               {/* AUDIT LOG TIMELINE */}
               <div className="space-y-3 pt-2">
-                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">
+                <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider block">
                   Registry Activity Log
                 </span>
                 <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden text-xs">
@@ -303,7 +323,7 @@ export default function TrackStatusPage() {
                         <strong className="text-slate-800 font-bold block">{h.stage}</strong>
                         <span className="text-slate-500 text-[11px]">{h.remarks}</span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                      <span className="text-xs text-slate-400 font-mono shrink-0">
                         {new Date(h.date).toLocaleDateString('en-IN', {
                           day: 'numeric',
                           month: 'short',

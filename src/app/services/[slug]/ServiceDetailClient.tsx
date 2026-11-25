@@ -4,9 +4,8 @@ import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
-import { MASTER_PACKAGES, PackageItem } from '@/data/packages';
-import { MASTER_SERVICES } from '@/data/services';
-import { getServiceStructure } from '@/data/serviceDetails';
+import type { PackageItem } from '@/data/packages';
+import type { ServiceStructure } from '@/data/serviceDetails';
 import {
   computeQuote,
   formatINR,
@@ -15,9 +14,13 @@ import {
   getPricingModelBadge,
 } from '@/lib/pricing';
 import { openRazorpayCheckout } from '@/lib/checkout-client';
+import Header from '@/components/Header';
 import StampDutyCalculator from '@/components/StampDutyCalculator';
 import DeliverablesUnboxingCard from '@/components/DeliverablesUnboxingCard';
 import CompanyTierSelector, { TierKey } from '@/components/CompanyTierSelector';
+import ServiceStickySidebar from '@/components/service/ServiceStickySidebar';
+import ServiceCheckoutModal from '@/components/service/ServiceCheckoutModal';
+import ServiceRequirementsModal from '@/components/service/ServiceRequirementsModal';
 import { getStateDocumentRequirements } from '@/data/stateDocumentRequirements';
 
 export interface ServicePricing {
@@ -51,6 +54,9 @@ export interface ServiceData {
 export interface ServiceDetailClientProps {
   serviceData?: ServiceData | null;
   pricing?: ServicePricing | null;
+  structure?: ServiceStructure | null;
+  packages?: PackageItem[];
+  masterMeta?: { badge: string; icon: string };
 }
 
 const DRAFT_KEY = (slug: string) => `nyayalink:intake:${slug}`;
@@ -76,29 +82,43 @@ function getDocIcon(docText: string): { icon: string; title: string } {
   return { icon: '📄', title: 'Statutory Documentation' };
 }
 
-function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps) {
+function ServiceDetailContent({ serviceData, pricing, structure, packages = [], masterMeta }: ServiceDetailClientProps) {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const slug = (params?.slug as string) || serviceData?.slug || 'private-limited-company';
   const prefilledName = searchParams?.get('name') || searchParams?.get('brand') || '';
 
-  const masterService = MASTER_SERVICES.find((s) => s.slug === slug) || {
-    id: 'srv-custom',
-    slug: slug,
+  const fallbackTitle = serviceData?.title || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const masterService = {
+    id: slug,
+    slug,
     category: serviceData?.category || 'company-reg',
-    title: serviceData?.title || slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-    price: serviceData?.professionalFee ?? 6999,
-    govtFee: serviceData?.govtFeeNote ?? 'Standard Official Portal Charges Apply',
-    sla: serviceData?.sla ?? '7–10 working days',
-    badge: 'NyayaLink Assured',
-    sacCode: serviceData?.sacCode ?? '998221',
-    icon: '🏢',
-    desc: 'Professional legal and statutory filing executed directly by Chartered Accountants and Legal Advocates.',
-    docs: 'PAN, ID, Address Proof, Commercial Documents',
+    title: fallbackTitle,
+    price: serviceData?.professionalFee ?? pricing?.professionalFee ?? 6999,
+    govtFee: serviceData?.govtFeeNote ?? pricing?.govtFeeNote ?? 'Standard Official Portal Charges Apply',
+    sla: serviceData?.sla ?? pricing?.sla ?? '7–10 working days',
+    badge: masterMeta?.badge || 'NyayaLink Assured',
+    sacCode: serviceData?.sacCode ?? pricing?.sacCode ?? '998221',
+    icon: masterMeta?.icon || '🏢',
   };
 
-  const details = getServiceStructure(slug);
+  const details: ServiceStructure = structure || {
+    slug,
+    title: fallbackTitle,
+    category: masterService.category,
+    badge: masterService.badge,
+    whoShouldBuy: 'Founders, professionals, and businesses seeking verified statutory compliance execution.',
+    whyShouldBuy: 'Direct Chartered Accountant and Advocate execution with Rule 33 pass-through transparency.',
+    timeframe: masterService.sla,
+    specificDocs: ['PAN & Aadhaar Card', 'Registered Business Address Proof'],
+    importantConsiderations: ['Government fees are billed at actuals under Rule 33.'],
+    deliverables: [
+      { title: 'Statutory Filing & Submission', desc: 'Executed by assigned practicing professionals.' },
+      { title: 'Encrypted Vault Deliverables', desc: 'Approved certificates and Rule 33 GST invoice.' },
+    ],
+    faqs: [],
+  };
   const serviceCategory = serviceData?.category || masterService.category;
   const isStateSpecificService = serviceCategory === 'company-reg' || slug.includes('incorporation') || slug.includes('company') || slug.includes('llp');
   const isServiceActive = serviceData ? serviceData.isActive : true;
@@ -157,33 +177,40 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
   const packageParam = searchParams?.get('package');
   const matchedPackage: PackageItem | null = useMemo(() => {
     if (!packageParam) return null;
-    return MASTER_PACKAGES.find((p) => p.slug === packageParam || p.id === packageParam) || null;
-  }, [packageParam]);
+    return packages.find((p) => p.slug === packageParam || p.id === packageParam) || null;
+  }, [packageParam, packages]);
 
-  // Active Formation Tier State (Launch vs Growth vs Complete vs Retainer)
+  const isPvtLtdPage = slug === 'private-limited-company';
+  const isEntityIncorporationPage =
+    slug === 'private-limited-company' ||
+    slug === 'one-person-company' ||
+    slug === 'llp-registration' ||
+    slug === 'public-limited-company';
+
+  // Active Formation Tier State (only applies to Private Limited Company page or explicit package link)
   const [activeFormationTier, setActiveFormationTier] = useState<TierKey>(() => {
     if (packageParam === 'tech-founder-venture-suite') return 'complete';
     if (packageParam === 'annual-corporate-compliance-retainer') return 'retainer';
     if (packageParam === 'startup-launchpad-bundle') return 'growth';
-    return 'growth'; // Default to Growth (Startup Launchpad) as recommended tier
+    return 'launch';
   });
 
-  // Effective package resolves either from active formation tier (on company registration) or URL param
+  // Effective package resolves either from explicit tier choice on Pvt Ltd page or URL ?package= param
   const effectivePackage: PackageItem | null = useMemo(() => {
-    if (slug === 'private-limited-company' || serviceCategory === 'company-reg') {
+    if (isPvtLtdPage) {
       if (activeFormationTier === 'growth') {
-        return MASTER_PACKAGES.find((p) => p.slug === 'startup-launchpad-bundle') || null;
+        return packages.find((p) => p.slug === 'startup-launchpad-bundle') || null;
       }
       if (activeFormationTier === 'complete') {
-        return MASTER_PACKAGES.find((p) => p.slug === 'tech-founder-venture-suite') || null;
+        return packages.find((p) => p.slug === 'tech-founder-venture-suite') || null;
       }
       if (activeFormationTier === 'retainer') {
-        return MASTER_PACKAGES.find((p) => p.slug === 'annual-corporate-compliance-retainer') || null;
+        return packages.find((p) => p.slug === 'annual-corporate-compliance-retainer') || null;
       }
-      return null; // 'launch' is standalone service
+      return null; // 'launch' is standalone Pvt Ltd service
     }
     return matchedPackage;
-  }, [slug, serviceCategory, activeFormationTier, matchedPackage]);
+  }, [isPvtLtdPage, activeFormationTier, matchedPackage, packages]);
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -546,41 +573,17 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 flex flex-col antialiased pb-28 lg:pb-12">
-      {/* 1. TOP NAV STRIP */}
-      <header className="bg-[#073B5C] text-white py-3.5 px-4 sm:px-8 sticky top-0 z-50 border-b border-[#0E7490]/40 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="bg-[#0E7490] text-white font-black text-xl px-3.5 py-1 rounded-xl font-mono shadow border border-cyan-400/30">
-              Nyaya<span className="text-[#F4B942]">Link</span>
-            </Link>
-            <span className="hidden sm:inline-block text-[11px] text-cyan-200 font-semibold border-l border-white/20 pl-3">
-              Direct Compliance Desk
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/vakil" className="text-xs text-[#F4B942] hover:text-amber-300 font-bold transition">
-              👨‍⚖️ Talk to a Lawyer
-            </Link>
-            <Link href="/dashboard" className="text-xs text-white/90 hover:text-white font-semibold">
-              Vault Dashboard
-            </Link>
-            <Link href="/#catalog-section" className="text-xs text-cyan-200 hover:text-white transition">
-              ← All Services
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* 2. MAIN 65/35 GRID LAYOUT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-grow space-y-6">
 
         {/* PACKAGE BUNDLE ACTIVATION BANNER */}
         {matchedPackage && (
-          <div className="bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#052840] text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-cyan-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="bg-gradient-to-r from-[#073B5C] via-[#0E7490] to-[#052840] text-white p-5 sm:p-6 rounded-3xl shadow-xl border border-cyan-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-3 py-0.5 rounded-full shadow-xs">
+                <span className="bg-[#F4B942] text-[#073B5C] text-[11px] font-black uppercase px-3 py-0.5 rounded-full shadow-sm">
                   Starter Suite Activated • Save {matchedPackage.savingsPercent}%
                 </span>
                 <span className="text-xs text-cyan-200 font-semibold">⏱️ SLA: {matchedPackage.sla}</span>
@@ -594,7 +597,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right">
-                <span className="text-[10px] text-cyan-200 line-through block">₹{matchedPackage.standaloneTotal.toLocaleString()}</span>
+                <span className="text-[11px] text-cyan-200 line-through block">₹{matchedPackage.standaloneTotal.toLocaleString()}</span>
                 <span className="text-xl font-black text-[#F4B942]">₹{matchedPackage.packagePrice.toLocaleString()}</span>
               </div>
               <button
@@ -616,7 +619,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
             {/* MOBILE 2-TAB SEGMENTED CONTROL (Matching Online Legal India UX pattern) */}
             <div className="lg:hidden sticky top-14 z-30 bg-white/95 backdrop-blur-md py-2 border-b border-slate-200">
-              <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold shadow-xs">
+              <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold shadow-sm">
                 <button
                   type="button"
                   onClick={() => setMobileTab('overview')}
@@ -638,7 +641,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   }`}
                 >
                   <span>📁 Documents Required</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
                     mobileTab === 'documents' ? 'bg-[#F4B942] text-[#073B5C]' : 'bg-slate-200 text-slate-700'
                   }`}>
                     {allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)}
@@ -649,18 +652,18 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
             {/* DEDICATED MOBILE DOCUMENTS REQUIRED TAB VIEW (lg:hidden) */}
             {mobileTab === 'documents' && (
-              <div className="lg:hidden space-y-5 animate-in fade-in duration-150">
+              <div className="lg:hidden space-y-5 animate-fadeIn">
                 <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div>
-                      <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                      <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                         Compliance Checklist
                       </span>
                       <h2 className="text-base font-black text-[#073B5C]">
                         {displayTitle}
                       </h2>
                     </div>
-                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-black text-[11px] px-2.5 py-1 rounded-full uppercase">
                       Vault Assured
                     </span>
                   </div>
@@ -682,7 +685,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         </option>
                       ))}
                     </select>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-xs text-slate-400">
                       Showing tailored documentation requirements for {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}.
                     </p>
                   </div>
@@ -700,7 +703,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                             <span className="text-lg shrink-0 mt-0.5">{parsed.icon}</span>
                             <div className="min-w-0">
                               <strong className="text-xs font-bold text-[#073B5C] block leading-snug">{doc}</strong>
-                              <span className="text-[10px] text-slate-400">Clear smartphone photo or PDF scan accepted</span>
+                              <span className="text-xs text-slate-400">Clear smartphone photo or PDF scan accepted</span>
                             </div>
                           </div>
                         );
@@ -715,7 +718,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         <h3 className="text-xs font-black uppercase text-[#0E7490] tracking-wider flex items-center gap-1.5">
                           <span>📍</span> 2. {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState} Premises & Tax Mandates
                         </h3>
-                        <span className="text-[9px] bg-cyan-100 text-cyan-900 font-bold px-2 py-0.5 rounded-full">
+                        <span className="text-[11px] bg-cyan-100 text-cyan-900 font-bold px-2 py-0.5 rounded-full">
                           State Specific
                         </span>
                       </div>
@@ -728,13 +731,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                                 <strong className="text-xs font-bold text-[#073B5C]">{doc.title}</strong>
                               </div>
                               {doc.mandatory && (
-                                <span className="text-[9px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
+                                <span className="text-[11px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
                                   Required
                                 </span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-600 pl-4 leading-relaxed">{doc.desc}</p>
-                            <span className="text-[9px] font-mono text-slate-400 pl-4 block">{doc.authority}</span>
+                            <p className="text-xs text-slate-600 pl-4 leading-relaxed">{doc.desc}</p>
+                            <span className="text-[11px] font-mono text-slate-400 pl-4 block">{doc.authority}</span>
                           </div>
                         ))}
                       </div>
@@ -746,13 +749,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                     <strong className="block font-black text-emerald-900 flex items-center gap-1">
                       <span>🛡️</span> Zero Pressure: No Documents Needed Right Now
                     </strong>
-                    <p className="text-[10px] text-emerald-800 leading-relaxed">
+                    <p className="text-xs text-emerald-800 leading-relaxed">
                       You do not need documents ready in hand to get started. Secure your booking with a ₹999 advance token today. Your assigned CA will open your private encrypted Vault and assist you step-by-step.
                     </p>
                   </div>
 
                   {/* Upload Specs */}
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-[10px] text-slate-500 space-y-0.5">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-xs text-slate-500 space-y-0.5">
                     <span className="font-bold text-slate-700 block">Accepted Formats: PDF, JPG, PNG (&lt; 10 MB)</span>
                     <span>Built-in smartphone camera compression automatically optimizes large photo files.</span>
                   </div>
@@ -774,7 +777,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             {/* HERO SECTION */}
             <div className="space-y-4">
               {!isServiceActive && (
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
                   <span className="text-2xl shrink-0">⚠️</span>
                   <div className="space-y-1">
                     <h2 className="text-xs sm:text-sm font-extrabold text-amber-900 uppercase tracking-wide">
@@ -788,10 +791,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               )}
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-[#073B5C] text-[#F4B942] font-black text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-cyan-400/20 shadow-sm">
+                <span className="bg-[#073B5C] text-[#F4B942] font-black text-[11px] uppercase tracking-wider px-3 py-1 rounded-full border border-cyan-400/20 shadow-sm">
                   ⚡ {details.badge || 'Govt Portal Assured'}
                 </span>
-                <span className="bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md">
+                <span className="bg-slate-200/80 text-slate-700 text-[11px] font-mono font-bold px-2.5 py-1 rounded-md">
                   SAC: {displaySac}
                 </span>
                 <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
@@ -810,40 +813,40 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
               {/* Trust Badges Ribbon (2×2 on mobile, 4 across on desktop) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2 text-xs">
-                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 sm:gap-2.5">
                   <span className="text-base sm:text-lg">🛡️</span>
                   <div className="min-w-0">
-                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">100% Verified</strong>
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">CA/CS Supervised</span>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px] sm:text-[11px] truncate">100% Verified</strong>
+                    <span className="text-[11px] sm:text-xs text-slate-500 block truncate">CA/CS Supervised</span>
                   </div>
                 </div>
-                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 sm:gap-2.5">
                   <span className="text-base sm:text-lg">⏱️</span>
                   <div className="min-w-0">
-                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">Fast Track SLA</strong>
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">{displaySla}</span>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px] sm:text-[11px] truncate">Fast Track SLA</strong>
+                    <span className="text-[11px] sm:text-xs text-slate-500 block truncate">{displaySla}</span>
                   </div>
                 </div>
-                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 sm:gap-2.5">
                   <span className="text-base sm:text-lg">🔒</span>
                   <div className="min-w-0">
-                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">Encrypted Vault</strong>
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">256-Bit SSL Cloud</span>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px] sm:text-[11px] truncate">Encrypted Vault</strong>
+                    <span className="text-[11px] sm:text-xs text-slate-500 block truncate">256-Bit SSL Cloud</span>
                   </div>
                 </div>
-                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 sm:gap-2.5">
+                <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 sm:gap-2.5">
                   <span className="text-base sm:text-lg">🧾</span>
                   <div className="min-w-0">
-                    <strong className="block text-[#073B5C] font-extrabold text-[10px] sm:text-[11px] truncate">GST Invoicing</strong>
-                    <span className="text-[9px] sm:text-[10px] text-slate-500 block truncate">Input Tax Credit</span>
+                    <strong className="block text-[#073B5C] font-extrabold text-[11px] sm:text-[11px] truncate">GST Invoicing</strong>
+                    <span className="text-[11px] sm:text-xs text-slate-500 block truncate">Input Tax Credit</span>
                   </div>
                 </div>
               </div>
             </div>
 
             
-            {/* COMPANY INCORPORATION TIERS (LAUNCH VS GROWTH VS COMPLETE VS RETAINER) */}
-            {(slug === 'private-limited-company' || serviceCategory === 'company-reg') && (
+            {/* COMPANY INCORPORATION TIERS (ONLY ON PRIVATE LIMITED COMPANY PAGE) */}
+            {isPvtLtdPage && (
               <CompanyTierSelector
                 selectedState={selectedState}
                 onSelectState={setSelectedState}
@@ -862,7 +865,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               <div className="bg-gradient-to-r from-[#073B5C] via-[#0A4E7A] to-[#041E30] text-white rounded-3xl p-5 sm:p-7 shadow-md space-y-4 border border-cyan-800/80">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-white/10 pb-3">
                   <div>
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                    <span className="bg-[#F4B942] text-[#073B5C] text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
                       Bar Council Verified Advocates
                     </span>
                     <h3 className="text-base sm:text-lg font-black text-white mt-1">
@@ -874,7 +877,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   </div>
                   <Link
                     href="/vakil"
-                    className="inline-flex items-center gap-1.5 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] text-xs font-black px-4 py-2.5 rounded-xl transition shadow-xs self-start sm:self-auto"
+                    className="inline-flex items-center gap-1.5 bg-[#F4B942] hover:bg-amber-400 text-[#073B5C] text-xs font-black px-4 py-2.5 rounded-xl transition shadow-sm self-start sm:self-auto"
                   >
                     <span>Browse Empanelled Advocates →</span>
                   </Link>
@@ -884,21 +887,21 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                   <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
                     <span className="text-base">📜</span>
                     <strong className="block text-white font-bold text-[11px]">Advocate Letterhead</strong>
-                    <p className="text-[10px] text-cyan-200 leading-snug">
+                    <p className="text-xs text-cyan-200 leading-snug">
                       Issued with official Bar Council enrollment numbers, carrying immediate statutory weight.
                     </p>
                   </div>
                   <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
                     <span className="text-base">📮</span>
                     <strong className="block text-white font-bold text-[11px]">Speed Post with POD</strong>
-                    <p className="text-[10px] text-cyan-200 leading-snug">
+                    <p className="text-xs text-cyan-200 leading-snug">
                       Dispatched via India Post with Proof of Delivery (POD) archived in your vault for court admissibility.
                     </p>
                   </div>
                   <div className="p-3 bg-white/10 rounded-2xl border border-white/10 space-y-1">
                     <span className="text-base">⚖️</span>
                     <strong className="block text-white font-bold text-[11px]">Litigation Ready</strong>
-                    <p className="text-[10px] text-cyan-200 leading-snug">
+                    <p className="text-xs text-cyan-200 leading-snug">
                       Seamless transition to e-Daakhil consumer forum filing or Section 138 trial if the opponent defaults.
                     </p>
                   </div>
@@ -906,84 +909,47 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </div>
             )}
 
-            {/* OFFICIAL DELIVERABLES UNBOXING KIT (INTERACTIVE VISUAL PREVIEW) */}
-            <DeliverablesUnboxingCard serviceSlug={slug} serviceTitle={displayTitle} />
-
-            {/* SECTION 2: OFFICIAL DELIVERABLES INCLUDED (2×2 GRID ON MOBILE) */}
-            <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-sm space-y-4 sm:space-y-5">
-              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-base sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
-                    <span>📦</span> Official Deliverables Included
-                  </h2>
-                  <p className="text-xs text-slate-500">Statutory assets delivered directly to your encrypted customer vault upon approval.</p>
-                </div>
-                <span className="hidden sm:inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
-                  All-Inclusive Kit
-                </span>
-              </div>
-
-              {/* 2×2 on Mobile, 2 Columns on Desktop */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                {details.deliverables.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 sm:p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 hover:border-cyan-400/50 rounded-2xl transition-all shadow-xs space-y-1 sm:space-y-1.5 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#0E7490] text-white text-[9px] sm:text-[10px] font-black flex items-center justify-center shrink-0">
-                          ✓
-                        </span>
-                        <strong className="text-[11px] sm:text-sm font-extrabold text-[#073B5C] leading-tight">
-                          {item.title}
-                        </strong>
-                      </div>
-                      <p className="text-[10px] sm:text-xs text-slate-600 pl-5 sm:pl-7 leading-relaxed font-normal pt-1 line-clamp-3 sm:line-clamp-none">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* PLAIN-ENGLISH FOUNDER DELIVERABLE DECODER */}
-            <div className="bg-gradient-to-br from-cyan-950 via-[#073B5C] to-[#041E30] text-white rounded-3xl p-5 sm:p-7 shadow-sm space-y-4 border border-cyan-800/40">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">💡</span>
+            {/* OFFICIAL DELIVERABLES SECTION (1 Focused Section) */}
+            {isEntityIncorporationPage ? (
+              <DeliverablesUnboxingCard serviceSlug={slug} serviceTitle={displayTitle} />
+            ) : (
+              <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-sm space-y-4 sm:space-y-5">
+                <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-[#F4B942]">First-Time Founder Plain-Language Decoder</h3>
-                    <p className="text-[11px] text-cyan-200">What these legal deliverables mean for your day-to-day business operations:</p>
+                    <h2 className="text-base sm:text-xl font-extrabold text-[#073B5C] flex items-center gap-2">
+                      <span>📦</span> Official Deliverables Included
+                    </h2>
+                    <p className="text-xs text-slate-500">Statutory assets delivered directly to your encrypted customer vault upon approval.</p>
                   </div>
+                  <span className="hidden sm:inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold px-3 py-1 rounded-full uppercase">
+                    All-Inclusive Kit
+                  </span>
                 </div>
-                <span className="text-[10px] font-mono bg-cyan-900/60 text-cyan-300 border border-cyan-700/50 px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
-                  Zero Bureaucracy
-                </span>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
-                  <span className="font-bold text-[#F4B942] text-[11px] block">🏦 COI + CIN Number</span>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Your company&apos;s birth certificate. Present this directly to any bank (HDFC, ICICI, SBI) to open your Current Account and receive payments.
-                  </p>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
-                  <span className="font-bold text-[#F4B942] text-[11px] block">🛒 PAN + GST Ready</span>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Corporate tax identity. Required to register on Amazon Seller Central, Flipkart, Zomato, Swiggy, or to issue official tax invoices.
-                  </p>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-1">
-                  <span className="font-bold text-[#F4B942] text-[11px] block">✍️ Class-3 DSC Tokens</span>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Your electronic cryptographic signatures. Ensures you never sign physical papers or visit government offices—all filings are 100% paperless.
-                  </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {details.deliverables.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 hover:border-cyan-400/50 rounded-2xl transition-all shadow-sm space-y-1.5 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-[#0E7490] text-white text-xs font-black flex items-center justify-center shrink-0">
+                            ✓
+                          </span>
+                          <strong className="text-xs sm:text-sm font-extrabold text-[#073B5C] leading-tight">
+                            {item.title}
+                          </strong>
+                        </div>
+                        <p className="text-xs text-slate-600 pl-7 leading-relaxed font-normal pt-1">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* SECTION 3: SIMPLIFIED DOCUMENTS (PROGRESSIVE DISCLOSURE GRID) */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
@@ -1004,13 +970,13 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                 {simplifiedDocs.map((doc, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 bg-gradient-to-b from-slate-50 to-white border border-slate-200 rounded-2xl flex flex-col items-center text-center space-y-1.5 hover:border-[#0E7490] transition shadow-xs"
+                    className="p-3.5 bg-gradient-to-b from-slate-50 to-white border border-slate-200 rounded-2xl flex flex-col items-center text-center space-y-1.5 hover:border-[#0E7490] transition shadow-sm"
                   >
                     <span className="text-2xl">{doc.icon}</span>
                     <strong className="text-[11px] font-extrabold text-[#073B5C] leading-tight line-clamp-2">
                       {doc.title}
                     </strong>
-                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
                       Required
                     </span>
                   </div>
@@ -1027,32 +993,32 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         <h3 className="text-xs sm:text-sm font-extrabold text-[#073B5C]">
                           State Jurisdiction Additions: {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}
                         </h3>
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           Mandated by local Registrar & Revenue authorities for premises verification in {selectedState}.
                         </p>
                       </div>
                     </div>
-                    <span className="bg-[#0E7490] text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                    <span className="bg-[#0E7490] text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
                       {selectedState} Verified
                     </span>
                   </div>
 
                   <div className="space-y-2 text-xs">
                     {stateSpecificDocs.map((doc, idx) => (
-                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs flex items-start justify-between gap-2">
+                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex items-start justify-between gap-2">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5">
                             <span className="text-emerald-700 font-bold">✓</span>
                             <strong className="text-xs text-[#073B5C]">{doc.title}</strong>
                             {doc.mandatory && (
-                              <span className="text-[9px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
+                              <span className="text-[11px] font-black uppercase text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
                                 Required
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-600 pl-4">{doc.desc}</p>
+                          <p className="text-xs text-slate-600 pl-4">{doc.desc}</p>
                         </div>
-                        <span className="text-[9px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded shrink-0 hidden sm:inline">
+                        <span className="text-[11px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded shrink-0 hidden sm:inline">
                           {doc.authority}
                         </span>
                       </div>
@@ -1098,10 +1064,14 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               </div>
             </div>
 
-            {/* SECTION 4.1: DYNAMIC STATE STAMP DUTY ESTIMATOR (FOR INCORPORATION & LLPS) */}
-            {isStateSpecificService && (
+            {/* SECTION 4.1: DYNAMIC STATE STAMP DUTY ESTIMATOR (FOR ENTITY INCORPORATION) */}
+            {isEntityIncorporationPage && (
               <div className="pt-1">
-                <StampDutyCalculator baseProfFee={baseProfFee} initialState={selectedState} />
+                <StampDutyCalculator
+                  baseProfFee={baseProfFee}
+                  selectedState={selectedState}
+                  onSelectState={setSelectedState}
+                />
               </div>
             )}
 
@@ -1116,11 +1086,11 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         FoSCoS Food Safety License Scale Selector
                       </h3>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Statutory FoSCoS portal fees vary based on annual food business turnover and operations.
                     </p>
                   </div>
-                  <span className="bg-amber-50 text-amber-900 border border-amber-200 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                  <span className="bg-amber-50 text-amber-900 border border-amber-200 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
                     Rule 33 Pure Agent
                   </span>
                 </div>
@@ -1167,7 +1137,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                          <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-full ${
                             fssaiTier === t.id ? 'bg-[#0E7490] text-white' : 'bg-slate-100 text-slate-600'
                           }`}>
                             {t.badge}
@@ -1178,10 +1148,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         </div>
                         <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug">{t.title}</h4>
                         <div className="text-[11px] font-bold text-amber-900">{t.turnover}</div>
-                        <p className="text-[10px] text-slate-500 leading-tight">{t.desc}</p>
+                        <p className="text-xs text-slate-500 leading-tight">{t.desc}</p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200/70 text-[10px] space-y-0.5">
+                      <div className="pt-2 border-t border-slate-200/70 text-[11px] space-y-0.5">
                         <div className="flex justify-between">
                           <span className="text-slate-400">Govt Fee:</span>
                           <strong className="text-slate-700">{t.govtFee}</strong>
@@ -1208,11 +1178,11 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         Shop & Establishment Staff Headcount Slab
                       </h3>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       State labor department registration requirements and portal fees scale with active employee headcount.
                     </p>
                   </div>
-                  <span className="bg-purple-50 text-purple-900 border border-purple-200 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
+                  <span className="bg-purple-50 text-purple-900 border border-purple-200 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase self-start sm:self-auto">
                     Labor Act Compliant
                   </span>
                 </div>
@@ -1259,7 +1229,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                          <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-full ${
                             staffSlab === s.id ? 'bg-[#0E7490] text-white' : 'bg-slate-100 text-slate-600'
                           }`}>
                             {s.badge}
@@ -1270,10 +1240,10 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
                         </div>
                         <h4 className="font-extrabold text-[#073B5C] text-xs leading-snug">{s.title}</h4>
                         <div className="text-[11px] font-bold text-purple-900">{s.staff}</div>
-                        <p className="text-[10px] text-slate-500 leading-tight">{s.desc}</p>
+                        <p className="text-xs text-slate-500 leading-tight">{s.desc}</p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200/70 text-[10px] space-y-0.5">
+                      <div className="pt-2 border-t border-slate-200/70 text-[11px] space-y-0.5">
                         <div className="flex justify-between">
                           <span className="text-slate-400">Labor Fee:</span>
                           <strong className="text-slate-700">{s.govtFee}</strong>
@@ -1291,7 +1261,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
 
             {/* SECTION 5: REGULATORY CONSIDERATIONS */}
             {details.importantConsiderations && details.importantConsiderations.length > 0 && (
-              <div className="bg-amber-50/50 rounded-3xl p-6 border border-amber-200 shadow-xs space-y-3">
+              <div className="bg-amber-50/50 rounded-3xl p-6 border border-amber-200 shadow-sm space-y-3">
                 <h3 className="text-sm sm:text-base font-extrabold text-amber-950 flex items-center gap-2">
                   <span>⚠️</span> Important Statutory & Regulatory Considerations
                 </h3>
@@ -1334,17 +1304,17 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
             </div>
 
             {/* Mobile In-Line Prompt to Check Required Documents */}
-            <div className="lg:hidden p-4 bg-cyan-50/80 border border-cyan-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
+            <div className="lg:hidden p-4 bg-cyan-50/80 border border-cyan-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-sm">
               <div>
                 <strong className="text-xs text-[#073B5C] block">Check Documentation Checklist</strong>
-                <p className="text-[10px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   {allDocsList.length + (isStatutoryFiling ? stateSpecificDocs.length : 0)} documents for {INDIAN_STATES.find((s) => s.code === selectedState)?.name || selectedState}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setMobileTab('documents')}
-                className="bg-[#073B5C] text-[#F4B942] text-xs font-black px-4 py-2 rounded-xl whitespace-nowrap cursor-pointer shadow-xs"
+                className="bg-[#073B5C] text-[#F4B942] text-xs font-black px-4 py-2 rounded-xl whitespace-nowrap cursor-pointer shadow-sm"
               >
                 View Checklist →
               </button>
@@ -1357,662 +1327,92 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
           {/* ======================================================== */}
           {/* RIGHT COLUMN (35% width): Sticky "Split-Ticket" Card     */}
           {/* ======================================================== */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
-            <div className="bg-white rounded-3xl border-2 border-slate-200/90 p-6 sm:p-7 shadow-xl space-y-5">
-              
-              {/* Header with Fast-Track Badge */}
-              <div className="space-y-1 border-b border-slate-100 pb-3">
-                <div className="flex items-center justify-between">
-                  <span className="bg-cyan-100 text-[#0E7490] font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                    ⚡ Fast-Track Filing
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-bold">CA Supervised</span>
-                </div>
-                <h3 className="font-black text-[#073B5C] text-lg sm:text-xl">
-                  {displayTitle}
-                </h3>
-                <div className="pt-1">
-                  <span
-                    className={`inline-block text-[10px] font-black px-2.5 py-0.5 rounded-full border ${pricingModel.badgeClass}`}
-                    title={pricingModel.tooltip}
-                  >
-                    {pricingModel.label}
-                  </span>
-                </div>
-              </div>
-
-              {/* STATE SELECTION DROPDOWN */}
-              <div className="space-y-1.5">
-                <label htmlFor="card-state" className="block text-xs font-bold text-[#073B5C]">
-                  {isStatutoryFiling
-                    ? isStateSpecificService
-                      ? 'Select Incorporation State'
-                      : 'Select Statutory Jurisdiction'
-                    : 'Select Operational State (Place of Supply)'}
-                </label>
-                <select
-                  id="card-state"
-                  value={selectedState}
-                  onChange={(e) => setSelectedState(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-extrabold text-[#073B5C] focus:outline-none focus:ring-2 focus:ring-[#0E7490] cursor-pointer"
-                >
-                  {INDIAN_STATES.map((st) => (
-                    <option key={st.code} value={st.code}>
-                      {st.name} {isStateSpecificService && stateStamp.baseStamp ? `(₹${(stateStamp.baseStamp + 131).toLocaleString()} Stamp)` : ''}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-slate-400">
-                  {isStatutoryFiling
-                    ? isStateSpecificService
-                      ? `Stamp Duty calculated automatically for ${stateStamp.breakdown}.`
-                      : 'Determines official jurisdiction & portal state registration.'
-                    : 'Determines Place of Supply for valid B2B GST tax invoice & Input Tax Credit (ITC).'}
-                </p>
-              </div>
-
-              {/* PRICING BREAKDOWN MATRIX (2-Mode Architecture) */}
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600 font-medium">
-                    {effectivePackage ? effectivePackage.title : (isPureService ? 'Professional Retainer Fee' : 'NyayaLink Professional Fee')}
-                  </span>
-                  <strong className="text-slate-900 font-extrabold">{formatINR(activeProfFee)}</strong>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600 font-medium">GST @ {gstRate}%</span>
-                  <strong className="text-slate-900 font-extrabold">{formatINR(baseQuote.gstAmount)}</strong>
-                </div>
-
-                {/* Show Govt Stamp Duty & Fee ONLY for statutory filings with portal costs */}
-                {isStatutoryFiling ? (
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-600 font-medium flex items-center gap-1">
-                      <span>Govt Stamp Duty & Fee</span>
-                      {isStateSpecificService && <span className="text-[10px] text-emerald-700 font-bold">(Live)</span>}
-                    </span>
-                    <strong className="text-slate-900 font-extrabold">
-                      {activeGovtFee > 0 ? formatINR(activeGovtFee) : '₹0 (At Actuals)'}
-                    </strong>
-                  </div>
-                ) : null}
-
-                <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-sm font-black text-[#073B5C]">
-                  <span>{isPureService ? 'Total Invoiced Amount' : 'Total Estimated Outlay'}</span>
-                  <span className="text-base text-slate-900">{formatINR(totalEstimatedCost)}</span>
-                </div>
-                {isPureService && (
-                  <p className="text-[10px] text-emerald-700 font-medium pt-0.5">
-                    ✓ 100% Tax Deductible B2B Expense (Eligible for Full GST ITC)
-                  </p>
-                )}
-              </div>
-
-              {/* SPLIT-TICKET PROPOSITION BOX */}
-              <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-200/90 rounded-2xl text-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase text-emerald-800 tracking-wider">
-                    💳 Split-Ticket Option
-                  </span>
-                  <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
-                    Save Capital
-                  </span>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPayAdvance(true)}
-                    className={`flex-1 py-2 px-2.5 rounded-xl border text-[11px] font-bold text-center cursor-pointer transition ${
-                      payAdvance
-                        ? 'bg-white text-emerald-800 border-emerald-400 shadow-xs'
-                        : 'bg-transparent text-slate-500 border-transparent hover:bg-white/60'
-                    }`}
-                  >
-                    <div>₹999 Advance</div>
-                    <div className="text-[9px] font-normal text-slate-400">Balance later</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPayAdvance(false)}
-                    className={`flex-1 py-2 px-2.5 rounded-xl border text-[11px] font-bold text-center cursor-pointer transition ${
-                      !payAdvance
-                        ? 'bg-white text-[#073B5C] border-cyan-400 shadow-xs'
-                        : 'bg-transparent text-slate-500 border-transparent hover:bg-white/60'
-                    }`}
-                  >
-                    <div>Pay Full {formatINR(totalEstimatedCost)}</div>
-                    <div className="text-[9px] font-normal text-slate-400">One-time</div>
-                  </button>
-                </div>
-
-                <p className="text-[10px] text-slate-500 leading-tight">
-                  {payAdvance
-                    ? isPureService
-                      ? 'Start onboarding with your dedicated CA/Legal Expert today for ₹999. Remaining balance is billed after preliminary review & scope sign-off.'
-                      : 'Start name reservation and document drafting today for ₹999. Remaining balance is billed after CA verification.'
-                    : isPureService
-                    ? 'Complete payment upfront. Immediate dedicated CA assignment and kickoff.'
-                    : 'Complete payment upfront. Direct fast-track filing into statutory portal queue.'}
-                </p>
-              </div>
-
-              {/* THE IMPULSE CTA BUTTON */}
-              <div className="space-y-2.5">
-                {!isServiceActive ? (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      disabled
-                      className="w-full bg-slate-200 text-slate-500 font-black text-xs sm:text-sm py-3.5 rounded-2xl uppercase tracking-wider cursor-not-allowed text-center"
-                    >
-                      Applications Paused
-                    </button>
-                    <a
-                      href="#consultation"
-                      className="block text-center w-full bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs py-3 rounded-2xl uppercase transition shadow"
-                    >
-                      Book Expert Consultation Instead →
-                    </a>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsCheckoutModalOpen(true)}
-                    className="w-full bg-[#F4B942] hover:bg-amber-500 text-[#073B5C] font-black text-sm py-4 rounded-2xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
-                  >
-                    <span>Start Now for {formatINR(activePayAmount)} {payAdvance ? 'Advance' : ''} →</span>
-                  </button>
-                )}
-
-                {/* SLA BADGE DIRECTLY UNDER CTA */}
-                <div className="p-2.5 bg-cyan-50/70 border border-cyan-200/80 rounded-xl text-center">
-                  <span className="text-xs font-extrabold text-[#073B5C] flex items-center justify-center gap-1.5">
-                    <span>⚡ Typical Turnaround:</span>
-                    <span className="text-[#0E7490]">{displaySla}</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-2.5 text-center text-[11px] text-emerald-900 font-bold space-y-0.5">
-                  <span className="block font-black text-emerald-800">🛡️ 100% Paperless & Zero Physical Visits</span>
-                  <span className="text-[10px] text-emerald-700 block font-normal">
-                    Never visit government offices or courts. Certified CAs sign electronically on your behalf.
-                  </span>
-                </div>
-
-              {/* VALUE ASSURANCE & ZERO-MARKUP GUARANTEE */}
-              {isPureService ? (
-                <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
-                  <div className="flex items-center gap-1.5 font-black text-emerald-900">
-                    <span>🛡️</span> Dedicated Professional Retainer
-                  </div>
-                  <p className="text-[10px] text-emerald-800 leading-snug">
-                    Assigned Chartered Accountant / Legal Advocate directly handles your scope. Full client confidentiality guaranteed under strict NDA and professional ethics.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl space-y-1 text-emerald-950 text-[11px]">
-                  <div className="flex items-center gap-1.5 font-black text-emerald-900">
-                    <span>🛡️</span> Zero Markup on Statutory Fees
-                  </div>
-                  <p className="text-[10px] text-emerald-800 leading-snug">
-                    Statutory portal fees (MCA, FoSCoS, Labor, GSTN) pass through strictly at actuals under Rule 33 of CGST. Official government treasury e-Challan receipts are uploaded directly to your Vault.
-                  </p>
-                </div>
-              )}
-
-              {/* TRUST SIGNALS */}
-              <div className="pt-1 space-y-1.5 text-[11px] text-slate-500 text-center font-medium">
-                <div className="flex items-center justify-center gap-3 text-slate-600 font-semibold text-[10px]">
-                  <span>🔒 256-Bit SSL</span>
-                  <span>•</span>
-                  <span>{isPureService ? '📑 GST Tax Invoice' : '🛡️ Pre-Checked Registry Search'}</span>
-                  <span>•</span>
-                  <span>🤝 Zero Hidden Fees</span>
-                </div>
-                <p className="text-[10px] text-slate-400">
-                  {isPureService
-                    ? 'Transparent professional retainer billing with zero hidden hourly surcharges.'
-                    : 'Government stamp duty is strictly pass-through at actuals. Never marked up.'}
-                </p>
-              </div>
-
-            </div>
-          </div>
+          <ServiceStickySidebar
+            displayTitle={displayTitle}
+            displaySla={displaySla}
+            pricingModel={pricingModel}
+            isStatutoryFiling={isStatutoryFiling}
+            isStateSpecificService={isStateSpecificService}
+            isPureService={isPureService}
+            isServiceActive={isServiceActive}
+            selectedState={selectedState}
+            onSelectState={setSelectedState}
+            stateStamp={stateStamp}
+            effectivePackage={effectivePackage}
+            activeProfFee={activeProfFee}
+            activeGovtFee={activeGovtFee}
+            gstRate={gstRate}
+            gstAmount={baseQuote.gstAmount}
+            totalEstimatedCost={totalEstimatedCost}
+            payAdvance={payAdvance}
+            onSelectPayAdvance={setPayAdvance}
+            activePayAmount={activePayAmount}
+            onOpenCheckout={() => setIsCheckoutModalOpen(true)}
+          />
 
         </div>
       </main>
 
 
       {/* ======================================================== */}
-      {/* 4. EXPRESS CHECKOUT MODAL                                */}
+      {/* 4. EXPRESS CHECKOUT & FULL REQUIREMENTS MODALS          */}
       {/* ======================================================== */}
-      {isCheckoutModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
-                  Express Filing Setup
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
-                  {displayTitle}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCheckoutModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center cursor-pointer transition"
-              >
-                ✕
-              </button>
-            </div>
+      <ServiceCheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        displayTitle={displayTitle}
+        displaySac={displaySac}
+        signedIn={signedIn}
+        effectivePackage={effectivePackage}
+        otpStep={otpStep}
+        setOtpStep={setOtpStep}
+        fullName={fullName}
+        setFullName={setFullName}
+        phone={phone}
+        setPhone={setPhone}
+        email={email}
+        setEmail={setEmail}
+        aadhaarPhone={aadhaarPhone}
+        setAadhaarPhone={setAadhaarPhone}
+        entityName={entityName}
+        setEntityName={setEntityName}
+        entityNameChoice2={entityNameChoice2}
+        setEntityNameChoice2={setEntityNameChoice2}
+        consent={consent}
+        setConsent={setConsent}
+        isPureService={isPureService}
+        isStateSpecificService={isStateSpecificService}
+        selectedState={selectedState}
+        payAdvance={payAdvance}
+        totalEstimatedCost={totalEstimatedCost}
+        activePayAmount={activePayAmount}
+        checkoutError={checkoutError}
+        setCheckoutError={setCheckoutError}
+        pendingOrder={pendingOrder}
+        isProcessing={isProcessing}
+        otpCode={otpCode}
+        setOtpCode={setOtpCode}
+        otpCooldown={otpCooldown}
+        onSubmitForm={handleCheckoutSubmit}
+        onVerifyOtp={handleVerifyOtpAndProceed}
+        onResendOtp={handleResendOtp}
+        onSaveDraftAndSignIn={saveDraftAndSignIn}
+      />
 
-            {otpStep === 'form' ? (
-              <form onSubmit={handleCheckoutSubmit} className="space-y-4 text-xs">
-                
-                {effectivePackage && (
-                  <div className="p-3 bg-gradient-to-r from-[#073B5C] to-[#0E7490] text-white rounded-2xl space-y-1">
-                    <span className="bg-[#F4B942] text-[#073B5C] text-[9px] font-black uppercase px-2 py-0.5 rounded-full">
-                      Bundled Package • Save {effectivePackage.savingsPercent}%
-                    </span>
-                    <h4 className="font-bold text-xs">{effectivePackage.title}</h4>
-                    <p className="text-[10px] text-cyan-100">
-                      Includes: {effectivePackage.includedServices.map((s) => s.name).join(' + ')}
-                    </p>
-                  </div>
-                )}
-
-                {!signedIn && (
-                  <div className="p-2.5 bg-cyan-50 border border-cyan-200 rounded-xl text-[11px] text-[#073B5C] flex items-center gap-2">
-                    <span className="text-base">⚡</span>
-                    <span>No separate sign-up required. Fast 1-click mobile verification will secure your booking room.</span>
-                  </div>
-                )}
-
-                {/* Applicant Name */}
-                <div>
-                  <label className="block font-bold text-[#073B5C] mb-1">
-                    Applicant Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Rahul Sharma"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                  />
-                </div>
-
-                {/* Mobile Number */}
-                <div>
-                  <label className="block font-bold text-[#073B5C] mb-1">
-                    WhatsApp / Mobile Number (+91) *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="10-digit mobile number"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                  />
-                </div>
-
-                {/* Email Address for official deliverables */}
-                <div>
-                  <label className="block font-bold text-[#073B5C] mb-1">
-                    Official Business Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. rahul@mycompany.com or rahul@gmail.com"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                  />
-                  <span className="text-[10px] text-cyan-800 bg-cyan-50 border border-cyan-200 p-2 rounded-lg block mt-1 leading-relaxed">
-                    🛡️ <strong>Statutory Ownership Guarantee:</strong> Your Certificate of Incorporation, e-PAN, GSTIN, and all government portal credentials will be officially tied to this email. You own this account 100%.
-                  </span>
-                </div>
-
-                {/* Aadhaar-Linked Phone (Optional, defaults to WhatsApp phone) */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold text-[#073B5C]">
-                      Director's UIDAI Aadhaar-Linked Mobile
-                    </label>
-                    <span className="text-[10px] text-slate-400">If different from above</span>
-                  </div>
-                  <input
-                    type="tel"
-                    value={aadhaarPhone}
-                    onChange={(e) => setAadhaarPhone(e.target.value)}
-                    placeholder="Same as WhatsApp mobile above (or enter 10 digits)"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                  />
-                  <span className="text-[9px] text-slate-400 block mt-0.5">UIDAI sends mandatory authentication OTPs for GST Aadhaar auth & DSC verification here.</span>
-                </div>
-
-                {/* Entity / Brand / Business Name (Adaptive for statutory vs pure services) */}
-                {isPureService ? (
-                  <div>
-                    <label className="block font-bold text-[#073B5C] mb-1">
-                      Business / Entity / Client Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={entityName}
-                      onChange={(e) => setEntityName(e.target.value)}
-                      placeholder="e.g. Acme Enterprises or Personal Name"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                    />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-bold text-[#073B5C] mb-1">
-                        {isStateSpecificService ? 'Proposed Company Name (1st Choice)' : 'Registered Name / Trademark'}
-                      </label>
-                      <input
-                        type="text"
-                        value={entityName}
-                        onChange={(e) => setEntityName(e.target.value)}
-                        placeholder="e.g. Acme Innovations"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-[#073B5C] mb-1">
-                        2nd Choice (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={entityNameChoice2}
-                        onChange={(e) => setEntityNameChoice2(e.target.value)}
-                        placeholder="e.g. Acme Technologies"
-                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#0E7490]"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Selected State & Amount Summary */}
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">
-                      {isPureService ? 'Place of Supply (GST):' : 'Jurisdiction:'} {selectedState}
-                    </span>
-                    <strong className="text-slate-800 text-xs">
-                      {payAdvance ? '₹999 Booking Token' : 'Full Payment'}
-                    </strong>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block">Total Scope:</span>
-                    <strong className="text-emerald-700 text-xs font-black">
-                      {effectivePackage ? formatINR(effectivePackage.packagePrice) : formatINR(totalEstimatedCost)}
-                    </strong>
-                  </div>
-                </div>
-
-                {/* Disclosure Note (Pure Service B2B vs Statutory Pure Agent) */}
-                {isPureService ? (
-                  <div className="p-2.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl space-y-1 text-[10px] text-emerald-900 leading-tight">
-                    <span className="font-extrabold flex items-center gap-1 text-emerald-950">
-                      <span>📑</span> B2B GST Invoicing & Input Tax Credit (ITC):
-                    </span>
-                    <p>
-                      A 100% compliant GST tax invoice with SAC {displaySac} will be generated for your business. Full Input Tax Credit can be claimed under Section 16 of the CGST Act.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl space-y-1 text-[10px] text-amber-900 leading-tight">
-                    <span className="font-extrabold flex items-center gap-1 text-amber-950">
-                      <span>🏛️</span> Statutory Pass-Through Disclosure (Rule 33 CGST):
-                    </span>
-                    <p>
-                      Government stamp duties and ROC/IP India fees are non-refundable statutory disbursements paid directly to the government treasury on your behalf as a pure agent.
-                    </p>
-                  </div>
-                )}
-
-                {/* Advance Token Scope Note */}
-                {payAdvance && (
-                  <div className="p-2.5 bg-cyan-50/80 border border-cyan-200/80 rounded-xl text-[10px] text-[#073B5C] leading-tight">
-                    <strong>ℹ️ Advance Token Scope:</strong>{' '}
-                    {isPureService
-                      ? 'This ₹999 advance locks in your assigned Chartered Accountant, onboarding briefing, and preliminary ledger review. Scope execution starts immediately upon balance confirmation.'
-                      : 'This ₹999 advance locks in your Name Availability Search, Trademark conflict cross-check, and CA intake review. Full drafting and statutory filing commences upon payment of the remaining milestone.'}
-                  </div>
-                )}
-
-                {/* Consent checkbox */}
-                <label className="flex items-start gap-2 text-[10px] text-slate-500 leading-tight">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={consent}
-                    onChange={(e) => setConsent(e.target.checked)}
-                    className="mt-0.5 accent-[#0E7490]"
-                  />
-                  <span>
-                    I agree to NyayaLink&apos;s <Link href="/terms" target="_blank" className="underline text-[#0E7490]">Terms</Link>,{' '}
-                    <Link href="/privacy" target="_blank" className="underline text-[#0E7490]">Privacy Policy</Link>,{' '}
-                    <Link href="/refund-policy" target="_blank" className="underline text-[#0E7490]">Refund Policy</Link>, and acknowledge the non-refundable statutory fee terms above.
-                  </span>
-                </label>
-
-                {checkoutError && (
-                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
-                    {checkoutError}
-                    {pendingOrder && (
-                      <div className="pt-1">
-                        <Link href={`/orders/${pendingOrder}`} className="underline text-[#073B5C]">
-                          Open Saved Order #{pendingOrder} →
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* CTA in Modal */}
-                <button
-                  type="submit"
-                  disabled={isProcessing || !fullName || phone.length < 10 || !email}
-                  className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {isProcessing
-                    ? 'Connecting Gateway…'
-                    : signedIn
-                    ? `Confirm & Pay ${formatINR(activePayAmount)} →`
-                    : `Verify & Pay ${formatINR(activePayAmount)} →`}
-                </button>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                  <span>🔒 100% Paperless & SSL Secured</span>
-                  {!signedIn && (
-                    <button
-                      type="button"
-                      onClick={saveDraftAndSignIn}
-                      className="text-[#0E7490] font-bold hover:underline cursor-pointer"
-                    >
-                      Sign in with Password →
-                    </button>
-                  )}
-                </div>
-              </form>
-            ) : (
-              /* IN-MODAL OTP STEP */
-              <div className="space-y-4 text-xs animate-in fade-in duration-150">
-                <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-2xl text-[11px] text-[#073B5C] space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <span>📱</span> Enter Verification Code
-                  </div>
-                  <p>
-                    We sent a 6-digit one-time code to <strong className="font-mono text-slate-800">{phone || email}</strong>.
-                  </p>
-                </div>
-
-                <form onSubmit={handleVerifyOtpAndProceed} className="space-y-4">
-                  <div>
-                    <label className="block font-bold text-[#073B5C] mb-1 text-center">
-                      6-Digit One-Time Password (OTP) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      placeholder="• • • • • •"
-                      autoFocus
-                      className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl p-3 text-center text-xl font-mono tracking-widest font-black focus:outline-none focus:border-[#0E7490]"
-                    />
-                  </div>
-
-                  {checkoutError && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] rounded-xl font-bold">
-                      {checkoutError}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <button
-                      type="button"
-                      onClick={() => { setOtpStep('form'); setCheckoutError(''); }}
-                      className="text-[#0E7490] font-bold hover:underline cursor-pointer"
-                    >
-                      ← Change Details
-                    </button>
-
-                    {otpCooldown > 0 ? (
-                      <span className="text-slate-400 font-mono">Resend in {otpCooldown}s</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        disabled={isProcessing}
-                        className="text-[#073B5C] font-extrabold hover:underline cursor-pointer"
-                      >
-                        Resend Code
-                      </button>
-                    )}
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isProcessing || otpCode.length < 4}
-                    className="w-full bg-[#073B5C] hover:bg-[#0E7490] disabled:bg-slate-300 text-[#F4B942] font-black text-xs py-3.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {isProcessing ? 'Verifying & Opening Payment…' : `Verify & Launch Payment (${formatINR(activePayAmount)}) →`}
-                  </button>
-                </form>
-
-                {/* In-Modal TRAI SMS Delay Rescue Support */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold text-[#073B5C] flex items-center gap-1">
-                      <span>🎧</span> OTP Delayed?
-                    </span>
-                    <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
-                      DLT Telecom Delay Rescue
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 leading-tight">
-                    If TRAI telecom scrubbing delays your SMS code, get instant verification assistance:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <a
-                      href="tel:+919920054785"
-                      className="bg-white border border-slate-300 hover:border-[#0E7490] text-[#073B5C] p-2 rounded-xl text-center font-bold text-[10px] flex items-center justify-center gap-1 shadow-xs transition"
-                    >
-                      <span>📞</span> Call CA Desk
-                    </a>
-                    <a
-                      href={`https://wa.me/919920054785?text=${encodeURIComponent(
-                        `Hi NyayaLink Support, I am booking ${displayTitle} with phone ${phone || email} and need instant verification assistance.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-center font-bold text-[10px] flex items-center justify-center gap-1 shadow-xs transition"
-                    >
-                      <span>💬</span> WhatsApp Desk
-                    </a>
-                  </div>
-                </div>
-
-                <p className="text-[10px] text-slate-400 text-center">
-                  Your payment window opens immediately upon code verification.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ======================================================== */}
-      {/* 5. ALL REQUIREMENTS FULL MODAL                          */}
-      {/* ======================================================== */}
-      {isDocsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
-                  Document Checklist
-                </span>
-                <h3 className="text-base sm:text-lg font-black text-[#073B5C]">
-                  All Required Documents
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDocsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center cursor-pointer transition"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="overflow-y-auto space-y-2.5 text-xs pr-1">
-              <p className="text-slate-500 text-[11px] pb-1">
-                You do not need these immediately. You can book now and upload them anytime inside your secure Vault:
-              </p>
-              {allDocsList.map((doc, idx) => (
-                <div key={idx} className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-start gap-2.5">
-                  <span className="text-emerald-700 font-black text-sm mt-0.5">✓</span>
-                  <span className="text-slate-700 font-medium leading-relaxed">{doc}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-xs">
-              <span className="text-slate-400 text-[11px]">Format: PDF, PNG, JPG (&lt; 10MB)</span>
-              <button
-                type="button"
-                onClick={() => setIsDocsModalOpen(false)}
-                className="bg-[#073B5C] text-[#F4B942] font-bold px-4 py-2 rounded-xl cursor-pointer"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ServiceRequirementsModal
+        isOpen={isDocsModalOpen}
+        onClose={() => setIsDocsModalOpen(false)}
+        documents={allDocsList}
+      />
 
       {/* STICKY MOBILE BOTTOM BOOKING BAR (Single high-converting bar) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] print:hidden">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] uppercase font-bold text-slate-500">
+            <span className="text-[11px] uppercase font-bold text-slate-500">
               {payAdvance ? 'Advance Token' : (isPureService ? 'Total Retainer' : 'Total Price')}
             </span>
-            <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.2 rounded">
+            <span className="bg-emerald-100 text-emerald-800 text-[11px] font-black px-1.5 py-0.2 rounded">
               {isPureService ? 'Fixed Retainer' : 'Zero Markup'}
             </span>
           </div>
@@ -2021,7 +1421,7 @@ function ServiceDetailContent({ serviceData, pricing }: ServiceDetailClientProps
               {formatINR(activePayAmount)}
             </strong>
             {payAdvance && (
-              <span className="text-[10px] text-slate-400 line-through">
+              <span className="text-xs text-slate-400 line-through">
                 {formatINR(totalEstimatedCost)}
               </span>
             )}

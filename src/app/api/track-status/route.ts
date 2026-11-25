@@ -51,7 +51,7 @@ export const POST = apiHandler(async (request: Request) => {
     });
   }
 
-  // 2. Intelligent Registry Identifier Classification
+  // 2. External registry format identification (no fabricated status claims)
   const isTrademark = /^\d{6,8}$/.test(clean);
   const isMcaSrn = /^[A-Z]\d{8}$/.test(clean) || clean.startsWith('SRN') || clean.length === 9;
   const isGstArn = clean.startsWith('AA') && clean.length === 15;
@@ -59,90 +59,65 @@ export const POST = apiHandler(async (request: Request) => {
   if (isTrademark) {
     return NextResponse.json({
       success: true,
-      source: 'IPINDIA_REGISTRY',
+      source: 'IPINDIA_FORMAT_MATCH',
       type: 'Trade Marks Registry (IP India)',
       identifier: clean,
       srn: `TM-${clean}`,
       title: `Trade Marks Application #${clean}`,
-      status: 'OBJECTED_EXAM_ISSUED',
-      sla: '30-Day Statutory Reply Window',
+      status: 'EXTERNAL_PORTAL_LOOKUP',
+      sla: 'Verify on IP India e-Register',
       lastUpdated: new Date().toISOString(),
-      stageNumber: 3,
+      stageNumber: 1,
+      externalUrl: 'https://ipindiaservices.gov.in/eregister/eregister.aspx',
       recommendation:
-        'Examination Report has been issued citing Section 9/11 objection. A formal written reply by an empanelled Trade Marks Agent is required within 30 days to prevent abandonment.',
-      history: [
-        { stage: 'Examination Report Issued', remarks: 'Objection raised under Section 9(1)(a) / 11(1). Written reply awaited.', date: new Date().toISOString() },
-        { stage: 'Formalities Chk Pass', remarks: 'Statutory form TM-A and POA verification passed.', date: new Date(Date.now() - 15 * 86400000).toISOString() },
-        { stage: 'Vienna Codification Completed', remarks: 'Visual logo codification allocated.', date: new Date(Date.now() - 30 * 86400000).toISOString() },
-        { stage: 'Application Lodged', remarks: 'E-filing fee acknowledged by Trade Marks Office.', date: new Date(Date.now() - 45 * 86400000).toISOString() },
-      ],
+        'This trademark application number is not linked to a NyayaLink Vault order. Use the official IP India e-Register portal to view live Examination Report or Journal status.',
+      history: [],
     });
   }
 
   if (isMcaSrn) {
     return NextResponse.json({
       success: true,
-      source: 'MCA_V3_REGISTRY',
+      source: 'MCA_FORMAT_MATCH',
       type: 'Ministry of Corporate Affairs (MCA V3)',
       identifier: clean,
       srn: clean,
-      title: 'Company Incorporation / Statutory ROC Docket',
-      status: 'UNDER_ROC_SCRUTINY',
-      sla: '24–48 Hours',
+      title: `MCA Service Request #${clean}`,
+      status: 'EXTERNAL_PORTAL_LOOKUP',
+      sla: 'Verify on MCA V3 Track SRN',
       lastUpdated: new Date().toISOString(),
-      stageNumber: 4,
+      stageNumber: 1,
+      externalUrl: 'https://www.mca.gov.in/mcafoportal/trackSRN.do',
       recommendation:
-        'SPICe+ Part B, Agile Pro S, and MoA/AoA digital signatures are registered. Central Processing Centre (CRC) scrutiny in progress.',
-      history: [
-        { stage: 'Processing at CRC / ROC', remarks: 'E-form scrutiny under active Registrar verification.', date: new Date().toISOString() },
-        { stage: 'Statutory Stamp Duty Paid', remarks: 'State e-Challan payment reconciled successfully.', date: new Date(Date.now() - 2 * 86400000).toISOString() },
-        { stage: 'Digital Signatures Affixed', remarks: 'Director Class-3 DSC tokens verified on MCA V3 portal.', date: new Date(Date.now() - 4 * 86400000).toISOString() },
-        { stage: 'Name Reserved (RUN/Part A)', remarks: 'Proposed corporate name approved by Registrar.', date: new Date(Date.now() - 7 * 86400000).toISOString() },
-      ],
+        'This MCA SRN is not in your NyayaLink Vault database. Check real-time CRC/ROC approval status directly on the official MCA V3 Track SRN portal.',
+      history: [],
     });
   }
 
   if (isGstArn) {
     return NextResponse.json({
       success: true,
-      source: 'GSTN_PORTAL',
+      source: 'GSTN_FORMAT_MATCH',
       type: 'Goods & Services Tax Network (GSTN)',
       identifier: clean,
       srn: clean,
-      title: 'New GSTIN Registration Docket (Form GST REG-01)',
-      status: 'APPROVED',
-      sla: 'Completed',
+      title: `GST Application Reference #${clean}`,
+      status: 'EXTERNAL_PORTAL_LOOKUP',
+      sla: 'Verify on GSTN Portal',
       lastUpdated: new Date().toISOString(),
-      stageNumber: 5,
+      stageNumber: 1,
+      externalUrl: 'https://services.gst.gov.in/services/arnstatus',
       recommendation:
-        'Application approved by State/Centre GST Jurisdiction Officer. 15-Digit GSTIN and Form REG-06 registration certificate generated.',
-      history: [
-        { stage: 'Registration Certificate Issued', remarks: 'Form GST REG-06 generated with active GSTIN status.', date: new Date().toISOString() },
-        { stage: 'Officer Verification Completed', remarks: 'Jurisdictional tax officer approved principal place of business.', date: new Date(Date.now() - 3 * 86400000).toISOString() },
-        { stage: 'Aadhaar Biometric KYC Completed', remarks: 'Authorized signatory e-KYC verified via UIDAI OTP.', date: new Date(Date.now() - 5 * 86400000).toISOString() },
-        { stage: 'Application Lodged (ARN Generated)', remarks: 'Form GST REG-01 filed successfully.', date: new Date(Date.now() - 7 * 86400000).toISOString() },
-      ],
+        'This GST ARN is not linked to an order in our system. Verify live officer review and GSTIN allotment directly on the official GSTN ARN Status page.',
+      history: [],
     });
   }
 
-  // Fallback generic statutory format
-  return NextResponse.json({
-    success: true,
-    source: 'GOVT_STATUTORY_REGISTRY',
-    type: 'Statutory Registry Docket',
-    identifier: clean,
-    srn: clean,
-    title: `Government Reference #${clean}`,
-    status: 'IN_PROCESS',
-    sla: '3–5 Working Days',
-    lastUpdated: new Date().toISOString(),
-    stageNumber: 3,
-    recommendation:
-      'Application reference logged on statutory government portal. Processing within standard service level agreement.',
-    history: [
-      { stage: 'Registry Scrutiny', remarks: 'Assigned to jurisdictional processing officer.', date: new Date().toISOString() },
-      { stage: 'Challan Payment Verified', remarks: 'Statutory fees cleared.', date: new Date(Date.now() - 2 * 86400000).toISOString() },
-      { stage: 'Acknowledgment Generated', remarks: 'Reference number allotted.', date: new Date(Date.now() - 4 * 86400000).toISOString() },
-    ],
-  });
+  return NextResponse.json(
+    {
+      success: false,
+      error: `No NyayaLink order found for "${clean}". Enter a valid NyayaLink Order # (e.g. NYL-...) or a standard MCA SRN, 7-digit TM number, or 15-character GST ARN.`,
+    },
+    { status: 404 }
+  );
 });

@@ -8,6 +8,7 @@ import type { DashboardData } from './page';
 import OrderProgress from '@/components/OrderProgress';
 import PayNowButton from '@/components/PayNowButton';
 import { formatINR } from '@/lib/pricing';
+import { BRAND } from '@/lib/constants';
 import StatutoryExpiryRadar from '@/components/StatutoryExpiryRadar';
 
 type Props = DashboardData;
@@ -33,22 +34,21 @@ const STATUS_STYLE: Record<string, string> = {
 
 function FilingLifecycleGuide() {
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
-      <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <details className="group bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+      <summary className="list-none cursor-pointer flex items-center justify-between gap-2">
         <div>
-          <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
-            Statutory Transparency &amp; Process SLA
+          <span className="text-[11px] font-bold uppercase text-[#0E7490] tracking-wider block">
+            How Your Filing Works
           </span>
-          <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C]">
-            6-Stage Post-Payment Filing Lifecycle
+          <h3 className="text-sm sm:text-base font-extrabold text-[#073B5C]">
+            6-Stage Filing Lifecycle &amp; SLA Guide
           </h3>
         </div>
-        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg self-start sm:self-auto">
-          Standard 7–10 Working Day SLA
-        </span>
-      </div>
+        <span className="text-xs font-bold text-[#0E7490] group-open:hidden">View Guide ▼</span>
+        <span className="text-xs font-bold text-[#0E7490] hidden group-open:inline">Hide Guide ▲</span>
+      </summary>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-4 mt-4 border-t border-slate-100 text-xs">
         {[
           {
             step: '01',
@@ -89,17 +89,17 @@ function FilingLifecycleGuide() {
         ].map((item) => (
           <div key={item.step} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5 hover:border-slate-300 transition">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+              <span className="font-mono text-[11px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
                 Stage {item.step}
               </span>
               <span className="text-base">{item.icon}</span>
             </div>
             <strong className="text-slate-800 text-xs font-bold block pt-1">{item.title}</strong>
-            <p className="text-[11px] text-slate-500 leading-relaxed">{item.desc}</p>
+            <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
           </div>
         ))}
       </div>
-    </div>
+    </details>
   );
 }
 
@@ -163,7 +163,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
       {user.email?.endsWith('.local') && (
         <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-950 px-4 py-2 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+            <span className="bg-amber-500 text-slate-950 text-[11px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
               Staging / Demo Session
             </span>
             <span className="text-slate-700">
@@ -178,7 +178,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
       {['SUPER_ADMIN', 'OPS_MANAGER', 'CA_CS_LEAD', 'COMPLIANCE_EXEC', 'FINANCE_MANAGER'].includes(user.role) && (
         <div className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 text-xs font-medium flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm border-b border-amber-600">
           <div className="flex items-center gap-2">
-            <span className="bg-black text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="bg-black text-amber-300 text-[11px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
               Staff Mode ({user.role})
             </span>
             <span>You are previewing the Client Vault as <strong>{user.name}</strong> ({user.email}).</span>
@@ -211,7 +211,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
             {([
               ['overview', '📊', 'Overview', activeOrders.length ? `${activeOrders.length} Active` : null],
               ['filings', '📋', 'Filings & SRNs', queriesPending.length ? `${queriesPending.length} Query` : null],
-              ['renewals', '🛡️', 'License Radar & Expiries', '1 Due Soon'],
+              ['renewals', '🛡️', 'License Expiry Radar', null],
               ['consultations', '⚖️', 'Consultations', upcoming.length ? `${upcoming.length} Upcoming` : null],
               ['vault', '🔒', 'Document Vault', rejectedDocs.length ? `${rejectedDocs.length} Re-upload` : documents.length ? String(documents.length) : null],
               ['billing', '🧾', 'Billing & Invoices', null],
@@ -228,7 +228,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   <span>{icon}</span> {label}
                 </span>
                 {badge && (
-                  <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
                     {badge}
                   </span>
                 )}
@@ -316,18 +316,48 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 </div>
               )}
 
-              {/* Post-Incorporation Day 1 Founder Activation Checklist */}
+              {orders.length > 0 && (
+                <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 className="text-sm sm:text-base font-extrabold text-[#073B5C]">Recent Filings &amp; Applications</h3>
+                    <button type="button" onClick={() => setActiveTab('filings')} className="text-xs font-bold text-[#0E7490] hover:underline cursor-pointer">
+                      View All ({orders.length}) →
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {orders.slice(0, 4).map((o) => (
+                      <div key={o.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-[#0E7490]">{o.orderNumber}</span>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${STATUS_STYLE[o.status]}`}>
+                              {STATUS_LABEL[o.status]}
+                            </span>
+                          </div>
+                          <strong className="text-sm text-[#073B5C] block mt-0.5">{o.service.title}</strong>
+                        </div>
+                        <Link href={`/orders/${o.orderNumber}`} className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-bold px-3.5 py-2 rounded-xl text-center shrink-0">
+                          Open Order Room →
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Post-Incorporation Checklist (Shown only after an incorporation order is APPROVED) */}
+              {orders.some((o) => o.service.category === 'company-reg' && o.status === 'APPROVED') && (
               <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] font-black uppercase text-[#0E7490] tracking-wider block">
+                    <span className="text-[11px] font-black uppercase text-[#0E7490] tracking-wider block">
                       Statutory Post-Incorporation Compliance
                     </span>
                     <h3 className="text-base sm:text-lg font-extrabold text-[#073B5C]">
                       Day 1 Founder Activation &amp; Compliance Checklist
                     </h3>
                   </div>
-                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-lg font-extrabold self-start sm:self-auto">
+                  <span className="text-[11px] bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-lg font-extrabold self-start sm:self-auto">
                     Section 10A Companies Act &bull; 180-Day Rule
                   </span>
                 </div>
@@ -336,43 +366,33 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   {/* Step 1: Bank Account */}
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 hover:border-slate-300 transition">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+                      <span className="font-mono text-[11px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
                         Step 1 &bull; Immediate
                       </span>
                       <span className="text-base">🏦</span>
                     </div>
                     <strong className="text-slate-900 font-bold block text-xs">Open Corporate Bank Current Account</strong>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">
-                      Deposit paid-up capital from initial subscribers. Fast-tracked with our banking partners (ICICI Bank, HDFC, Axis).
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Deposit paid-up capital from initial subscribers with any scheduled Indian bank.
                     </p>
-                    <div className="pt-1 flex gap-2">
-                      <a
-                        href="https://www.icicibank.com/business-banking/current-account"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-[10px] px-3 py-1.5 rounded-lg transition"
-                      >
-                        Fast-Track Account &rarr;
-                      </a>
-                    </div>
                   </div>
 
                   {/* Step 2: INC-20A */}
                   <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-2xl space-y-2 hover:border-amber-300 transition">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-black bg-amber-600 text-white px-2 py-0.5 rounded">
+                      <span className="font-mono text-[11px] font-black bg-amber-600 text-white px-2 py-0.5 rounded">
                         Step 2 &bull; 180 Days
                       </span>
                       <span className="text-base">⏰</span>
                     </div>
                     <strong className="text-amber-950 font-bold block text-xs">MCA Form INC-20A (Commencement of Business)</strong>
-                    <p className="text-[11px] text-amber-900 leading-relaxed">
-                      Must be filed within 180 days of incorporation. Failure attracts <strong>₹50,000 corporate penalty + ₹1,000/day on directors</strong> and risks ROC strike-off.
+                    <p className="text-xs text-amber-900 leading-relaxed">
+                      Must be filed within 180 days of incorporation to avoid statutory director penalties.
                     </p>
                     <div className="pt-1">
                       <Link
-                        href="/#catalog-section"
-                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition inline-block"
+                        href="/services/mca-inc-20a-commencement-of-business"
+                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition inline-block"
                       >
                         File INC-20A with CA Desk &rarr;
                       </Link>
@@ -382,13 +402,13 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   {/* Step 3: ADT-1 */}
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 hover:border-slate-300 transition">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
+                      <span className="font-mono text-[11px] font-black bg-[#073B5C] text-[#F4B942] px-2 py-0.5 rounded">
                         Step 3 &bull; 30 Days
                       </span>
                       <span className="text-base">📑</span>
                     </div>
                     <strong className="text-slate-900 font-bold block text-xs">Appoint Statutory Auditor (Form ADT-1)</strong>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       Board must appoint the first auditor within 30 days of incorporation under Section 139(6) of Companies Act, 2013.
                     </p>
                   </div>
@@ -396,80 +416,47 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   {/* Step 4: Startup India */}
                   <div className="p-4 bg-cyan-50/60 border border-cyan-200 rounded-2xl space-y-2 hover:border-cyan-300 transition">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-black bg-[#0E7490] text-white px-2 py-0.5 rounded">
+                      <span className="font-mono text-[11px] font-black bg-[#0E7490] text-white px-2 py-0.5 rounded">
                         Step 4 &bull; Tax Benefits
                       </span>
                       <span className="text-base">🚀</span>
                     </div>
-                    <strong className="text-[#073B5C] font-bold block text-xs">Startup India DPIIT &amp; 80-IAC 3-Year Tax Holiday</strong>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Verify your eligibility for 100% income tax exemption under Section 80-IAC and fast-tracked patent rebates.
+                    <strong className="text-[#073B5C] font-bold block text-xs">Startup India DPIIT &amp; 80-IAC Eligibility</strong>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Check eligibility for Section 80-IAC tax exemption and IP filing rebates.
                     </p>
                     <div className="pt-1">
                       <Link
                         href="/tools/startup-india-checker"
-                        className="bg-[#0E7490] hover:bg-cyan-700 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition inline-block"
+                        className="bg-[#0E7490] hover:bg-cyan-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition inline-block"
                       >
-                        Check 80-IAC Eligibility (Free) &rarr;
+                        Check 80-IAC Eligibility &rarr;
                       </Link>
                     </div>
                   </div>
                 </div>
               </div>
+              )}
 
-              {/* Dedicated Assigned Chartered Accountant Desk Card */}
-              <div className="bg-gradient-to-br from-[#073B5C] to-[#0A4E78] text-white rounded-3xl p-6 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-cyan-800 pb-3">
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-[#F4B942] tracking-wider block">
-                      Dedicated Professional Desk
-                    </span>
-                    <h3 className="text-base font-black">Assigned Chartered Accountant &amp; Secretarial Lead</h3>
-                  </div>
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase">
-                    ICAI / ICSI Verified
-                  </span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-xs">
-                  <div className="space-y-1">
-                    <strong className="text-sm font-extrabold text-white block">NyayaLink Senior Legal &amp; CA Desk</strong>
-                    <p className="text-slate-300 text-[11px] leading-relaxed">
-                      Your business docket is overseen by our empanelled Chartered Accountants and Company Secretaries. All filings adhere strictly to MCA CRC guidelines and Section 31 GST invoicing standards.
-                    </p>
-                  </div>
-                  <div className="shrink-0 flex items-center gap-2">
-                    <a
-                      href="https://wa.me/919820012345?text=Namaste%20NyayaLink%2C%20I%20have%20a%20question%20regarding%20my%20company%20filing."
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2.5 rounded-xl transition shadow flex items-center gap-1.5"
-                    >
-                      <span>💬</span> WhatsApp Compliance Desk
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Statutory License Expiry Radar Banner on Overview */}
-              <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border border-amber-300 p-5 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              {/* Direct Compliance Desk Card */}
+              <div className="bg-gradient-to-br from-[#073B5C] to-[#0A4E78] text-white rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-xs">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      Statutory Radar Alert
-                    </span>
-                    <span className="text-xs text-amber-900 font-bold">1 License in Early Renewal Window</span>
-                  </div>
-                  <p className="text-xs text-slate-700 leading-relaxed">
-                    <strong>FOSCOS State Food License (Lic #11524034000891)</strong> expires in <strong>42 days</strong>. Mandatory renewal window is active to avoid ₹100/day late penalty.
+                  <span className="text-[11px] font-bold uppercase text-[#F4B942] tracking-wider block">
+                    Dedicated Professional Desk
+                  </span>
+                  <h3 className="text-base font-black">NyayaLink Senior Legal &amp; CA Desk</h3>
+                  <p className="text-slate-300 text-xs leading-relaxed">
+                    Supervised by empanelled Chartered Accountants &amp; Company Secretaries.
                   </p>
                 </div>
-                <button
-                  onClick={() => setActiveTab('renewals')}
-                  className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black text-xs px-4 py-2.5 rounded-xl shadow transition shrink-0 cursor-pointer"
+                <a
+                  href={BRAND.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow shrink-0 text-center"
                 >
-                  View Expiry Radar &rarr;
-                </button>
+                  💬 WhatsApp Compliance Desk
+                </a>
               </div>
 
               <FilingLifecycleGuide />
@@ -502,7 +489,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   <div className="flex flex-wrap justify-center gap-2 pt-2 text-xs">
                     <Link
                       href="/services/private-limited-company"
-                      className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black px-4 py-2.5 rounded-xl transition shadow-xs"
+                      className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] font-black px-4 py-2.5 rounded-xl transition shadow-sm"
                     >
                       🏢 Incorporate Pvt Ltd Company →
                     </Link>
@@ -529,7 +516,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                     <div key={order.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-5">
                       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-4">
                         <div>
-                          <span className="text-[10px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-md uppercase">
+                          <span className="text-[11px] font-extrabold text-[#0E7490] bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-md uppercase">
                             {order.orderNumber}
                             {order.srn ? ` · SRN ${order.srn}` : ''}
                           </span>
@@ -538,7 +525,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                             Assigned: {order.assignedCA?.name || 'Not yet assigned'}
                           </span>
                         </div>
-                        <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase ${STATUS_STYLE[order.status]}`}>
+                        <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full uppercase ${STATUS_STYLE[order.status]}`}>
                           {STATUS_LABEL[order.status]}
                         </span>
                       </div>
@@ -598,7 +585,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   <h2 className="text-xl font-extrabold text-[#073B5C]">Encrypted Document Vault</h2>
                   <p className="text-xs text-slate-500">Documents uploaded against your filings.</p>
                 </div>
-                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider self-start sm:self-auto">
+                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider self-start sm:self-auto">
                   🔒 256-Bit SSL Encrypted
                 </span>
               </div>
@@ -607,7 +594,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 <span className="text-lg shrink-0">🪪</span>
                 <div className="space-y-0.5">
                   <strong>UIDAI & DPDP Privacy Compliance:</strong>
-                  <p className="text-[11px] text-slate-600">
+                  <p className="text-xs text-slate-600">
                     For director and signatory KYC, please upload <strong>Masked Aadhaar</strong> copies (showing only the last 4 digits) as mandated by UIDAI. Documents are restricted strictly to your assigned Chartered Accountant.
                   </p>
                 </div>
@@ -617,7 +604,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                      <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                         <th className="p-4">Document Name</th>
                         <th className="p-4">Category</th>
                         <th className="p-4">Upload Date</th>
@@ -640,19 +627,19 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                               <span>
                                 {doc.name}
                                 {doc.rejectNote && doc.status === 'REJECTED' && (
-                                  <span className="block text-[10px] font-semibold text-rose-700">{doc.rejectNote}</span>
+                                  <span className="block text-[11px] font-semibold text-rose-700">{doc.rejectNote}</span>
                                 )}
                               </span>
                             </td>
                             <td className="p-4">
-                              <span className="bg-slate-100 text-slate-700 font-bold px-2.5 py-0.5 rounded-md text-[10px] uppercase">
+                              <span className="bg-slate-100 text-slate-700 font-bold px-2.5 py-0.5 rounded-md text-[11px] uppercase">
                                 {doc.category}
                               </span>
                             </td>
                             <td className="p-4 text-slate-500">{new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</td>
                             <td className="p-4">
                               <span
-                                className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${
+                                className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${
                                   doc.status === 'VERIFIED'
                                     ? 'bg-emerald-100 text-emerald-800'
                                     : doc.status === 'REJECTED'
@@ -694,7 +681,7 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                      <tr className="bg-slate-50 text-[#073B5C] font-extrabold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                         <th className="p-4">Invoice No</th>
                         <th className="p-4">Service</th>
                         <th className="p-4">Date</th>
@@ -749,11 +736,11 @@ export default function DashboardClient({ user, orders, documents, invoices, con
                   assigned desk. For everything else:
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                  <a href="tel:+919920054785" className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
-                    📞 Call +91 9920054785
+                  <a href={`tel:${BRAND.phoneTel}`} className="bg-[#073B5C] hover:bg-[#0E7490] text-[#F4B942] text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
+                    📞 Call {BRAND.phone}
                   </a>
-                  <a href="mailto:info@nyayalink.com" className="bg-slate-100 hover:bg-slate-200 text-[#073B5C] text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
-                    ✉️ info@nyayalink.com
+                  <a href={`mailto:${BRAND.supportEmail}`} className="bg-slate-100 hover:bg-slate-200 text-[#073B5C] text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
+                    ✉️ {BRAND.supportEmail}
                   </a>
                 </div>
               </div>
@@ -789,7 +776,7 @@ function ConsultationCard({ c }: { c: DashboardData['consultations'][number] }) 
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
       <div className="space-y-1 text-xs">
-        <span className="text-[10px] font-extrabold uppercase text-[#0E7490]">
+        <span className="text-[11px] font-extrabold uppercase text-[#0E7490]">
           {c.number} · {c.mode.replace('_', ' ')} · {c.status.replace(/_/g, ' ')}
         </span>
         <h3 className="text-sm font-extrabold text-[#073B5C]">

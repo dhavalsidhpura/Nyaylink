@@ -244,19 +244,19 @@ function LoginForm() {
                     <span className="text-[11px] font-extrabold text-[#073B5C] flex items-center gap-1.5">
                       <span>🎧</span> Need Help Signing In?
                     </span>
-                    <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
                       DLT / SMS Delay Support
                     </span>
                   </div>
 
-                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-500 leading-relaxed">
                     Telecom operator scrubbers (TRAI DLT) can occasionally delay SMS delivery. If your code is delayed, connect with our compliance desk directly:
                   </p>
 
                   <div className="grid grid-cols-2 gap-2 pt-0.5">
                     <a
                       href="tel:+919920054785"
-                      className="bg-white border border-slate-300 hover:border-[#0E7490] text-[#073B5C] p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-xs transition"
+                      className="bg-white border border-slate-300 hover:border-[#0E7490] text-[#073B5C] p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-sm transition"
                     >
                       <span>📞</span> Call Us
                     </a>
@@ -266,13 +266,13 @@ function LoginForm() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-xs transition"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl text-center font-bold text-[11px] flex items-center justify-center gap-1 shadow-sm transition"
                     >
                       <span>💬</span> WhatsApp Code
                     </a>
                   </div>
 
-                  <div className="text-[10px] text-slate-400 space-y-1 pt-1.5 border-t border-slate-200/60">
+                  <div className="text-xs text-slate-400 space-y-1 pt-1.5 border-t border-slate-200/60">
                     <div className="flex items-start gap-1">
                       <span className="text-slate-500">📶</span>
                       <span><strong>Check Network:</strong> Poor connectivity or airplane mode can delay OTP delivery.</span>
@@ -321,7 +321,7 @@ function LoginForm() {
               <button type="submit" disabled={loading} className={primaryBtn}>
                 {loading ? 'Signing in…' : 'Sign in →'}
               </button>
-              <p className="text-center text-[11px] text-slate-500">Forgot your password? Use a one-time code instead.</p>
+              <p className="text-center text-xs text-slate-500">Forgot your password? Use a one-time code instead.</p>
             </form>
           )}
 

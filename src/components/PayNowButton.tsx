@@ -28,7 +28,7 @@ export default function PayNowButton({ paymentId, amount, label }: { paymentId: 
       >
         {busy ? 'Opening secure payment…' : label || `Pay ${formatINR(amount)} →`}
       </button>
-      {error && <p className="text-[11px] text-rose-700 font-semibold">{error}</p>}
+      {error && <p className="text-xs text-rose-700 font-semibold">{error}</p>}
     </div>
   );
 }

@@ -19,6 +19,17 @@ const nextConfig = {
       { source: '/services/corporate-compliance-governance', destination: '/services/mca-inc-20a-commencement-of-business', permanent: true },
       { source: '/services/form-aoc-4-filing', destination: '/services/mca-inc-20a-commencement-of-business', permanent: true },
       { source: '/services/patent-filing', destination: '/vakil', permanent: false },
+      { source: '/services/patent-filing-india', destination: '/vakil', permanent: true },
+      { source: '/services/monthly-gst-return-filing', destination: '/services/gst-return-filing', permanent: true },
+      { source: '/services/income-tax-return-itr-filing', destination: '/services/income-tax-return-itr', permanent: true },
+      { source: '/services/accounting-bookkeeping-service', destination: '/services/online-bookkeeping', permanent: true },
+      { source: '/services/legal-notice-demand-recovery', destination: '/services/legal-demand-notice', permanent: true },
+      { source: '/services/llp-incorporation', destination: '/services/llp-registration', permanent: true },
+      { source: '/services/gst-modifications-amendment', destination: '/services/gst-modification', permanent: true },
+      { source: '/services/startup-india-seed-fund-registration', destination: '/services/startup-india-dpiit-recognition', permanent: true },
+      { source: '/services/founders-agreement-drafting', destination: '/tools/agreement-generator', permanent: true },
+      { source: '/services/business-contract-drafting', destination: '/tools/agreement-generator', permanent: true },
+      { source: '/services/website-terms-privacy-policy', destination: '/vakil', permanent: false },
     ];
   },
 
